@@ -6,12 +6,12 @@ mlp :
   normalize : false
 
   # Number of characters as input
-  features : 128
+  features : 16
 
   # Polynomial interpolation points.  Polynomial order
   # is (n-1).  In the case of Fourier series, n is the
   # number of Fourier components.
-  n : 3
+  n : 2
   n_in : 2
   n_out : null
   n_hidden : null
@@ -27,12 +27,12 @@ mlp :
   hidden :
     segments : 8
     layers : 1
-    width : 200
+    width : 10
 
 data :
   max_size : -1
 
-max_epochs: 500
+max_epochs: 50
 gpus: 1
 lr: 1e-4
 batch_size: 256
@@ -63,11 +63,11 @@ hydra:
       # maximize: true  # comment out for maximization
     # default parametrization of the search space
     parametrization:
-      #mlp.n :
-      #  init: 3
-      #  lower : 2
-      #  upper: 3
-      #  integer: true
+      mlp.n :
+        init: 3
+        lower : 2
+        upper: 3
+        integer: true
       mlp.layer_type :
         - continuous
         - discontinuous
@@ -77,23 +77,23 @@ hydra:
       #  upper : 1e-3
       #  step : 2
       #  log : true
-      #mlp.hidden.segments :
-      #  init : 8
-      #  lower : 8
-      #  upper : 100
-      #  integer: true
-      #mlp.hidden.layers :
-      #  init : 1
-      #  lower : 1
-      #  upper : 3
-      #  integer : true
-      #mlp.hidden.width :
-      #  init : 200
-      #  lower : 200
-      #  upper : 250
-      #  integer : true
-      #mlp.output.segments :
-      #  init : 8
-      #  lower : 8
-      #  upper : 20
-      #  integer: true
+      mlp.hidden.segments :
+        init : 8
+        lower : 8
+        upper : 100
+        integer: true
+      mlp.hidden.layers :
+        init : 1
+        lower : 1
+        upper : 2
+        integer : true
+      mlp.hidden.width :
+        init : 10
+        lower : 2
+        upper : 250
+        integer : true
+      mlp.output.segments :
+        init : 8
+        lower : 8
+        upper : 20
+        integer: true
