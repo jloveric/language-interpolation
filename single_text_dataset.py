@@ -13,8 +13,9 @@ class SingleTextDataset(Dataset):
             max_size : Set the maximum number of characters to read from file.  Defaults
             to -1 which is to read everything.
         """
+
         feature_list, target_list = dataset_from_file(
-            filenames[0], features=features, targets=targets, max_size=max_size)
+            filenames[0], features=features, targets=targets, max_size=max_size, dataset_generator=generate_dataset)
         self.inputs = feature_list
         self.output = target_list
         self.features = features
@@ -74,7 +75,11 @@ def decode_output_to_text(encoding: torch.tensor, topk: int = 1) -> Tuple[torch.
     return ascii_codes[0], ascii_codes[1], ascii_values
 
 
-def generate_dataset(text_in: str, features: int, targets: int):
+def generate_dataset(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Generate dataset and convert to ordinal values for each character.
+    This approach needs to be used for the neural network based approach.
+    """
     text = text_in.encode("ascii", "ignore").decode('ascii')
     print('text[1:100', text[1:100])
     final = len(text)-(targets+features)
@@ -90,6 +95,25 @@ def generate_dataset(text_in: str, features: int, targets: int):
     return torch.tensor(feature_list), torch.tensor(target_list)
 
 
-def dataset_from_file(filename: str, features: int, targets: int, max_size: int = -1):
+def generate_dataset_char(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Generate dataset as characters for use in random forest approaches.
+    """
+    text = text_in.encode("ascii", "ignore").decode('ascii')
+    print('text[1:100', text[1:100])
+    final = len(text)-(targets+features)
+    feature_list = []
+    target_list = []
+    for i in range(final):
+        n_feature = [ord(val) for val in text[i:(i+features)]]
+        feature_list.append(n_feature)
+        n_target = [ord(val)
+                    for val in text[(i+features):(i+features+targets)]]
+        target_list.append(n_target)
+
+    return feature_list, target_list
+
+
+def dataset_from_file(filename: str, features: int, targets: int, max_size: int = -1, dataset_generator=generate_dataset):
     with open(filename, "r") as f:
-        return generate_dataset(text_in=f.read()[0:max_size], features=features, targets=targets)
+        return dataset_generator(text_in=f.read()[0:max_size], features=features, targets=targets)

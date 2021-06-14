@@ -1,11 +1,7 @@
 # Language interpolation of Books
-Run with this command
+Run with nevergrad
 ```
-python language_interpolation.py 
-```
-running with Nevergrad
-```
-python language_interpolation.py hydra/sweeper=nevergrad --cfg hydra -p hydra.sweeper
+python language_interpolation.py -m
 ```
 ## Apply a model
 ```

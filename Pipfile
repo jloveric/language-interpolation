@@ -21,6 +21,7 @@ torchvision = "*"
 pytest = "*"
 hydra-nevergrad-sweeper = "*"
 torchsummary = "*"
+lightgbm = "*"
 
 [packages.high_order_layers_torch]
 git = "git://github.com/jloveric/high-order-layers-torch"
