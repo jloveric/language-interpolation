@@ -17,7 +17,7 @@ gpus: 1
 
 # Are you training? Otherwise plot the result
 train: True
-checkpoint: null
+checkpoint: outputs/2021-07-10/05-40-09/model.txt
 
 text: "This is sample text"
 topk: 5

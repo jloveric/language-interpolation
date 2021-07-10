@@ -11,7 +11,7 @@ import torch
 from high_order_layers_torch.networks import *
 from single_text_dataset import SingleTextDataset
 from torchsummary import summary
-from single_text_dataset import dataset_from_file, generate_dataset_char
+from single_text_dataset import dataset_from_file, generate_dataset_char, encode_input_from_text, decode_output_to_text
 import random
 from pytorch_lightning.metrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
@@ -43,6 +43,10 @@ def train(cfg: DictConfig):
     bst.save_model('model.txt')
 
 
+def predict(text: str):
+    pass
+
+
 @hydra.main(config_path="./config", config_name="language_config_gbm")
 def run_language_interpolation(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
@@ -57,11 +61,11 @@ def run_language_interpolation(cfg: DictConfig):
         print('cfg.checkpoint', cfg.checkpoint)
         checkpoint_path = f"{hydra.utils.get_original_cwd()}/{cfg.checkpoint}"
         print('checkpoint_path', checkpoint_path)
-        model = Net.load_from_checkpoint(checkpoint_path)
-        model.eval()
+
+        bst = lgb.Booster(model_file=checkpoint_path)
 
         text_in = cfg.text
-        features = cfg.mlp.input.width
+        features = cfg.features
 
         # Make sure the prompt text is long enough.  The network is expecting a prompt
         # of size features.  It will take the last "features" characters from the
@@ -71,11 +75,11 @@ def run_language_interpolation(cfg: DictConfig):
         for i in range(cfg.num_predict):
             encoding, text_used = encode_input_from_text(
                 text_in=text_in, features=features)
-            encoding = ascii_to_float(encoding).unsqueeze(dim=0)
-            model.eval()
-            output = model(encoding)
+            encoding = encoding.unsqueeze(dim=0)
+            output = bst.predict(encoding.numpy())
+            
             values, indices, ascii = decode_output_to_text(
-                encoding=output[0], topk=cfg.topk)
+                encoding=torch.tensor(output[0]), topk=cfg.topk)
 
             # pick the next character weighted by probabilities of each character
             # prevents the same response for every query.
