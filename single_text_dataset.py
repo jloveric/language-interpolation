@@ -94,6 +94,32 @@ def generate_dataset(text_in: str, features: int, targets: int) -> Tuple[torch.T
 
     return torch.tensor(feature_list), torch.tensor(target_list)
 
+def dataset_centered(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Generate a centered dataset as integers
+    """
+
+    f_left = features // 2
+    f_right = features - f_left
+    t_left = targets // 2
+    t_right = targets - t_left
+
+    text = text_in.encode("ascii", "ignore").decode('ascii')
+    print('text[1:100', text[1:100])
+    final = len(text)-(targets+features)
+    feature_list = []
+    target_list = []
+    for i in range(final):
+        feature_set = text[i:(i+f_left)] + text[(f_left+1):(f_left+1+f_right)]
+
+        n_feature = [ord(val) for val in feature_set]
+        feature_list.append(n_feature)
+        n_target = [ord(val)
+                    for val in text[(i+f_left-t_left):(i+f_left+t_right)]]
+        target_list.append(n_target)
+
+    return torch.tensor(feature_list), torch.tensor(target_list)
+
 
 def generate_dataset_char(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
     """
@@ -105,6 +131,7 @@ def generate_dataset_char(text_in: str, features: int, targets: int) -> Tuple[to
     feature_list = []
     target_list = []
     for i in range(final):
+        
         n_feature = [ord(val) for val in text[i:(i+features)]]
         feature_list.append(n_feature)
         n_target = [ord(val)
@@ -112,6 +139,32 @@ def generate_dataset_char(text_in: str, features: int, targets: int) -> Tuple[to
         target_list.append(n_target)
 
     return feature_list, target_list
+
+def dataset_centered_char(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Generate a centered dataset as char
+    """
+
+    f_left = features // 2
+    f_right = features - f_left
+    t_left = targets // 2
+    t_right = targets - t_left
+
+    text = text_in.encode("ascii", "ignore").decode('ascii')
+    print('text[1:100', text[1:100])
+    final = len(text)-(targets+features)
+    feature_list = []
+    target_list = []
+    for i in range(final):
+        feature_set = text[i:(i+f_left)] + text[(f_left+1):(f_left+1+f_right)]
+        n_feature = [ord(val) for val in feature_set]
+        feature_list.append(n_feature)
+        n_target = [ord(val)
+                    for val in text[(i+f_left-t_left):(i+f_left+t_right)]]
+        target_list.append(n_target)
+
+    return feature_list, target_list
+
 
 
 def dataset_from_file(filename: str, features: int, targets: int, max_size: int = -1, dataset_generator=generate_dataset):
