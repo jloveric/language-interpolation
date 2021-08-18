@@ -4,24 +4,20 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-tensorboard = "*"
 pytest = "*"
 
 [requires]
 python_version = "3"
 
 [packages]
-hydra = "*"
-torch = "*"
-pillow = "*"
-matplotlib = "*"
-pytorch-lightning = "*"
+Hydra = "*"
 hydra-core = "*"
-torchvision = "*"
 pytest = "*"
 hydra-nevergrad-sweeper = "*"
 torchsummary = "*"
 lightgbm = "*"
+omegaconf = "*"
+pytorch-lightning = "*"
 
 [packages.high_order_layers_torch]
 git = "git://github.com/jloveric/high-order-layers-torch"

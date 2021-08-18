@@ -30,6 +30,8 @@ mlp :
     width : 10
 
 data :
+  type : sequence # centered
+  reapply : 0 # number of times to reapply calculation
   max_size : -1
 
 max_epochs: 50

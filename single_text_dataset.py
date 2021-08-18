@@ -1,34 +1,6 @@
 import torch
 from torch.utils.data import Dataset
-from typing import List, Tuple
-
-
-class SingleTextDataset(Dataset):
-    def __init__(self, filenames: List[str], features: int = 10, targets: int = 1, max_size: int = -1):
-        """
-        Args :
-            filenames : List of filenames to load data from
-            features : Number of input features (characters)
-            targets : Number of output features (characters)
-            max_size : Set the maximum number of characters to read from file.  Defaults
-            to -1 which is to read everything.
-        """
-
-        feature_list, target_list = dataset_from_file(
-            filenames[0], features=features, targets=targets, max_size=max_size, dataset_generator=generate_dataset)
-        self.inputs = feature_list
-        self.output = target_list
-        self.features = features
-        self.targets = targets
-
-    def __len__(self):
-        return len(self.output)
-
-    def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-
-        return (self.inputs[idx]-64+0.5)/64.0, self.output[idx]
+from typing import List, Tuple, Callable
 
 
 def ascii_to_float(ascii_tensor: torch.Tensor):
@@ -94,6 +66,7 @@ def generate_dataset(text_in: str, features: int, targets: int) -> Tuple[torch.T
 
     return torch.tensor(feature_list), torch.tensor(target_list)
 
+
 def dataset_centered(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Generate a centered dataset as integers
@@ -131,7 +104,7 @@ def generate_dataset_char(text_in: str, features: int, targets: int) -> Tuple[to
     feature_list = []
     target_list = []
     for i in range(final):
-        
+
         n_feature = [ord(val) for val in text[i:(i+features)]]
         feature_list.append(n_feature)
         n_target = [ord(val)
@@ -139,6 +112,7 @@ def generate_dataset_char(text_in: str, features: int, targets: int) -> Tuple[to
         target_list.append(n_target)
 
     return feature_list, target_list
+
 
 def dataset_centered_char(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
     """
@@ -166,7 +140,35 @@ def dataset_centered_char(text_in: str, features: int, targets: int) -> Tuple[to
     return feature_list, target_list
 
 
-
 def dataset_from_file(filename: str, features: int, targets: int, max_size: int = -1, dataset_generator=generate_dataset):
     with open(filename, "r") as f:
         return dataset_generator(text_in=f.read()[0:max_size], features=features, targets=targets)
+
+
+class SingleTextDataset(Dataset):
+    def __init__(self, filenames: List[str], features: int = 10, targets: int = 1, max_size: int = -1, dataset_generator=generate_dataset):
+        """
+        Args :
+
+            filenames : List of filenames to load data from
+            features : Number of input features (characters)
+            targets : Number of output features (characters)
+            max_size : Set the maximum number of characters to read from file.  Defaults
+            to -1 which is to read everything.
+        """
+
+        feature_list, target_list = dataset_from_file(
+            filenames[0], features=features, targets=targets, max_size=max_size, dataset_generator=dataset_generator)
+        self.inputs = feature_list
+        self.output = target_list
+        self.features = features
+        self.targets = targets
+
+    def __len__(self):
+        return len(self.output)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        return (self.inputs[idx]-64+0.5)/64.0, self.output[idx]

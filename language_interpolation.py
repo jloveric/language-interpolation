@@ -11,7 +11,7 @@ import torch
 from high_order_layers_torch.networks import *
 from single_text_dataset import SingleTextDataset
 from torchsummary import summary
-from single_text_dataset import dataset_from_file, encode_input_from_text, decode_output_to_text, ascii_to_float
+from single_text_dataset import dataset_from_file, encode_input_from_text, decode_output_to_text, ascii_to_float, generate_dataset, dataset_centered
 import random
 from pytorch_lightning.metrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
@@ -53,10 +53,18 @@ class Net(LightningModule):
     def setup(self, stage):
 
         full_path = [f"{self.root_dir}/{path}" for path in self.cfg.filenames]
+        if self.cfg.data.type == "sequence":
+            dataset_generator = generate_dataset
+        elif self.cfg.data_dataset == "centered":
+            dataset_generator = dataset_centered
+        else:
+            raise ValueError(
+                f"data.type must be centered or sequence. recieved {self.cfg.data.type}")
+
         self.train_dataset = SingleTextDataset(
-            filenames=full_path, features=self.cfg.mlp.features, max_size=self.cfg.data.max_size)
+            filenames=full_path, features=self.cfg.mlp.features, max_size=self.cfg.data.max_size, dataset_generator=dataset_generator)
         self.test_dataset = SingleTextDataset(
-            filenames=full_path, features=self.cfg.mlp.features, max_size=self.cfg.data.max_size)
+            filenames=full_path, features=self.cfg.mlp.features, max_size=self.cfg.data.max_size, dataset_generator=dataset_generator)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
