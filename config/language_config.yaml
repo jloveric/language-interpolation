@@ -30,7 +30,7 @@ mlp :
     width : 10
 
 data :
-  type : sequence # centered
+  type :  centered # sequence # centered
   reapply : 0 # number of times to reapply calculation
   max_size : -1
 

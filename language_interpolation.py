@@ -55,7 +55,7 @@ class Net(LightningModule):
         full_path = [f"{self.root_dir}/{path}" for path in self.cfg.filenames]
         if self.cfg.data.type == "sequence":
             dataset_generator = generate_dataset
-        elif self.cfg.data_dataset == "centered":
+        elif self.cfg.data.type == "centered":
             dataset_generator = dataset_centered
         else:
             raise ValueError(
