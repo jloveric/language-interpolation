@@ -59,6 +59,20 @@ def run_language_cellular_automata(cfg: DictConfig):
         # of size features.  It will take the last "features" characters from the
         # provided string and ignore the rest.
         text_in = text_in.rjust(features)
+        length = len(text_in)
+        padding = cfg.mlp.features // 2
+        padded_text_in = text_in.center(length+2*padding)
+        for i in range(length):
+            center = i+padding
+            right = center+2*padding
+            this_text = padded_text_in[left:(
+                left+padding+1)]+padded_text_in[right:(right+padding+2)]
+            assert len(this_text) == features
+
+            encoding, text_used = encode_input_from_text(
+                text_in=this_text, features=features)
+            encoding = ascii_to_float(encoding).unsqueeze(dim=0)
+            model.eval()
 
         for i in range(cfg.num_predict):
             encoding, text_used = encode_input_from_text(
