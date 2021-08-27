@@ -55,40 +55,21 @@ def run_language_cellular_automata(cfg: DictConfig):
         text_in = cfg.text
         features = cfg.mlp.input.width
 
-        # Make sure the prompt text is long enough.  The network is expecting a prompt
-        # of size features.  It will take the last "features" characters from the
-        # provided string and ignore the rest.
-        text_in = text_in.rjust(features)
-        length = len(text_in)
-        padding = cfg.mlp.features // 2
-        padded_text_in = text_in.center(length+2*padding)
-        for i in range(length):
-            center = i+padding
-            right = center+2*padding
-            this_text = padded_text_in[left:(
-                left+padding+1)]+padded_text_in[right:(right+padding+2)]
-            assert len(this_text) == features
+        dataset = SingleTextDataset(text=cfg.text, features=features)
+        model.eval()
+        outputs = model(dataset)
 
-            encoding, text_used = encode_input_from_text(
-                text_in=this_text, features=features)
-            encoding = ascii_to_float(encoding).unsqueeze(dim=0)
-            model.eval()
-
-        for i in range(cfg.num_predict):
-            encoding, text_used = encode_input_from_text(
-                text_in=text_in, features=features)
-            encoding = ascii_to_float(encoding).unsqueeze(dim=0)
-            model.eval()
-            output = model(encoding)
+        result = ''
+        for output in outputs:
             values, indices, ascii = decode_output_to_text(
-                encoding=output[0], topk=cfg.topk)
+                encoding=output, topk=cfg.topk)
 
             # pick the next character weighted by probabilities of each character
             # prevents the same response for every query.
             actual = random.choices(ascii, values.tolist())
-            text_in = text_in+actual[0]
+            result += actual[0]
 
-        print('output:', text_in.replace('\n', ' '))
+        print('output:', result.replace('\n', ' '))
 
 
 if __name__ == "__main__":

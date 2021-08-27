@@ -146,19 +146,27 @@ def dataset_from_file(filename: str, features: int, targets: int, max_size: int 
 
 
 class SingleTextDataset(Dataset):
-    def __init__(self, filenames: List[str], features: int = 10, targets: int = 1, max_size: int = -1, dataset_generator=generate_dataset):
+    def __init__(self, filenames: List[str] = None, text: str = None, features: int = 10, targets: int = 1, max_size: int = -1, dataset_generator=generate_dataset):
         """
         Args :
-
             filenames : List of filenames to load data from
             features : Number of input features (characters)
             targets : Number of output features (characters)
             max_size : Set the maximum number of characters to read from file.  Defaults
             to -1 which is to read everything.
         """
+        if filenames is None and text is None:
+            raise ValueError(f"Must define either filenames or text.")
+        if (filenames is not None) and (text is not None):
+            raise ValueError(f"Either filenames or text must be defined.")
 
-        feature_list, target_list = dataset_from_file(
-            filenames[0], features=features, targets=targets, max_size=max_size, dataset_generator=dataset_generator)
+        if filenames is not None:
+            feature_list, target_list = dataset_from_file(
+                filenames[0], features=features, targets=targets, max_size=max_size, dataset_generator=dataset_generator)
+        if text is not None:
+            feature_list, target_list = dataset_generator(
+                text_in=text, features=features, targets=targets)
+
         self.inputs = feature_list
         self.output = target_list
         self.features = features
