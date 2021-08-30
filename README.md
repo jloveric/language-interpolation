@@ -22,5 +22,5 @@ The model attempts to memorize the entire book (Frankenstein) by predicting the 
 A centered model can be repeatedly applied to the same text as a moving window and will work with arbitrary length sentences.  This
 approach is similar to stencils used in solving partial differential equations.
 ```
-python language_cellular_automata.py mlp.features=11 data.type=centered train=False checkpoint=\"outputs/2021-08-21/20-14-40/lightning_logs/version_0/checkpoints/epoch=20-step=35909.ckpt\" topk=2 num_predict=200 text="Let us see what this text produces"
+python language_cellular_automata.py mlp.features=11 data.type=centered train=False checkpoint=\"outputs/2021-08-21/20-14-40/lightning_logs/version_0/checkpoints/epoch=20-step=35909.ckpt\" topk=2 num_predict=200 text="The monster awakes" topk=1 data.reapply=10
 ```

@@ -54,23 +54,31 @@ def run_language_cellular_automata(cfg: DictConfig):
 
         text_in = cfg.text
         features = cfg.mlp.input.width
+        result_list = []
 
-        dataset = SingleTextDataset(text=cfg.text, features=features)
-        model.eval()
-        outputs = model(dataset)
+        text = (cfg.text).center(len(cfg.text)+cfg.mlp.features+3)
+        for step in range(cfg.data.reapply) :
+            #print('text is : ', text)
+            text=text.center(len(text)+cfg.mlp.features+3)
+            dataset = list(SingleTextDataset(text=text, features=features))
+            dataset = torch.stack([a[0] for a in dataset])
+            model.eval()
+            outputs = model(dataset)
 
-        result = ''
-        for output in outputs:
-            values, indices, ascii = decode_output_to_text(
-                encoding=output, topk=cfg.topk)
+            result = ''
+            for output in outputs:
+                values, indices, ascii = decode_output_to_text(
+                    encoding=output, topk=cfg.topk)
 
-            # pick the next character weighted by probabilities of each character
-            # prevents the same response for every query.
-            actual = random.choices(ascii, values.tolist())
-            result += actual[0]
+                # pick the next character weighted by probabilities of each character
+                # prevents the same response for every query.
+                actual = random.choices(ascii, values.tolist())
+                result += actual[0]
 
-        print('output:', result.replace('\n', ' '))
-
+            text = ''.join(result.replace('\n',' '))
+            result_list.append(text)
+            #print('output:', text)
+        print('\nresult_list\n', '\n'.join(result_list))
 
 if __name__ == "__main__":
     run_language_cellular_automata()
