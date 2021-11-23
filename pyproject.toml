@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "language-interpolation"
+version = "0.1.0"
+description = ""
+authors = ["jloveric <john.loverich@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+hydra-core = "^1.1.1"
+hydra-nevergrad-sweeper = "^1.1.5"
+torchsummary = "^1.5.1"
+lightgbm = "^3.3.1"
+omegaconf = "^2.1.1"
+pytorch-lightning = "^1.5.2"
+high-order-layers-torch = "^1.0.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
