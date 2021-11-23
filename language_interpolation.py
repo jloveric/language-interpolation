@@ -11,7 +11,14 @@ import torch
 from high_order_layers_torch.networks import *
 from single_text_dataset import SingleTextDataset
 from torchsummary import summary
-from single_text_dataset import dataset_from_file, encode_input_from_text, decode_output_to_text, ascii_to_float, generate_dataset, dataset_centered
+from single_text_dataset import (
+    dataset_from_file,
+    encode_input_from_text,
+    decode_output_to_text,
+    ascii_to_float,
+    generate_dataset,
+    dataset_centered,
+)
 import random
 from pytorch_lightning.metrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
@@ -25,8 +32,7 @@ class Net(LightningModule):
 
         normalization = None
         if cfg.mlp.normalize is True:
-            normalization = torch.nn.BatchNorm1d(
-                num_features=cfg.mlp.hidden.width)
+            normalization = torch.nn.BatchNorm1d(num_features=cfg.mlp.hidden.width)
 
         self.model = HighOrderMLP(
             layer_type=cfg.mlp.layer_type,
@@ -59,23 +65,32 @@ class Net(LightningModule):
             dataset_generator = dataset_centered
         else:
             raise ValueError(
-                f"data.type must be centered or sequence. recieved {self.cfg.data.type}")
+                f"data.type must be centered or sequence. recieved {self.cfg.data.type}"
+            )
 
         self.train_dataset = SingleTextDataset(
-            filenames=full_path, features=self.cfg.mlp.features, max_size=self.cfg.data.max_size, dataset_generator=dataset_generator)
+            filenames=full_path,
+            features=self.cfg.mlp.features,
+            max_size=self.cfg.data.max_size,
+            dataset_generator=dataset_generator,
+        )
         self.test_dataset = SingleTextDataset(
-            filenames=full_path, features=self.cfg.mlp.features, max_size=self.cfg.data.max_size, dataset_generator=dataset_generator)
+            filenames=full_path,
+            features=self.cfg.mlp.features,
+            max_size=self.cfg.data.max_size,
+            dataset_generator=dataset_generator,
+        )
 
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
         loss = self.loss(y_hat, y.flatten())
 
-        diff = torch.argmax(y_hat, dim=1)-y.flatten()
-        accuracy = torch.where(diff == 0, 1, 0).sum()/len(diff)
+        diff = torch.argmax(y_hat, dim=1) - y.flatten()
+        accuracy = torch.where(diff == 0, 1, 0).sum() / len(diff)
 
-        self.log(f'train_loss', loss, prog_bar=True)
-        self.log(f'acc', accuracy, prog_bar=True)
+        self.log(f"train_loss", loss, prog_bar=True)
+        self.log(f"acc", accuracy, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -83,13 +98,21 @@ class Net(LightningModule):
 
     def train_dataloader(self):
         trainloader = torch.utils.data.DataLoader(
-            self.train_dataset, batch_size=self.cfg.batch_size, shuffle=True, num_workers=10)
+            self.train_dataset,
+            batch_size=self.cfg.batch_size,
+            shuffle=True,
+            num_workers=10,
+        )
         return trainloader
 
     def test_dataloader(self):
 
         testloader = torch.utils.data.DataLoader(
-            self.test_dataset, batch_size=self.cfg.batch_size, shuffle=False, num_workers=10)
+            self.test_dataset,
+            batch_size=self.cfg.batch_size,
+            shuffle=False,
+            num_workers=10,
+        )
         return testloader
 
     def configure_optimizers(self):
@@ -103,30 +126,30 @@ def run_language_interpolation(cfg: DictConfig):
     print(f"Orig working directory    : {hydra.utils.get_original_cwd()}")
 
     if cfg.train is True:
-        early_stopping = EarlyStopping(monitor='train_loss', patience=5)
+        early_stopping = EarlyStopping(monitor="train_loss", patience=5)
         trainer = Trainer(
             callbacks=[early_stopping],
             max_epochs=cfg.max_epochs,
             gpus=cfg.gpus,
-            gradient_clip_val=cfg.gradient_clip
+            gradient_clip_val=cfg.gradient_clip,
         )
 
         model = Net(cfg)
         trainer.fit(model)
-        print('testing')
+        print("testing")
 
         result = trainer.test(model)
-        print('result', result)
-        print('finished testing')
-        print('best check_point', trainer.checkpoint_callback.best_model_path)
-        print('loss', result[0]['train_loss'])
-        return result[0]['train_loss']
+        print("result", result)
+        print("finished testing")
+        print("best check_point", trainer.checkpoint_callback.best_model_path)
+        print("loss", result[0]["train_loss"])
+        return result[0]["train_loss"]
     else:
         # plot some data
-        print('evaluating result')
-        print('cfg.checkpoint', cfg.checkpoint)
+        print("evaluating result")
+        print("cfg.checkpoint", cfg.checkpoint)
         checkpoint_path = f"{hydra.utils.get_original_cwd()}/{cfg.checkpoint}"
-        print('checkpoint_path', checkpoint_path)
+        print("checkpoint_path", checkpoint_path)
         model = Net.load_from_checkpoint(checkpoint_path)
         model.eval()
 
@@ -140,19 +163,21 @@ def run_language_interpolation(cfg: DictConfig):
 
         for i in range(cfg.num_predict):
             encoding, text_used = encode_input_from_text(
-                text_in=text_in, features=features)
+                text_in=text_in, features=features
+            )
             encoding = ascii_to_float(encoding).unsqueeze(dim=0)
             model.eval()
             output = model(encoding)
             values, indices, ascii = decode_output_to_text(
-                encoding=output[0], topk=cfg.topk)
+                encoding=output[0], topk=cfg.topk
+            )
 
             # pick the next character weighted by probabilities of each character
             # prevents the same response for every query.
             actual = random.choices(ascii, values.tolist())
-            text_in = text_in+actual[0]
+            text_in = text_in + actual[0]
 
-        print('output:', text_in.replace('\n', ' '))
+        print("output:", text_in.replace("\n", " "))
 
 
 if __name__ == "__main__":
