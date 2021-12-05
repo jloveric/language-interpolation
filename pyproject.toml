@@ -13,10 +13,11 @@ torchsummary = "^1.5.1"
 lightgbm = "^3.3.1"
 omegaconf = "^2.1.1"
 pytorch-lightning = "^1.5.2"
-high-order-layers-torch = "^1.0.5"
+high-order-layers-torch = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
+black = "^21.11b1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

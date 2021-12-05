@@ -2,7 +2,7 @@ filenames:
   - "books/frankenstein.txt"
   - "books/the_raven.txt"
 
-features: 16
+features: 128
 num_leaves: 100
 objective: multiclass
 num_class: 128
@@ -17,7 +17,7 @@ gpus: 1
 
 # Are you training? Otherwise plot the result
 train: True
-checkpoint: outputs/2021-07-10/05-40-09/model.txt
+checkpoint: outputs/2021-07-10/07-10-54/model.txt
 
 text: "This is sample text"
 topk: 5
@@ -39,37 +39,13 @@ hydra:
       # maximize: true  # comment out for maximization
     # default parametrization of the search space
     parametrization:
-      mlp.n:
+      max_depth:
         init: 3
         lower: 2
         upper: 3
         integer: true
-      mlp.layer_type:
-        - continuous
-        - discontinuous
-      #lr :
-      #  init : 1e-4
-      #  lower : 1e-5
-      #  upper : 1e-3
-      #  step : 2
-      #  log : true
-      mlp.hidden.segments:
+      num_leaves:
         init: 8
         lower: 8
         upper: 100
-        integer: true
-      mlp.hidden.layers:
-        init: 1
-        lower: 1
-        upper: 2
-        integer: true
-      mlp.hidden.width:
-        init: 10
-        lower: 2
-        upper: 250
-        integer: true
-      mlp.output.segments:
-        init: 8
-        lower: 8
-        upper: 20
         integer: true
