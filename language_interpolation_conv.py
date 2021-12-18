@@ -3,7 +3,7 @@ from typing import List, Union
 import os
 from omegaconf import DictConfig, OmegaConf
 import hydra
-from pytorch_lightning.metrics.functional import accuracy
+from torchmetrics.functional import accuracy
 from high_order_layers_torch.layers import *
 from pytorch_lightning import LightningModule, Trainer
 import torch.optim as optim
@@ -20,10 +20,9 @@ from single_text_dataset import (
     dataset_centered,
 )
 import random
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 import torch.nn as nn
-
 
 
 class Net(LightningModule):
@@ -35,6 +34,8 @@ class Net(LightningModule):
         normalization = None
         if cfg.mlp.normalize is True:
             normalization = torch.nn.BatchNorm1d(num_features=cfg.mlp.hidden.width)
+
+        # self.model =
 
         self.model = HighOrderMLP(
             layer_type=cfg.mlp.layer_type,
