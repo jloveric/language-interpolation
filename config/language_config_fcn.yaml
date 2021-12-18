@@ -2,22 +2,8 @@ filenames:
   - "books/frankenstein.txt"
   - "books/the_raven.txt"
 
-if cfg.normalize is True:
-  normalization = torch.nn.BatchNorm1d(num_features=cfg.fcn.in_features)
-
-  self.fcn = HighOrderFullyConvolutionalNetwork(
-  layer_type=cfg.fcn.layer_type,
-  n=cfg.fcn.n,
-  channels=cfg.fcn.channels,
-  segments=cfg.fcn.segments,
-  kernel_size=cfg.fcn.kernel_size,
-  periodicity=2.0,
-  normalization=normalization,
-  rescale_output=False,
-  )
-
 fcn:
-  layer_type: "discontinuous"
+  layer_type: ["discontinuous1d", "discontinuous1d"]
   normalize: false
 
   # Number of characters as input
@@ -26,15 +12,22 @@ fcn:
   # Polynomial interpolation points.  Polynomial order
   # is (n-1).  In the case of Fourier series, n is the
   # number of Fourier components.
-  n: 2
+  n: [2, 2]
   channels: [2, 2]
   segments: [128, 2]
-  kenel_size: [1, 2]
+  kernel_size: [1, 2]
   periodicity: 2.0
   rescale_output: False
 
+out:
+  layer_type: "discontinuous"
+  n: ${fcn.n}
+  segments: 2
+
+normalize: false
+
 data:
-  type: centered # sequence # centered
+  type: sequence # centered
   reapply: 10 # number of times to reapply calculation
   max_size: -1
 
@@ -69,37 +62,11 @@ hydra:
       # maximize: true  # comment out for maximization
     # default parametrization of the search space
     parametrization:
-      mlp.n:
+      fcn.n:
         init: 3
         lower: 2
         upper: 3
         integer: true
-      mlp.layer_type:
-        - continuous
-        - discontinuous
-      #lr :
-      #  init : 1e-4
-      #  lower : 1e-5
-      #  upper : 1e-3
-      #  step : 2
-      #  log : true
-      mlp.hidden.segments:
-        init: 8
-        lower: 8
-        upper: 100
-        integer: true
-      mlp.hidden.layers:
-        init: 1
-        lower: 1
-        upper: 2
-        integer: true
-      mlp.hidden.width:
-        init: 10
-        lower: 2
-        upper: 250
-        integer: true
-      mlp.output.segments:
-        init: 8
-        lower: 8
-        upper: 20
-        integer: true
+      fcn.layer_type:
+        - continuous1d
+        - discontinuous1d

@@ -3,6 +3,10 @@ Run with nevergrad
 ```
 python language_interpolation.py -m data.type=sequence
 ```
+# With conv layers (not yet working
+```
+python language_interpolation_conv.py data.type=sequence
+```
 # Run with centered model (language cellular automaton)
 ```
 python language_cellular_automata.py mlp.features=11 data.type=centered

@@ -48,9 +48,8 @@ class Net(LightningModule):
             rescale_output=False,
         )
 
-        reduction = itertools.accumulate(
-            [a - 1 for a in cfg.fcn.kernel_size], operator.add
-        )
+        print(cfg.fcn.kernel_size)
+        reduction = sum([a - 1 for a in cfg.fcn.kernel_size])
 
         in_features = cfg.fcn.features - reduction
 
@@ -151,7 +150,7 @@ class Net(LightningModule):
         return optim.Adam(self.parameters(), lr=self.cfg.lr)
 
 
-@hydra.main(config_path="./config", config_name="language_config")
+@hydra.main(config_path="./config", config_name="language_config_fcn")
 def run_language_interpolation(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
     print("Working directory : {}".format(os.getcwd()))
