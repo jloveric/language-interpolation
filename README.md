@@ -3,7 +3,7 @@ Run with nevergrad
 ```
 python language_interpolation.py -m data.type=sequence
 ```
-# With conv layers (not yet working
+# With conv layers (not yet working)
 ```
 python language_interpolation_conv.py data.type=sequence
 ```
