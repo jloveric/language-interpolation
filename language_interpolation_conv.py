@@ -23,6 +23,8 @@ import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 import torch.nn as nn
+import itertools
+import operator
 
 
 class Net(LightningModule):
@@ -32,11 +34,37 @@ class Net(LightningModule):
         self.cfg = cfg
 
         normalization = None
-        if cfg.mlp.normalize is True:
-            normalization = torch.nn.BatchNorm1d(num_features=cfg.mlp.hidden.width)
+        if cfg.normalize is True:
+            normalization = torch.nn.BatchNorm1d(num_features=cfg.fcn.features)
 
-        # self.model =
+        self.fcn = HighOrderFullyConvolutionalNetwork(
+            layer_type=cfg.fcn.layer_type,
+            n=cfg.fcn.n,
+            channels=cfg.fcn.channels,
+            segments=cfg.fcn.segments,
+            kernel_size=cfg.fcn.kernel_size,
+            periodicity=2.0,
+            normalization=normalization,
+            rescale_output=False,
+        )
 
+        reduction = itertools.accumulate(
+            [a - 1 for a in cfg.fcn.kernel_size], operator.add
+        )
+
+        in_features = cfg.fcn.features - reduction
+
+        self.output_layer = high_order_fc_layers(
+            n=cfg.out.n,
+            in_features=in_features,
+            out_features=128,  # 128 ascii characters
+            layer_type=cfg.out.layer_type,
+            segments=cfg.out.segments,
+        )
+
+        self.model = nn.Sequential(self.fcn, self.output_layer)
+
+        """
         self.model = HighOrderMLP(
             layer_type=cfg.mlp.layer_type,
             n=cfg.mlp.n,
@@ -52,6 +80,7 @@ class Net(LightningModule):
             hidden_segments=cfg.mlp.hidden.segments,
             normalization=normalization,
         )
+        """
         self.root_dir = f"{hydra.utils.get_original_cwd()}"
         self.loss = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(top_k=2)

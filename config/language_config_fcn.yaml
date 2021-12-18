@@ -1,0 +1,105 @@
+filenames:
+  - "books/frankenstein.txt"
+  - "books/the_raven.txt"
+
+if cfg.normalize is True:
+  normalization = torch.nn.BatchNorm1d(num_features=cfg.fcn.in_features)
+
+  self.fcn = HighOrderFullyConvolutionalNetwork(
+  layer_type=cfg.fcn.layer_type,
+  n=cfg.fcn.n,
+  channels=cfg.fcn.channels,
+  segments=cfg.fcn.segments,
+  kernel_size=cfg.fcn.kernel_size,
+  periodicity=2.0,
+  normalization=normalization,
+  rescale_output=False,
+  )
+
+fcn:
+  layer_type: "discontinuous"
+  normalize: false
+
+  # Number of characters as input
+  features: 16
+
+  # Polynomial interpolation points.  Polynomial order
+  # is (n-1).  In the case of Fourier series, n is the
+  # number of Fourier components.
+  n: 2
+  channels: [2, 2]
+  segments: [128, 2]
+  kenel_size: [1, 2]
+  periodicity: 2.0
+  rescale_output: False
+
+data:
+  type: centered # sequence # centered
+  reapply: 10 # number of times to reapply calculation
+  max_size: -1
+
+max_epochs: 50
+gpus: 1
+lr: 1e-4
+batch_size: 256
+gradient_clip: null # 5.0
+
+# Are you training? Otherwise plot the result
+train: True
+checkpoint: null
+rotations: 1 # 1 is x,y, 2 is x,y, x-y, x+y, greater includes additional rotations
+
+text: "This is sample text"
+topk: 5
+num_predict: 100
+
+defaults:
+  - override hydra/sweeper: nevergrad
+
+hydra:
+  sweeper:
+    optim:
+      # name of the nevergrad optimizer to use
+      # OnePlusOne is good at low budget, but may converge early
+      optimizer: OnePlusOne
+      # total number of function evaluations to perform
+      budget: 40
+      # number of parallel workers for performing function evaluations
+      num_workers: 10
+      # maximize: true  # comment out for maximization
+    # default parametrization of the search space
+    parametrization:
+      mlp.n:
+        init: 3
+        lower: 2
+        upper: 3
+        integer: true
+      mlp.layer_type:
+        - continuous
+        - discontinuous
+      #lr :
+      #  init : 1e-4
+      #  lower : 1e-5
+      #  upper : 1e-3
+      #  step : 2
+      #  log : true
+      mlp.hidden.segments:
+        init: 8
+        lower: 8
+        upper: 100
+        integer: true
+      mlp.hidden.layers:
+        init: 1
+        lower: 1
+        upper: 2
+        integer: true
+      mlp.hidden.width:
+        init: 10
+        lower: 2
+        upper: 250
+        integer: true
+      mlp.output.segments:
+        init: 8
+        lower: 8
+        upper: 20
+        integer: true
