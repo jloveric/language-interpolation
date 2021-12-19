@@ -43,12 +43,16 @@ class Net(LightningModule):
             channels=cfg.fcn.channels,
             segments=cfg.fcn.segments,
             kernel_size=cfg.fcn.kernel_size,
-            periodicity=2.0,
-            normalization=normalization,
-            rescale_output=False,
+            # periodicity=cfg.fcn.periodicity,
+            # normalization=normalization,
+            # rescale_output=False,
         )
 
         print(cfg.fcn.kernel_size)
+        print(cfg.fcn.channels)
+        print(cfg.fcn.segments)
+        print(cfg.fcn.kernel_size)
+
         reduction = sum([a - 1 for a in cfg.fcn.kernel_size])
 
         in_features = cfg.fcn.features - reduction
@@ -61,25 +65,10 @@ class Net(LightningModule):
             segments=cfg.out.segments,
         )
 
-        self.model = nn.Sequential(self.fcn, self.output_layer)
+        self.flatten = nn.Flatten()
 
-        """
-        self.model = HighOrderMLP(
-            layer_type=cfg.mlp.layer_type,
-            n=cfg.mlp.n,
-            n_in=cfg.mlp.n_in,
-            n_hidden=cfg.mlp.n_in,
-            n_out=cfg.mlp.n_out,
-            in_width=cfg.mlp.input.width,
-            in_segments=cfg.mlp.input.segments,
-            out_width=128,  # ascii has 128 characters
-            out_segments=cfg.mlp.output.segments,
-            hidden_width=cfg.mlp.hidden.width,
-            hidden_layers=cfg.mlp.hidden.layers,
-            hidden_segments=cfg.mlp.hidden.segments,
-            normalization=normalization,
-        )
-        """
+        self.model = nn.Sequential(self.fcn, self.flatten)  # self.output_layer)
+
         self.root_dir = f"{hydra.utils.get_original_cwd()}"
         self.loss = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(top_k=2)
@@ -101,13 +90,13 @@ class Net(LightningModule):
 
         self.train_dataset = SingleTextDataset(
             filenames=full_path,
-            features=self.cfg.mlp.features,
+            features=self.cfg.fcn.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
         )
         self.test_dataset = SingleTextDataset(
             filenames=full_path,
-            features=self.cfg.mlp.features,
+            features=self.cfg.fcn.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
         )
@@ -185,7 +174,7 @@ def run_language_interpolation(cfg: DictConfig):
         model.eval()
 
         text_in = cfg.text
-        features = cfg.mlp.input.width
+        features = cfg.fcn.input.width
 
         # Make sure the prompt text is long enough.  The network is expecting a prompt
         # of size features.  It will take the last "features" characters from the

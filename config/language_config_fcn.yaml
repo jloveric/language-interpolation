@@ -2,26 +2,24 @@ filenames:
   - "books/frankenstein.txt"
   - "books/the_raven.txt"
 
+# fully convolutional layers
 fcn:
-  layer_type: ["discontinuous1d", "discontinuous1d"]
+  layer_type: ["continuous1d", "continuous1d"]
   normalize: false
 
   # Number of characters as input
   features: 16
-
-  # Polynomial interpolation points.  Polynomial order
-  # is (n-1).  In the case of Fourier series, n is the
-  # number of Fourier components.
-  n: [2, 2]
-  channels: [2, 2]
-  segments: [128, 2]
-  kernel_size: [1, 2]
+  n: [3, 3]
+  channels: [2, 2, 2]
+  segments: [2, 2]
+  kernel_size: [2, 2]
   periodicity: 2.0
   rescale_output: False
 
+# fully connected output layer
 out:
   layer_type: "discontinuous"
-  n: ${fcn.n}
+  n: 2
   segments: 2
 
 normalize: false
