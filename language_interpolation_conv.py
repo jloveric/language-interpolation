@@ -43,9 +43,9 @@ class Net(LightningModule):
             channels=cfg.fcn.channels,
             segments=cfg.fcn.segments,
             kernel_size=cfg.fcn.kernel_size,
-            # periodicity=cfg.fcn.periodicity,
-            # normalization=normalization,
-            # rescale_output=False,
+            periodicity=cfg.fcn.periodicity,
+            normalization=normalization,
+            rescale_output=False,
         )
 
         print(cfg.fcn.kernel_size)
