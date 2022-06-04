@@ -1,38 +1,38 @@
-filenames :
+filenames:
   - "books/frankenstein.txt"
   - "books/the_raven.txt"
-mlp :
-  layer_type : "discontinuous"
-  normalize : false
+mlp:
+  layer_type: "discontinuous"
+  normalize: false
 
   # Number of characters as input
-  features : 16
+  features: 16
 
   # Polynomial interpolation points.  Polynomial order
   # is (n-1).  In the case of Fourier series, n is the
   # number of Fourier components.
-  n : 2
-  n_in : 2
-  n_out : null
-  n_hidden : null
-  periodicity : 2.0
-  rescale_output : False
-  scale : 2.0
-  input :
-    segments : 128
-    width : ${mlp.features}
-  output :
-    segments : 8
-    width : 128
-  hidden :
-    segments : 8
-    layers : 1
-    width : 10
+  n: 2
+  n_in: 2
+  n_out: null
+  n_hidden: null
+  periodicity: 2.0
+  rescale_output: False
+  scale: 2.0
+  input:
+    segments: 128
+    width: ${mlp.features}
+  output:
+    segments: 8
+    width: 128
+  hidden:
+    segments: 8
+    layers: 1
+    width: 10
 
-data :
-  type :  centered # sequence # centered
-  reapply : 10 # number of times to reapply calculation
-  max_size : -1
+data:
+  type: centered # sequence # centered
+  reapply: 10 # number of times to reapply calculation
+  max_size: -1
 
 max_epochs: 50
 gpus: 1
@@ -45,12 +45,14 @@ train: True
 checkpoint: null
 rotations: 1 # 1 is x,y, 2 is x,y, x-y, x+y, greater includes additional rotations
 
-text : "This is sample text"
-topk : 5
+prompts:
+  ["This is sample text", "Continue this", "Who are you?", "Golden goose"]
+
+topk: 5
 num_predict: 100
 
 defaults:
- - override hydra/sweeper: nevergrad
+  - override hydra/sweeper: nevergrad
 
 hydra:
   sweeper:
@@ -65,12 +67,12 @@ hydra:
       # maximize: true  # comment out for maximization
     # default parametrization of the search space
     parametrization:
-      mlp.n :
+      mlp.n:
         init: 3
-        lower : 2
+        lower: 2
         upper: 3
         integer: true
-      mlp.layer_type :
+      mlp.layer_type:
         - continuous
         - discontinuous
       #lr :
@@ -79,23 +81,23 @@ hydra:
       #  upper : 1e-3
       #  step : 2
       #  log : true
-      mlp.hidden.segments :
-        init : 8
-        lower : 8
-        upper : 100
+      mlp.hidden.segments:
+        init: 8
+        lower: 8
+        upper: 100
         integer: true
-      mlp.hidden.layers :
-        init : 1
-        lower : 1
-        upper : 2
-        integer : true
-      mlp.hidden.width :
-        init : 10
-        lower : 2
-        upper : 250
-        integer : true
-      mlp.output.segments :
-        init : 8
-        lower : 8
-        upper : 20
+      mlp.hidden.layers:
+        init: 1
+        lower: 1
+        upper: 2
+        integer: true
+      mlp.hidden.width:
+        init: 10
+        lower: 2
+        upper: 250
+        integer: true
+      mlp.output.segments:
+        init: 8
+        lower: 8
+        upper: 20
         integer: true
