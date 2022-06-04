@@ -19,6 +19,7 @@ from language_interpolation.single_text_dataset import (
     generate_dataset,
     dataset_centered,
 )
+
 import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
@@ -120,7 +121,7 @@ class Net(LightningModule):
         return optim.Adam(self.parameters(), lr=self.cfg.lr)
 
 
-@hydra.main(config_path="./config", config_name="language_config")
+@hydra.main(config_path="../config", config_name="language_config")
 def run_language_interpolation(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
     print("Working directory : {}".format(os.getcwd()))

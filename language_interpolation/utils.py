@@ -9,7 +9,7 @@ from pytorch_lightning import LightningModule, Trainer, Callback
 import torch.optim as optim
 import torch
 from high_order_layers_torch.networks import *
-from single_text_dataset import SingleTextDataset
+from language_interpolation.single_text_dataset import SingleTextDataset
 from torchsummary import summary
 from language_interpolation.single_text_dataset import (
     encode_input_from_text,
@@ -44,7 +44,7 @@ def generate_text(
             encoding, text_used = encode_input_from_text(
                 text_in=text_in, features=features
             )
-            encoding = ascii_to_float(encoding).unsqueeze(dim=0)
+            encoding = ascii_to_float(encoding).unsqueeze(dim=0).to(model.device)
             model.eval()
             output = model(encoding)
             values, indices, ascii = decode_output_to_text(
@@ -58,7 +58,7 @@ def generate_text(
 
         results.append(text_in.replace("\n", " "))
 
-    return None
+    return results
 
 
 class TextGenerationSampler(Callback):
@@ -68,18 +68,18 @@ class TextGenerationSampler(Callback):
 
     def on_train_epoch_end(self, trainer, pl_module, outputs=None):
 
-        for topk in range(self._cfg.topk + 1):
+        for topk in range(1, self._cfg.topk + 1):
             predictions = generate_text(
                 pl_module,
                 features=self._cfg.mlp.features,
-                text_list=self._cfg.mlp.prompts,
+                text_list=self._cfg.prompts,
                 output_size=self._cfg.num_predict,
                 topk=topk,
             )
 
             for index, text in enumerate(predictions):
                 trainer.logger.experiment.add_text(
-                    f"topk={topk}_prompt={self._cfg.mlp.prompts[index]}",
+                    f"topk={topk}_prompt={self._cfg.prompts[index]}",
                     text,
                     global_step=trainer.global_step,
                 )
