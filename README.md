@@ -1,3 +1,8 @@
+# Experiments in natural language generation
+High order networks
+LightGBM
+Decoder
+
 # Language interpolation of Books
 Run with nevergrad
 ```
