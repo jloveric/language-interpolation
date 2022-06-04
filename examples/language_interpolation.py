@@ -9,9 +9,9 @@ from pytorch_lightning import LightningModule, Trainer, Callback
 import torch.optim as optim
 import torch
 from high_order_layers_torch.networks import *
-from language_interpolation.single_text_dataset import SingleTextDataset
 from torchsummary import summary
 from language_interpolation.single_text_dataset import (
+    SingleTextDataset,
     dataset_from_file,
     encode_input_from_text,
     decode_output_to_text,
@@ -152,7 +152,7 @@ def run_language_interpolation(cfg: DictConfig):
         checkpoint_path = f"{hydra.utils.get_original_cwd()}/{cfg.checkpoint}"
         print("checkpoint_path", checkpoint_path)
         model = Net.load_from_checkpoint(checkpoint_path)
-        
+
         # TODO: replace with generate_text function.
         model.eval()
 

@@ -1,5 +1,6 @@
 import torch, torchtext
 from torchtext.functional import to_tensor
+
 xlmr_base = torchtext.models.XLMR_BASE_ENCODER
 model = xlmr_base.get_model()
 transform = xlmr_base.transform()

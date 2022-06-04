@@ -4,11 +4,11 @@ from typing import List, Tuple, Callable
 
 
 def ascii_to_float(ascii_tensor: torch.Tensor):
-    return (ascii_tensor-64+0.5)/64
+    return (ascii_tensor - 64 + 0.5) / 64
 
 
 def float_to_ascii(float_tensor: torch.Tensor):
-    return ((float_tensor+1.0)*64-0.5).int()
+    return ((float_tensor + 1.0) * 64 - 0.5).int()
 
 
 def encode_input_from_text(text_in: str, features: int) -> Tuple[torch.tensor, str]:
@@ -22,13 +22,15 @@ def encode_input_from_text(text_in: str, features: int) -> Tuple[torch.tensor, s
     Returns :
         tensor encoding, text used to create encoding.
     """
-    text = text_in.encode("ascii", "ignore").decode('ascii')
+    text = text_in.encode("ascii", "ignore").decode("ascii")
     raw_sample = text[-(features):]
     encoding = [ord(val) for val in raw_sample]
     return torch.tensor(encoding), raw_sample
 
 
-def decode_output_to_text(encoding: torch.tensor, topk: int = 1) -> Tuple[torch.tensor, str]:
+def decode_output_to_text(
+    encoding: torch.tensor, topk: int = 1
+) -> Tuple[torch.tensor, str]:
     """
     Takes an output from the network and converts to text.
     Args :
@@ -41,33 +43,37 @@ def decode_output_to_text(encoding: torch.tensor, topk: int = 1) -> Tuple[torch.
     probabilities = torch.nn.Softmax(dim=0)(encoding)
 
     ascii_codes = torch.topk(probabilities, k=topk, dim=0)
-    ascii_values = [chr(val).encode("ascii", "ignore").decode('ascii')
-                    for val in ascii_codes[1]]
+    ascii_values = [
+        chr(val).encode("ascii", "ignore").decode("ascii") for val in ascii_codes[1]
+    ]
 
     return ascii_codes[0], ascii_codes[1], ascii_values
 
 
-def generate_dataset(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+def generate_dataset(
+    text_in: str, features: int, targets: int
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Generate dataset and convert to ordinal values for each character.
     This approach needs to be used for the neural network based approach.
     """
-    text = text_in.encode("ascii", "ignore").decode('ascii')
-    print('text[1:100', text[1:100])
-    final = len(text)-(targets+features)
+    text = text_in.encode("ascii", "ignore").decode("ascii")
+    print("text[1:100", text[1:100])
+    final = len(text) - (targets + features)
     feature_list = []
     target_list = []
     for i in range(final):
-        n_feature = [ord(val) for val in text[i:(i+features)]]
+        n_feature = [ord(val) for val in text[i : (i + features)]]
         feature_list.append(n_feature)
-        n_target = [ord(val)
-                    for val in text[(i+features):(i+features+targets)]]
+        n_target = [ord(val) for val in text[(i + features) : (i + features + targets)]]
         target_list.append(n_target)
 
     return torch.tensor(feature_list), torch.tensor(target_list)
 
 
-def dataset_centered(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+def dataset_centered(
+    text_in: str, features: int, targets: int
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Generate a centered dataset as integers
     """
@@ -77,44 +83,50 @@ def dataset_centered(text_in: str, features: int, targets: int) -> Tuple[torch.T
     t_left = targets // 2
     t_right = targets - t_left
 
-    text = text_in.encode("ascii", "ignore").decode('ascii')
-    print('text[1:100', text[1:100])
-    final = len(text)-(targets+features)
+    text = text_in.encode("ascii", "ignore").decode("ascii")
+    print("text[1:100", text[1:100])
+    final = len(text) - (targets + features)
     feature_list = []
     target_list = []
     for i in range(final):
-        feature_set = text[i:(i+f_left)] + text[(f_left+1):(f_left+1+f_right)]
+        feature_set = (
+            text[i : (i + f_left)] + text[(f_left + 1) : (f_left + 1 + f_right)]
+        )
 
         n_feature = [ord(val) for val in feature_set]
         feature_list.append(n_feature)
-        n_target = [ord(val)
-                    for val in text[(i+f_left-t_left):(i+f_left+t_right)]]
+        n_target = [
+            ord(val) for val in text[(i + f_left - t_left) : (i + f_left + t_right)]
+        ]
         target_list.append(n_target)
 
     return torch.tensor(feature_list), torch.tensor(target_list)
 
 
-def generate_dataset_char(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+def generate_dataset_char(
+    text_in: str, features: int, targets: int
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Generate dataset as characters for use in random forest approaches.
     """
-    text = text_in.encode("ascii", "ignore").decode('ascii')
-    print('text[1:100', text[1:100])
-    final = len(text)-(targets+features)
+    text = text_in.encode("ascii", "ignore").decode("ascii")
+    print("text[1:100", text[1:100])
+    final = len(text) - (targets + features)
     feature_list = []
     target_list = []
     for i in range(final):
 
-        n_feature = [ord(val) for val in text[i:(i+features)]]
+        n_feature = [ord(val) for val in text[i : (i + features)]]
         feature_list.append(n_feature)
-        n_target = [ord(val)
-                    for val in text[(i+features):(i+features+targets)]]
+        n_target = [ord(val) for val in text[(i + features) : (i + features + targets)]]
         target_list.append(n_target)
 
     return feature_list, target_list
 
 
-def dataset_centered_char(text_in: str, features: int, targets: int) -> Tuple[torch.Tensor, torch.Tensor]:
+def dataset_centered_char(
+    text_in: str, features: int, targets: int
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Generate a centered dataset as char
     """
@@ -124,29 +136,48 @@ def dataset_centered_char(text_in: str, features: int, targets: int) -> Tuple[to
     t_left = targets // 2
     t_right = targets - t_left
 
-    text = text_in.encode("ascii", "ignore").decode('ascii')
-    print('text[1:100', text[1:100])
-    final = len(text)-(targets+features)
+    text = text_in.encode("ascii", "ignore").decode("ascii")
+    print("text[1:100", text[1:100])
+    final = len(text) - (targets + features)
     feature_list = []
     target_list = []
     for i in range(final):
-        feature_set = text[i:(i+f_left)] + text[(f_left+1):(f_left+1+f_right)]
+        feature_set = (
+            text[i : (i + f_left)] + text[(f_left + 1) : (f_left + 1 + f_right)]
+        )
         n_feature = [ord(val) for val in feature_set]
         feature_list.append(n_feature)
-        n_target = [ord(val)
-                    for val in text[(i+f_left-t_left):(i+f_left+t_right)]]
+        n_target = [
+            ord(val) for val in text[(i + f_left - t_left) : (i + f_left + t_right)]
+        ]
         target_list.append(n_target)
 
     return feature_list, target_list
 
 
-def dataset_from_file(filename: str, features: int, targets: int, max_size: int = -1, dataset_generator=generate_dataset):
+def dataset_from_file(
+    filename: str,
+    features: int,
+    targets: int,
+    max_size: int = -1,
+    dataset_generator=generate_dataset,
+):
     with open(filename, "r") as f:
-        return dataset_generator(text_in=f.read()[0:max_size], features=features, targets=targets)
+        return dataset_generator(
+            text_in=f.read()[0:max_size], features=features, targets=targets
+        )
 
 
 class SingleTextDataset(Dataset):
-    def __init__(self, filenames: List[str] = None, text: str = None, features: int = 10, targets: int = 1, max_size: int = -1, dataset_generator=generate_dataset):
+    def __init__(
+        self,
+        filenames: List[str] = None,
+        text: str = None,
+        features: int = 10,
+        targets: int = 1,
+        max_size: int = -1,
+        dataset_generator=generate_dataset,
+    ):
         """
         Args :
             filenames : List of filenames to load data from
@@ -162,10 +193,16 @@ class SingleTextDataset(Dataset):
 
         if filenames is not None:
             feature_list, target_list = dataset_from_file(
-                filenames[0], features=features, targets=targets, max_size=max_size, dataset_generator=dataset_generator)
+                filenames[0],
+                features=features,
+                targets=targets,
+                max_size=max_size,
+                dataset_generator=dataset_generator,
+            )
         if text is not None:
             feature_list, target_list = dataset_generator(
-                text_in=text, features=features, targets=targets)
+                text_in=text, features=features, targets=targets
+            )
 
         self.inputs = feature_list
         self.output = target_list
@@ -179,4 +216,4 @@ class SingleTextDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        return (self.inputs[idx]-64+0.5)/64.0, self.output[idx]
+        return (self.inputs[idx] - 64 + 0.5) / 64.0, self.output[idx]

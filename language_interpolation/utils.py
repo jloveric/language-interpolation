@@ -20,8 +20,15 @@ import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 
-def generate_text(model: nn.Module, features : int, text_list : List[str], output_size : int, topk : int=1):
-    
+
+def generate_text(
+    model: nn.Module,
+    features: int,
+    text_list: List[str],
+    output_size: int,
+    topk: int = 1,
+):
+
     model.eval()
 
     features = features
@@ -32,7 +39,7 @@ def generate_text(model: nn.Module, features : int, text_list : List[str], outpu
     text_list = [text.rjust(features) for text in text_list]
 
     results = []
-    for text_in in text_list :
+    for text_in in text_list:
         for i in range(output_size):
             encoding, text_used = encode_input_from_text(
                 text_in=text_in, features=features
@@ -61,12 +68,18 @@ class TextGenerationSampler(Callback):
 
     def on_train_epoch_end(self, trainer, pl_module, outputs=None):
 
-        for topk in range(self._cfg.topk+1) :
+        for topk in range(self._cfg.topk + 1):
             predictions = generate_text(
-                pl_module, features=self._cfg.mlp.features, text_list=self._cfg.mlp.prompts, output_size=self._cfg.num_predict, topk=topk
+                pl_module,
+                features=self._cfg.mlp.features,
+                text_list=self._cfg.mlp.prompts,
+                output_size=self._cfg.num_predict,
+                topk=topk,
             )
 
             for index, text in enumerate(predictions):
                 trainer.logger.experiment.add_text(
-                    f"topk={topk}_prompt={self._cfg.mlp.prompts[index]}", text, global_step=trainer.global_step
+                    f"topk={topk}_prompt={self._cfg.mlp.prompts[index]}",
+                    text,
+                    global_step=trainer.global_step,
                 )
