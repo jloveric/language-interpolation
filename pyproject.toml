@@ -16,6 +16,7 @@ pytorch-lightning = "^1.5.2"
 torchmetrics = "^0.6.2"
 high-order-layers-torch = "^1.1.1"
 torchtext = "^0.12.0"
+gutenbergpy = "^0.3.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
