@@ -3,17 +3,17 @@ from typing import List
 import os
 from omegaconf import DictConfig, OmegaConf
 import hydra
-from pytorch_lightning.metrics.functional import accuracy
+from torchmetrics.functional import accuracy
 from high_order_layers_torch.layers import *
 from pytorch_lightning import LightningModule, Trainer
 import torch.optim as optim
 import torch
 from high_order_layers_torch.networks import *
-from single_text_dataset import SingleTextDataset
+from language_interpolation.single_text_dataset import SingleTextDataset
 from torchsummary import summary
-from single_text_dataset import dataset_from_file, encode_input_from_text, decode_output_to_text, ascii_to_float, dataset_centered_char, dataset_centered
+from language_interpolation.single_text_dataset import dataset_from_file, encode_input_from_text, decode_output_to_text, ascii_to_float, dataset_centered_char, dataset_centered
 import random
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 from language_interpolation import Net
 

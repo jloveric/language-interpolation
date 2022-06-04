@@ -1,11 +1,11 @@
-from typing import List, Union
+from typing import List
 
 import os
 from omegaconf import DictConfig, OmegaConf
 import hydra
 from torchmetrics.functional import accuracy
 from high_order_layers_torch.layers import *
-from pytorch_lightning import LightningModule, Trainer
+from pytorch_lightning import LightningModule, Trainer, Callback
 import torch.optim as optim
 import torch
 from high_order_layers_torch.networks import *
@@ -22,9 +22,6 @@ from single_text_dataset import (
 import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
-import torch.nn as nn
-import itertools
-import operator
 
 
 class Net(LightningModule):
@@ -34,41 +31,24 @@ class Net(LightningModule):
         self.cfg = cfg
 
         normalization = None
-        if cfg.normalize is True:
-            normalization = torch.nn.BatchNorm1d(num_features=cfg.fcn.features)
+        if cfg.mlp.normalize is True:
+            normalization = torch.nn.BatchNorm1d(num_features=cfg.mlp.hidden.width)
 
-        self.fcn = HighOrderFullyConvolutionalNetwork(
-            layer_type=cfg.fcn.layer_type,
-            n=cfg.fcn.n,
-            channels=cfg.fcn.channels,
-            segments=cfg.fcn.segments,
-            kernel_size=cfg.fcn.kernel_size,
-            periodicity=cfg.fcn.periodicity,
+        self.model = HighOrderMLP(
+            layer_type=cfg.mlp.layer_type,
+            n=cfg.mlp.n,
+            n_in=cfg.mlp.n_in,
+            n_hidden=cfg.mlp.n_in,
+            n_out=cfg.mlp.n_out,
+            in_width=cfg.mlp.input.width,
+            in_segments=cfg.mlp.input.segments,
+            out_width=128,  # ascii has 128 characters
+            out_segments=cfg.mlp.output.segments,
+            hidden_width=cfg.mlp.hidden.width,
+            hidden_layers=cfg.mlp.hidden.layers,
+            hidden_segments=cfg.mlp.hidden.segments,
             normalization=normalization,
-            rescale_output=False,
         )
-
-        print(cfg.fcn.kernel_size)
-        print(cfg.fcn.channels)
-        print(cfg.fcn.segments)
-        print(cfg.fcn.kernel_size)
-
-        reduction = sum([a - 1 for a in cfg.fcn.kernel_size])
-
-        in_features = cfg.fcn.features - reduction
-
-        self.output_layer = high_order_fc_layers(
-            n=cfg.out.n,
-            in_features=in_features,
-            out_features=128,  # 128 ascii characters
-            layer_type=cfg.out.layer_type,
-            segments=cfg.out.segments,
-        )
-
-        self.flatten = nn.Flatten()
-
-        self.model = nn.Sequential(self.fcn, self.flatten)  # self.output_layer)
-
         self.root_dir = f"{hydra.utils.get_original_cwd()}"
         self.loss = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(top_k=2)
@@ -90,13 +70,13 @@ class Net(LightningModule):
 
         self.train_dataset = SingleTextDataset(
             filenames=full_path,
-            features=self.cfg.fcn.features,
+            features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
         )
         self.test_dataset = SingleTextDataset(
             filenames=full_path,
-            features=self.cfg.fcn.features,
+            features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
         )
@@ -139,7 +119,9 @@ class Net(LightningModule):
         return optim.Adam(self.parameters(), lr=self.cfg.lr)
 
 
-@hydra.main(config_path="./config", config_name="language_config_fcn")
+
+
+@hydra.main(config_path="./config", config_name="language_config")
 def run_language_interpolation(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
     print("Working directory : {}".format(os.getcwd()))
@@ -174,7 +156,7 @@ def run_language_interpolation(cfg: DictConfig):
         model.eval()
 
         text_in = cfg.text
-        features = cfg.fcn.input.width
+        features = cfg.mlp.input.width
 
         # Make sure the prompt text is long enough.  The network is expecting a prompt
         # of size features.  It will take the last "features" characters from the
