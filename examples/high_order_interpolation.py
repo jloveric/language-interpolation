@@ -82,6 +82,7 @@ class Net(LightningModule):
         )
         self.test_dataset = SingleTextDataset(
             filenames=full_path,
+            gutenberg_ids=self.cfg.gutenberg_ids,
             features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
