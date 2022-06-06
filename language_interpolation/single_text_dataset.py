@@ -1,6 +1,8 @@
 import torch
 from torch.utils.data import Dataset
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Union, Any
+import gutenbergpy.textget
+from torch import Tensor
 
 
 def ascii_to_float(ascii_tensor: torch.Tensor):
@@ -166,6 +168,30 @@ def dataset_from_file(
         return dataset_generator(
             text_in=f.read()[0:max_size], features=features, targets=targets
         )
+
+
+def dataset_from_gutenberg(
+    gutenberg_id: int,
+    features: int,
+    targets: int,
+    max_size: int = -1,
+    dataset_generator=generate_dataset,
+) -> Union[Tuple[Tensor, Tensor], Any]:
+    """
+    Create a dataset from a book in project gutenberg https://www.gutenberg.org/
+    Args :
+        gutenberg_id : integer id of the book
+        features : number of input features to use (number of characters)
+        targets: number of targets to use (number of characters)
+        datset_generator: formats the resulting dataset
+    """
+    raw_book = gutenbergpy.textget.get_text_by_id(gutenberg_id)
+    clean_book = gutenbergpy.textget.strip_headers(raw_book)
+    clean_book = clean_book.decode()
+
+    return dataset_generator(
+        text_in=clean_book[0:max_size], features=features, targets=targets
+    )
 
 
 class SingleTextDataset(Dataset):
