@@ -198,6 +198,7 @@ class SingleTextDataset(Dataset):
     def __init__(
         self,
         filenames: List[str] = None,
+        gutenberg_ids: List[int] = None,
         text: str = None,
         features: int = 10,
         targets: int = 1,
@@ -212,10 +213,15 @@ class SingleTextDataset(Dataset):
             max_size : Set the maximum number of characters to read from file.  Defaults
             to -1 which is to read everything.
         """
-        if filenames is None and text is None:
-            raise ValueError(f"Must define either filenames or text.")
+        if filenames is None and text is None and gutenberg_ids is None:
+            raise ValueError(f"Must define either filenames, text or gutenberg ids.")
         if (filenames is not None) and (text is not None):
-            raise ValueError(f"Either filenames or text must be defined.")
+            raise ValueError(
+                f"Either filenames, text, or gutenberg_ids must be defined."
+            )
+
+        list_features = []
+        list_targets = []
 
         if filenames is not None:
             feature_list, target_list = dataset_from_file(
@@ -225,13 +231,35 @@ class SingleTextDataset(Dataset):
                 max_size=max_size,
                 dataset_generator=dataset_generator,
             )
+
+            list_features.extend(feature_list)
+            list_targets.extend(target_list)
+
         if text is not None:
             feature_list, target_list = dataset_generator(
                 text_in=text, features=features, targets=targets
             )
 
-        self.inputs = feature_list
-        self.output = target_list
+            list_features.extend(feature_list)
+            list_targets.extend(target_list)
+
+        if gutenberg_ids is not None:
+
+            for index in gutenberg_ids:
+
+                feature_list, target_list = dataset_from_gutenberg(
+                    index,
+                    features=features,
+                    targets=targets,
+                    max_size=max_size,
+                    dataset_generator=dataset_generator,
+                )
+
+                list_features.extend(feature_list)
+                list_targets.extend(target_list)
+
+        self.inputs = torch.stack(list_features)
+        self.output = torch.stack(list_targets)
         self.features = features
         self.targets = targets
 

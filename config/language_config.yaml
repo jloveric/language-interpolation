@@ -1,6 +1,7 @@
-filenames:
-  - "books/frankenstein.txt"
-  - "books/the_raven.txt"
+gutenberg_ids:
+  - 10 # King James Bible
+  - 2800 # Koran, English
+  - 20 # Paradise Lost
 mlp:
   layer_type: "discontinuous"
   normalize: false
@@ -48,7 +49,7 @@ rotations: 1 # 1 is x,y, 2 is x,y, x-y, x+y, greater includes additional rotatio
 prompts:
   ["This is sample text", "Continue this", "Who are you?", "Golden goose"]
 
-topk: 5
+topk: 3
 num_predict: 100
 
 defaults:
