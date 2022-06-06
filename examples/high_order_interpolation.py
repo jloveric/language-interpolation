@@ -60,7 +60,10 @@ class Net(LightningModule):
 
     def setup(self, stage):
 
-        full_path = [f"{self.root_dir}/{path}" for path in self.cfg.filenames]
+        full_path = None
+        if self.cfg.filenames is not None:
+            full_path = [f"{self.root_dir}/{path}" for path in self.cfg.filenames]
+
         if self.cfg.data.type == "sequence":
             dataset_generator = generate_dataset
         elif self.cfg.data.type == "centered":
@@ -72,6 +75,7 @@ class Net(LightningModule):
 
         self.train_dataset = SingleTextDataset(
             filenames=full_path,
+            gutenberg_ids=self.cfg.gutenberg_ids,
             features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
