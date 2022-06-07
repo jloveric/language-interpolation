@@ -36,13 +36,14 @@ def create_gutenberg_cache(parent_directory: str):
     directory = Path(parent_directory) / "gutenberg"
     directory.mkdir(parents=True, exist_ok=True)
     filename = (directory / "gutenbergindex.db").as_posix()
+    logger.info(f"guttenberg filename {filename}, directory {directory.as_posix()}")
 
     GutenbergCacheSettings.set(
         CacheFilename=filename, CacheUnpackDir=directory.as_posix()
     )
 
     if not GutenbergCache.exists():
-        logger.info("Creating Gutenberg cache.")
+        logger.info(f"Creating Gutenberg cache {filename}")
         GutenbergCache.create()
     else:
         logger.info("Gutenberg cache exists. Skipping.")

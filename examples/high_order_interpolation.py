@@ -195,7 +195,8 @@ def run_language_interpolation(cfg: DictConfig):
             actual = random.choices(ascii, values.tolist())
             text_in = text_in + actual[0]
 
-        logger.info(f'output: {text_in.replace("\n", " ")}')
+        final = text_in.replace("\n", " ")
+        logger.info(f"output: {final}")
 
 
 if __name__ == "__main__":
