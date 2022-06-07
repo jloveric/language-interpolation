@@ -21,7 +21,7 @@ from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 from gutenbergpy.gutenbergcache import GutenbergCache, GutenbergCacheSettings
 import logging
-import os
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,10 @@ def create_gutenberg_cache(parent_directory: str):
     Args :
         parent_directory : The directory that the gutenberg directory sits in.
     """
+    directory = (Path(parent_directory) / "gutenberg").mkdir(
+        parents=True, exist_ok=True
+    )
+
     GutenbergCacheSettings.set(CacheUnpackDir=f"{parent_directory}/gutenberg")
 
     if not GutenbergCache.exists():
