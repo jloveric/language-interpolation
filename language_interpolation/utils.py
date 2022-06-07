@@ -19,6 +19,21 @@ from language_interpolation.single_text_dataset import (
 import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
+from gutenbergpy.gutenbergcache import GutenbergCache, GutenbergCacheSettings
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def create_gutenberg_cache() :
+    GutenbergCacheSettings.set(CacheUnpackDir="gutenberg")
+    
+    if not GutenbergCache.exists() :
+        logger.info("Creating Gutenberg cache.")
+        GutenbergCache.create()
+    else :
+        logger.info("Gutenberg cache exists. Skipping.")
+
 
 
 def generate_text(
