@@ -6,7 +6,7 @@ High order networks
 # Language interpolation of Books
 Run with nevergrad
 ```
-python examples/high_order_language_interpolation.py -m data.type=sequence
+python examples/high_order_interpolation.py -m data.type=sequence
 ```
 # With conv layers (not yet working)
 ```
@@ -18,7 +18,7 @@ python examples/language_cellular_automata.py mlp.features=11 data.type=centered
 ```
 ## Apply a model using sequence model
 ```
-python examples/high_order_language_interpolation.py train=False checkpoint=\"multirun/2021-05-16/17-27-58/2/lightning_logs/version_0/checkpoints/epoch=19-step=34199.ckpt\" topk=2 num_predict=200 text="The stars were"
+python examples/high_order_interpolation.py train=False checkpoint=\"multirun/2021-05-16/17-27-58/2/lightning_logs/version_0/checkpoints/epoch=19-step=34199.ckpt\" topk=2 num_predict=200 text="The stars were"
 ```
 example output (model trained to predict the next character given the preceeding 10) using a single hidden layer
 ```
