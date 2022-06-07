@@ -28,6 +28,9 @@ from language_interpolation.utils import (
     TextGenerationSampler,
     create_gutenberg_cache,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Net(LightningModule):
@@ -132,9 +135,9 @@ class Net(LightningModule):
 
 @hydra.main(config_path="../config", config_name="language_config")
 def run_language_interpolation(cfg: DictConfig):
-    print(OmegaConf.to_yaml(cfg))
-    print("Working directory : {}".format(os.getcwd()))
-    print(f"Orig working directory    : {hydra.utils.get_original_cwd()}")
+    logger.info(OmegaConf.to_yaml(cfg))
+    logger.info("Working directory : {}".format(os.getcwd()))
+    logger.info(f"Orig working directory    : {hydra.utils.get_original_cwd()}")
 
     create_gutenberg_cache(parent_directory=hydra.utils.get_original_cwd())
 
@@ -149,20 +152,20 @@ def run_language_interpolation(cfg: DictConfig):
 
         model = Net(cfg)
         trainer.fit(model)
-        print("testing")
+        logger.info("testing")
 
         result = trainer.test(model)
-        print("result", result)
-        print("finished testing")
-        print("best check_point", trainer.checkpoint_callback.best_model_path)
-        print("loss", result[0]["train_loss"])
+        logger.info(f"result {result}")
+        logger.info("finished testing")
+        logger.info(f"best check_point {trainer.checkpoint_callback.best_model_path}")
+        logger.info(f"loss {result[0]['train_loss']}")
         return result[0]["train_loss"]
     else:
         # plot some data
-        print("evaluating result")
-        print("cfg.checkpoint", cfg.checkpoint)
+        logger.info("evaluating result")
+        logger.info(f"cfg.checkpoint {cfg.checkpoint}")
         checkpoint_path = f"{hydra.utils.get_original_cwd()}/{cfg.checkpoint}"
-        print("checkpoint_path", checkpoint_path)
+        logger.info(f"checkpoint_path {checkpoint_path}")
         model = Net.load_from_checkpoint(checkpoint_path)
 
         # TODO: replace with generate_text function.
@@ -192,7 +195,7 @@ def run_language_interpolation(cfg: DictConfig):
             actual = random.choices(ascii, values.tolist())
             text_in = text_in + actual[0]
 
-        print("output:", text_in.replace("\n", " "))
+        logger.info(f'output: {text_in.replace("\n", " ")}')
 
 
 if __name__ == "__main__":
