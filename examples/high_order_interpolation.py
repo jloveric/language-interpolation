@@ -23,7 +23,11 @@ from language_interpolation.single_text_dataset import (
 import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
-from language_interpolation.utils import generate_text, TextGenerationSampler
+from language_interpolation.utils import (
+    generate_text,
+    TextGenerationSampler,
+    create_gutenberg_cache,
+)
 
 
 class Net(LightningModule):
@@ -131,6 +135,8 @@ def run_language_interpolation(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
     print("Working directory : {}".format(os.getcwd()))
     print(f"Orig working directory    : {hydra.utils.get_original_cwd()}")
+
+    create_gutenberg_cache(parent_directory=hydra.utils.get_original_cwd())
 
     if cfg.train is True:
         early_stopping = EarlyStopping(monitor="train_loss", patience=5)

@@ -21,19 +21,25 @@ from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 from gutenbergpy.gutenbergcache import GutenbergCache, GutenbergCacheSettings
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
 
-def create_gutenberg_cache() :
-    GutenbergCacheSettings.set(CacheUnpackDir="gutenberg")
-    
-    if not GutenbergCache.exists() :
+def create_gutenberg_cache(parent_directory: str):
+    """
+    Gutenberg will delete your directory contents so make sure that the CacheUnpackDirectory
+    is set properly. This happened to me once!
+    Args :
+        parent_directory : The directory that the gutenberg directory sits in.
+    """
+    GutenbergCacheSettings.set(CacheUnpackDir=f"{parent_directory}/gutenberg")
+
+    if not GutenbergCache.exists():
         logger.info("Creating Gutenberg cache.")
         GutenbergCache.create()
-    else :
+    else:
         logger.info("Gutenberg cache exists. Skipping.")
-
 
 
 def generate_text(
