@@ -36,17 +36,30 @@ def create_gutenberg_cache(parent_directory: str):
     directory = Path(parent_directory) / "gutenberg"
     directory.mkdir(parents=True, exist_ok=True)
     filename = (directory / "gutenbergindex.db").as_posix()
-    logger.info(f"guttenberg filename {filename}, directory {directory.as_posix()}")
+    cache_archive_name = (directory / "rdf-files.tar.bz2").as_posix()
+    logger.info(
+        f"guttenberg filename {filename}, directory {directory.as_posix()}, cache_archive_name {cache_archive_name}"
+    )
 
     GutenbergCacheSettings.set(
-        CacheFilename=filename, CacheUnpackDir=directory.as_posix()
+        CacheFilename=filename,
+        CacheUnpackDir=(
+            directory / "unpack"
+        ).as_posix(),  # This needs to be in it's own directory.
+        CacheArchiveName=cache_archive_name,
     )
+
+    logger.info(f"Cachesettings {GutenbergCacheSettings.CACHE_RDF_UNPACK_DIRECTORY}")
 
     if not GutenbergCache.exists():
         logger.info(f"Creating Gutenberg cache {filename}")
         GutenbergCache.create()
     else:
         logger.info("Gutenberg cache exists. Skipping.")
+
+    cache = GutenbergCache.get_cache()
+
+    return cache
 
 
 def generate_text(

@@ -7,8 +7,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.9"
-hydra-core = "^1.1.1"
-hydra-nevergrad-sweeper = "^1.1.5"
 torchsummary = "^1.5.1"
 lightgbm = "^3.3.1"
 omegaconf = "^2.1.1"
@@ -16,7 +14,9 @@ pytorch-lightning = "^1.5.2"
 torchmetrics = "^0.6.2"
 high-order-layers-torch = "^1.1.1"
 torchtext = "^0.12.0"
-gutenbergpy = "^0.3.4"
+hydra-core = "^1.2.0"
+hydra-nevergrad-sweeper = "^1.2.0"
+gutenbergpy = {git = "https://github.com/jloveric/gutenbergpy.git"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

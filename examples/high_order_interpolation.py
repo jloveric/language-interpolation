@@ -30,7 +30,9 @@ from language_interpolation.utils import (
 )
 import logging
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 class Net(LightningModule):
