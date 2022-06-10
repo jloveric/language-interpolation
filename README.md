@@ -1,4 +1,4 @@
-![Build Status](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml/badge.svg)
+[![CI](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml/badge.svg)](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml)
 
 # Experiments in natural language generation
 High order networks
