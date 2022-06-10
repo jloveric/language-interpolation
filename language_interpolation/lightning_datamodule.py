@@ -10,6 +10,9 @@ from language_interpolation.single_text_dataset import (
     unify_ids,
     create_full_paths,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GutenbergDataModule(pl.LightningDataModule):
@@ -98,6 +101,10 @@ class GutenbergDataModule(pl.LightningDataModule):
             dataset_generator=self._dataset_generator,
             num_workers=self._pre_process_workers,
         )
+
+        logger.info(f"Training dataset has {len(self.train_dataset)} samples.")
+        logger.info(f"Validation dataset has {len(self.val_dataset)} samples.")
+        logger.info(f"Test dataset has {len(self.test_dataset)} samples.")
 
     @property
     def train_dataset(self) -> Dataset:

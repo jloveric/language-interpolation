@@ -18,6 +18,11 @@ def float_to_ascii(float_tensor: torch.Tensor):
     return ((float_tensor + 1.0) * 64 - 0.5).int()
 
 
+def print_lines(text, size=100):
+    short = text[:size].replace("\n", " ")
+    logger.info(f"{short}")
+
+
 def create_full_paths(root_dir: str, filenames: List[str] = None):
     """
     Construct global path from a list of local paths and a root directory.
@@ -100,7 +105,7 @@ def generate_dataset(
     This approach needs to be used for the neural network based approach.
     """
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    logger.info(f"text[1:100 {text[1:100]}")
+    print_lines(text)
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []
@@ -126,7 +131,7 @@ def dataset_centered(
     t_right = targets - t_left
 
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    logger.info(f"text[1:100 {text[1:100]}")
+    print_lines(text)
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []
@@ -152,7 +157,7 @@ def generate_dataset_char(
     Generate dataset as characters for use in random forest approaches.
     """
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    logger.info(f"text[1:100 {text[1:100]}")
+    print_lines(text)
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []
@@ -179,7 +184,7 @@ def dataset_centered_char(
     t_right = targets - t_left
 
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    logger.info(f"text[1:100 {text[1:100]}")
+    print_lines(text)
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []

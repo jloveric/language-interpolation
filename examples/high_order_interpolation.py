@@ -13,7 +13,6 @@ from torchsummary import summary
 from language_interpolation.single_text_dataset import dataset_registry
 from language_interpolation.utils import generate_text
 from language_interpolation.lightning_datamodule import GutenbergDataModule
-import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 from language_interpolation.utils import (
@@ -36,9 +35,7 @@ class Net(LightningModule):
 
         normalization = None
         if cfg.mlp.normalize is True:
-            normalization = (
-                torch.nn.LazyBatchNorm1d
-            )  # torch.nn.LazyBatchNorm1d(num_features=cfg.mlp.hidden.width)
+            normalization = torch.nn.LazyBatchNorm1d
 
         self.model = HighOrderMLP(
             layer_type=cfg.mlp.layer_type,
