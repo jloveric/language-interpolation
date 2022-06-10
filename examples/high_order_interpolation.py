@@ -59,7 +59,7 @@ class Net(LightningModule):
     def forward(self, x):
         return self.model(x)
 
-    def training_step(self, batch, batch_idx):
+    def eval_step(self, batch: Tensor, name: str):
         x, y = batch
         y_hat = self(x)
         loss = self.loss(y_hat, y.flatten())
@@ -67,12 +67,18 @@ class Net(LightningModule):
         diff = torch.argmax(y_hat, dim=1) - y.flatten()
         accuracy = torch.where(diff == 0, 1, 0).sum() / len(diff)
 
-        self.log(f"train_loss", loss, prog_bar=True)
-        self.log(f"acc", accuracy, prog_bar=True)
+        self.log(f"{name}_loss", loss, prog_bar=True)
+        self.log(f"{name}_acc", accuracy, prog_bar=True)
         return loss
 
+    def training_step(self, batch, batch_idx):
+        return self.eval_step(batch, "train")
+
+    def validation_step(self, batch, batch_idx):
+        return self.eval_step(batch, "val")
+
     def test_step(self, batch, batch_idx):
-        return self.training_step(batch, batch_idx)
+        return self.eval_step(batch, "test")
 
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=self.cfg.lr)

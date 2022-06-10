@@ -125,6 +125,7 @@ class GutenbergDataModule(pl.LightningDataModule):
             shuffle=self._shuffle,
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
+            drop_last=True,  # Needed for batchnorm
         )
 
     def val_dataloader(self) -> DataLoader:
@@ -134,6 +135,7 @@ class GutenbergDataModule(pl.LightningDataModule):
             shuffle=False,
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
+            drop_last=True,
         )
 
     def test_dataloader(self) -> DataLoader:
@@ -143,4 +145,5 @@ class GutenbergDataModule(pl.LightningDataModule):
             shuffle=False,
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
+            drop_last=True,
         )

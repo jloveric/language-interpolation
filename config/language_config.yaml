@@ -8,7 +8,7 @@ data: # TODO: should this be part of the above?
     filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
 
     # Book ids from project gutenberg
-    gutenberg_ids: [10, 2800, 20, 22382, 50133]
+    gutenberg_ids: [50133] #[10, 2800, 20, 22382, 50133]
     gutenberg_range: null #[1, 1000]
 
   test:
