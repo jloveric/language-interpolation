@@ -1,15 +1,14 @@
-from typing import Optional
-from pathlib import Path
-
-from torch.utils.data import DataLoader, Dataset, random_split
+from typing import Optional, Callable, Tuple
+from torch import Tensor
+from torch.utils.data import DataLoader, Dataset
 
 import pytorch_lightning as pl
 from typing import List
 from language_interpolation.single_text_dataset import (
     SingleTextDataset,
     generate_dataset,
-    dataset_centered,
     unify_ids,
+    create_full_paths,
 )
 
 
@@ -17,6 +16,7 @@ class GutenbergDataModule(pl.LightningDataModule):
     def __init__(
         self,
         features: int,
+        targets: int = 1,
         batch_size: int = 32,
         num_workers: int = 10,
         shuffle: bool = True,
@@ -27,14 +27,22 @@ class GutenbergDataModule(pl.LightningDataModule):
         gutenberg_range_train: List[int] = None,
         gutenberg_range_val: List[int] = None,
         gutenberg_range_test: List[int] = None,
+        train_filenames: List[str] = None,
+        val_filenames: List[str] = None,
+        test_filenames: List[str] = None,
         pre_process_workers: int = 10,
         max_size: int = -1,
+        dataset_generator: Callable[
+            [str, int, int], Tuple[Tensor, Tensor]
+        ] = generate_dataset,
+        root_dir: str = ".",
     ):
         """
         Data module for project gutenberg
         """
         super().__init__()
         self._features = features
+        self._targets = targets
         self._batch_size = batch_size
         self._num_workers = num_workers
         self._shuffle = shuffle
@@ -45,66 +53,65 @@ class GutenbergDataModule(pl.LightningDataModule):
         self._gutenberg_range_train = gutenberg_range_train
         self._gutenberg_range_val = gutenberg_range_val
         self._gutenberg_range_test = gutenberg_range_test
+        self._train_filenames = train_filenames
+        self._val_filenames = val_filenames
+        self._test_filenames = test_filenames
         self._pre_process_workers = pre_process_workers
         self._max_size = max_size
+        self._dataset_generator = dataset_generator
+        self._root_dir = root_dir
 
     def setup(self, stage: Optional[str] = None):
 
-        full_path = None
-        if self.cfg.filenames is not None:
-            full_path = [f"{self.root_dir}/{path}" for path in self.cfg.filenames]
-
-        if self.cfg.data.type == "sequence":
-            dataset_generator = generate_dataset
-        elif self.cfg.data.type == "centered":
-            dataset_generator = dataset_centered
-        else:
-            raise ValueError(
-                f"data.type must be centered or sequence. recieved {self.cfg.data.type}"
-            )
+        train_files = create_full_paths(self._root_dir, self._train_filenames)
+        test_files = create_full_paths(self._root_dir, self._test_filenames)
+        val_files = create_full_paths(self._root_dir, self._val_filenames)
 
         train_ids = unify_ids(self._gutenberg_ids_train, self._gutenberg_range_train)
         val_ids = unify_ids(self._gutenberg_ids_val, self._gutenberg_range_val)
         test_ids = unify_ids(self._gutenberg_ids_test, self._gutenberg_range_test)
 
         self._train_dataset = SingleTextDataset(
-            filenames=full_path,
+            filenames=train_files,
             gutenberg_ids=train_ids,
             features=self._features,
+            targets=self._targets,
             max_size=self._max_size,
-            dataset_generator=dataset_generator,
+            dataset_generator=self._dataset_generator,
             num_workers=self._pre_process_workers,
         )
         self._val_dataset = SingleTextDataset(
-            filenames=full_path,
+            filenames=val_files,
             gutenberg_ids=val_ids,
             features=self._features,
+            targets=self._targets,
             max_size=self._max_size,
-            dataset_generator=dataset_generator,
+            dataset_generator=self._dataset_generator,
             num_workers=self._pre_process_workers,
         )
         self._test_dataset = SingleTextDataset(
-            filenames=full_path,
+            filenames=test_files,
             gutenberg_ids=test_ids,
             features=self._features,
+            targets=self._targets,
             max_size=self._max_size,
-            dataset_generator=dataset_generator,
+            dataset_generator=self._dataset_generator,
             num_workers=self._pre_process_workers,
         )
 
     @property
-    def train_dataset(self):
+    def train_dataset(self) -> Dataset:
         return self._train_dataset
 
     @property
-    def test_dataset(self):
+    def test_dataset(self) -> Dataset:
         return self._test_dataset
 
     @property
-    def val_dataset(self):
+    def val_dataset(self) -> Dataset:
         return self._val_dataset
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             self._train_dataset,
             batch_size=self._batch_size,
@@ -113,7 +120,7 @@ class GutenbergDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         return DataLoader(
             self._val_dataset,
             batch_size=self._batch_size,
@@ -122,7 +129,7 @@ class GutenbergDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> DataLoader:
         return DataLoader(
             self._test_dataset,
             batch_size=self._batch_size,

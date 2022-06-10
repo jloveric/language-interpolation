@@ -18,6 +18,20 @@ def float_to_ascii(float_tensor: torch.Tensor):
     return ((float_tensor + 1.0) * 64 - 0.5).int()
 
 
+def create_full_paths(root_dir: str, filenames: List[str] = None):
+    """
+    Construct global path from a list of local paths and a root directory.
+    Args :
+        root_dir : The directory containing the files
+        filenames : A list of filenames within the root
+    """
+    if filenames is not None:
+        full_paths = [f"{root_dir}/{path}" for path in filenames]
+        return full_paths
+
+    return None
+
+
 def unify_ids(specific_ids: List[int], id_range: List[int]):
     """
     Create a single list from ids specified as a list and those
@@ -181,6 +195,14 @@ def dataset_centered_char(
         target_list.append(n_target)
 
     return feature_list, target_list
+
+
+dataset_registry = {
+    "sequence": generate_dataset,
+    "centered": dataset_centered,
+    "sequence_of_char": generate_dataset_char,
+    "centered_char": dataset_centered_char,
+}
 
 
 def dataset_from_file(

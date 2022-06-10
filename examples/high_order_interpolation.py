@@ -10,17 +10,9 @@ import torch.optim as optim
 import torch
 from high_order_layers_torch.networks import *
 from torchsummary import summary
-from language_interpolation.single_text_dataset import (
-    SingleTextDataset,
-    dataset_from_file,
-    encode_input_from_text,
-    decode_output_to_text,
-    ascii_to_float,
-    generate_dataset,
-    dataset_centered,
-)
+from language_interpolation.single_text_dataset import dataset_registry
 from language_interpolation.utils import generate_text
-
+from language_interpolation.lightning_datamodule import GutenbergDataModule
 import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
@@ -70,42 +62,6 @@ class Net(LightningModule):
     def forward(self, x):
         return self.model(x)
 
-    def setup(self, stage):
-
-        full_path = None
-        if self.cfg.filenames is not None:
-            full_path = [f"{self.root_dir}/{path}" for path in self.cfg.filenames]
-
-        if self.cfg.data.type == "sequence":
-            dataset_generator = generate_dataset
-        elif self.cfg.data.type == "centered":
-            dataset_generator = dataset_centered
-        else:
-            raise ValueError(
-                f"data.type must be centered or sequence. recieved {self.cfg.data.type}"
-            )
-
-        gutenberg_ids = self.cfg.gutenberg_ids or []
-        if self.cfg.gutenberg_range is not None:
-            gutenberg_ids.extend(list(range(*self.cfg.gutenberg_range)))
-
-        self.train_dataset = SingleTextDataset(
-            filenames=full_path,
-            gutenberg_ids=gutenberg_ids,
-            features=self.cfg.mlp.features,
-            max_size=self.cfg.data.max_size,
-            dataset_generator=dataset_generator,
-            num_workers=self.cfg.pre_process_workers,
-        )
-        self.test_dataset = SingleTextDataset(
-            filenames=full_path,
-            gutenberg_ids=gutenberg_ids,
-            features=self.cfg.mlp.features,
-            max_size=self.cfg.data.max_size,
-            dataset_generator=dataset_generator,
-            num_workers=self.cfg.pre_process_workers,
-        )
-
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
@@ -121,25 +77,6 @@ class Net(LightningModule):
     def test_step(self, batch, batch_idx):
         return self.training_step(batch, batch_idx)
 
-    def train_dataloader(self):
-        trainloader = torch.utils.data.DataLoader(
-            self.train_dataset,
-            batch_size=self.cfg.batch_size,
-            shuffle=True,
-            num_workers=10,
-        )
-        return trainloader
-
-    def test_dataloader(self):
-
-        testloader = torch.utils.data.DataLoader(
-            self.test_dataset,
-            batch_size=self.cfg.batch_size,
-            shuffle=False,
-            num_workers=10,
-        )
-        return testloader
-
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=self.cfg.lr)
 
@@ -153,7 +90,33 @@ def run_language_interpolation(cfg: DictConfig):
     create_gutenberg_cache(parent_directory=hydra.utils.get_original_cwd())
 
     if cfg.train is True:
-        early_stopping = EarlyStopping(monitor="train_loss", patience=5)
+
+        if cfg.data.type in dataset_registry:
+            dataset_generator = dataset_registry[cfg.data.type]
+        else:
+            raise ValueError(
+                f"data.type must be centered or sequence. recieved {cfg.data.type}"
+            )
+
+        datamodule = GutenbergDataModule(
+            features=cfg.mlp.features,
+            targets=1,
+            num_workers=cfg.data.num_workers,
+            pre_process_workers=cfg.data.pre_process_workers,
+            gutenberg_ids_train=cfg.data.train.gutenberg_ids,
+            gutenberg_ids_val=cfg.data.val.gutenberg_ids,
+            gutenberg_ids_test=cfg.data.test.gutenberg_ids,
+            gutenberg_range_train=cfg.data.train.gutenberg_range,
+            gutenberg_range_val=cfg.data.val.gutenberg_range,
+            gutenberg_range_test=cfg.data.test.gutenberg_range,
+            train_filenames=cfg.data.train.filenames,
+            val_filenames=cfg.data.val.filenames,
+            test_filenames=cfg.data.test.filenames,
+            max_size=cfg.data.max_size,
+            dataset_generator=dataset_generator,
+        )
+
+        early_stopping = EarlyStopping(monitor="train_loss", patience=10)
         trainer = Trainer(
             callbacks=[early_stopping, TextGenerationSampler(cfg)],
             max_epochs=cfg.max_epochs,
@@ -162,7 +125,7 @@ def run_language_interpolation(cfg: DictConfig):
         )
 
         model = Net(cfg)
-        trainer.fit(model)
+        trainer.fit(model, datamodule=datamodule)
         logger.info("testing")
 
         result = trainer.test(model)

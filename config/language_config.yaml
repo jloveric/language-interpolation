@@ -1,4 +1,9 @@
-dataset:
+data: # TODO: should this be part of the above?
+  type: centered # sequence # centered
+  reapply: 10 # number of times to reapply calculation
+  max_size: -1
+  num_workers: 10
+
   train:
     filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
 
@@ -11,7 +16,7 @@ dataset:
     gutenberg_ids: [9]
     gutenberg_range: null
 
-  validation:
+  val:
     filenames: null
     gutenberg_ids: [1]
     gutenberg_range: null
@@ -47,11 +52,6 @@ mlp:
     segments: 8
     layers: 2
     width: 10
-
-data:
-  type: centered # sequence # centered
-  reapply: 10 # number of times to reapply calculation
-  max_size: -1
 
 max_epochs: 100
 gpus: 1
