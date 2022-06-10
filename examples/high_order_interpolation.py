@@ -83,16 +83,20 @@ class Net(LightningModule):
                 f"data.type must be centered or sequence. recieved {self.cfg.data.type}"
             )
 
+        gutenberg_ids = self.cfg.gutenberg_ids or []
+        if self.cfg.gutenberg_range is not None:
+            gutenberg_ids.extend(list(range(*self.cfg.gutenberg_range)))
+
         self.train_dataset = SingleTextDataset(
             filenames=full_path,
-            gutenberg_ids=self.cfg.gutenberg_ids,
+            gutenberg_ids=gutenberg_ids,
             features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
         )
         self.test_dataset = SingleTextDataset(
             filenames=full_path,
-            gutenberg_ids=self.cfg.gutenberg_ids,
+            gutenberg_ids=gutenberg_ids,
             features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,

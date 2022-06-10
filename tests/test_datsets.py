@@ -18,7 +18,6 @@ def test_dataset_from_gutenberg():
     assert features.shape[0] == targets.shape[0]
     assert features.shape[1] == num_features
     assert targets.shape[1] == num_targets
-    assert True is False
 
 
 def test_dataset_from_file():

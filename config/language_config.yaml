@@ -1,5 +1,6 @@
 filenames: null
-gutenberg_ids: [10, 2800, 20]
+gutenberg_ids: [] #[10, 2800, 20]
+gutenberg_range: [1, 1000]
 mlp:
   layer_type: "discontinuous"
   normalize: false
