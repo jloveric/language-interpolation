@@ -44,7 +44,9 @@ class Net(LightningModule):
 
         normalization = None
         if cfg.mlp.normalize is True:
-            normalization = torch.nn.BatchNorm1d(num_features=cfg.mlp.hidden.width)
+            normalization = (
+                torch.nn.LazyBatchNorm1d
+            )  # torch.nn.LazyBatchNorm1d(num_features=cfg.mlp.hidden.width)
 
         self.model = HighOrderMLP(
             layer_type=cfg.mlp.layer_type,

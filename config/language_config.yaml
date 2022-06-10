@@ -1,9 +1,9 @@
 filenames: null
-gutenberg_ids: [] #[10, 2800, 20]
-gutenberg_range: [1, 1000]
+gutenberg_ids: [10, 2800, 20, 22382, 50133]
+gutenberg_range: null #[1, 1000]
 mlp:
   layer_type: "discontinuous"
-  normalize: false
+  normalize: true
 
   # Number of characters as input
   features: 16
@@ -34,7 +34,7 @@ data:
   reapply: 10 # number of times to reapply calculation
   max_size: -1
 
-max_epochs: 50
+max_epochs: 100
 gpus: 1
 lr: 1e-4
 batch_size: 256

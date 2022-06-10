@@ -302,7 +302,7 @@ resolved_reference = "1ae3215b096289eeb1dfdd6fe48fd76d5fe6b55e"
 
 [[package]]
 name = "high-order-layers-torch"
-version = "1.1.7"
+version = "1.1.8"
 description = "High order layers in pytorch"
 category = "main"
 optional = false
@@ -1264,8 +1264,8 @@ grpcio = [
 ]
 gutenbergpy = []
 high-order-layers-torch = [
-    {file = "high-order-layers-torch-1.1.7.tar.gz", hash = "sha256:9188ae507fd0e63d7c2991ab314fdb7d4a2d3028076e4d002ece19b460291a93"},
-    {file = "high_order_layers_torch-1.1.7-py3-none-any.whl", hash = "sha256:f39d32dde149973f6b1c6b8d40d796efe10820481a5a3c4eb78bea58164205a1"},
+    {file = "high-order-layers-torch-1.1.8.tar.gz", hash = "sha256:e055a76d484886f0e636db8b23b86d5668400295b3b3df8c8983e542db90ce90"},
+    {file = "high_order_layers_torch-1.1.8-py3-none-any.whl", hash = "sha256:87fd7b36f0a2de3680eb26e680ed7b44aa40428c8fb2f58f814ce55095507f35"},
 ]
 httpsproxy-urllib2 = [
     {file = "httpsproxy_urllib2-1.0.tar.gz", hash = "sha256:d6f53cefc271c2fd02c4639eea17326d74163cfff345a1f55616e8a02192d240"},
