@@ -1,9 +1,11 @@
 import torch
 from torch.utils.data import Dataset
-from typing import List, Tuple, Callable, Union, Any
+from typing import List, Tuple, Callable, Union, Any, Dict
 import gutenbergpy.textget
 from torch import Tensor
 import logging
+from multiprocessing import Pool
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +180,7 @@ def dataset_from_gutenberg(
     features: int,
     targets: int,
     max_size: int = -1,
-    dataset_generator=generate_dataset,
+    dataset_generator: Callable[[str, int, int], Tuple[Any, Any]] = generate_dataset,
 ) -> Union[Tuple[Tensor, Tensor], Any]:
     """
     Create a dataset from a book in project gutenberg https://www.gutenberg.org/
@@ -206,7 +208,10 @@ class SingleTextDataset(Dataset):
         features: int = 10,
         targets: int = 1,
         max_size: int = -1,
-        dataset_generator=generate_dataset,
+        dataset_generator: Callable[
+            [str, int, int], Tuple[Any, Any]
+        ] = generate_dataset,
+        num_workers: int = 5,
     ):
         """
         Args :
@@ -215,6 +220,9 @@ class SingleTextDataset(Dataset):
             targets : Number of output features (characters)
             max_size : Set the maximum number of characters to read from file.  Defaults
             to -1 which is to read everything.
+            dataset_generator: A function that converts text into a tuple of features, targets
+            num_workers: Number of parallel workers when more than one book is being
+            processed.
         """
         if filenames is None and text is None and gutenberg_ids is None:
             raise ValueError(f"Must define either filenames, text or gutenberg ids.")
@@ -248,18 +256,38 @@ class SingleTextDataset(Dataset):
 
         if gutenberg_ids is not None:
 
-            for index in gutenberg_ids:
+            if num_workers > 0:  # Run in parallel
 
-                feature_list, target_list = dataset_from_gutenberg(
-                    index,
+                pdataset = partial(
+                    dataset_from_gutenberg,
                     features=features,
                     targets=targets,
                     max_size=max_size,
                     dataset_generator=dataset_generator,
                 )
+                with Pool(num_workers) as p:
+                    results = p.map(
+                        pdataset,
+                        gutenberg_ids,
+                    )
 
-                list_features.extend(feature_list)
-                list_targets.extend(target_list)
+                for feature_res, target_res in results:
+                    list_features.extend(feature_res)
+                    list_targets.extend(target_res)
+
+            else:  # Run in serial
+                for index in gutenberg_ids:
+
+                    feature_list, target_list = dataset_from_gutenberg(
+                        index,
+                        features=features,
+                        targets=targets,
+                        max_size=max_size,
+                        dataset_generator=dataset_generator,
+                    )
+
+                    list_features.extend(feature_list)
+                    list_targets.extend(target_list)
 
         self.inputs = torch.stack(list_features)
         self.output = torch.stack(list_targets)

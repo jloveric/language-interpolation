@@ -1,6 +1,13 @@
-filenames: null
+filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
+
+# Book ids from project gutenberg
 gutenberg_ids: [10, 2800, 20, 22382, 50133]
 gutenberg_range: null #[1, 1000]
+
+# Number of workers to use processing gutenberg books
+# each book is processed by a single process!
+pre_process_workers: 10
+
 mlp:
   layer_type: "discontinuous"
   normalize: true
@@ -11,13 +18,13 @@ mlp:
   # Polynomial interpolation points.  Polynomial order
   # is (n-1).  In the case of Fourier series, n is the
   # number of Fourier components.
-  n: 2
-  n_in: 2
+  n: 3
+  n_in: 3
   n_out: null
   n_hidden: null
   periodicity: 2.0
   rescale_output: False
-  scale: 2.0
+  # scale: 2.0
   input:
     segments: 128
     width: ${mlp.features}

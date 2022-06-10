@@ -95,6 +95,7 @@ class Net(LightningModule):
             features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
+            num_workers=self.cfg.pre_process_workers,
         )
         self.test_dataset = SingleTextDataset(
             filenames=full_path,
@@ -102,6 +103,7 @@ class Net(LightningModule):
             features=self.cfg.mlp.features,
             max_size=self.cfg.data.max_size,
             dataset_generator=dataset_generator,
+            num_workers=self.cfg.pre_process_workers,
         )
 
     def training_step(self, batch, batch_idx):
