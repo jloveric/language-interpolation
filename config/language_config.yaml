@@ -1,12 +1,24 @@
-filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
+dataset:
+  train:
+    filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
 
-# Book ids from project gutenberg
-gutenberg_ids: [10, 2800, 20, 22382, 50133]
-gutenberg_range: null #[1, 1000]
+    # Book ids from project gutenberg
+    gutenberg_ids: [10, 2800, 20, 22382, 50133]
+    gutenberg_range: null #[1, 1000]
 
-# Number of workers to use processing gutenberg books
-# each book is processed by a single process!
-pre_process_workers: 10
+  test:
+    filenames: null
+    gutenberg_ids: [9]
+    gutenberg_range: null
+
+  validation:
+    filenames: null
+    gutenberg_ids: [1]
+    gutenberg_range: null
+
+  # Number of workers to use processing gutenberg books
+  # each book is processed by a single process!
+  pre_process_workers: 10
 
 mlp:
   layer_type: "discontinuous"
@@ -18,8 +30,8 @@ mlp:
   # Polynomial interpolation points.  Polynomial order
   # is (n-1).  In the case of Fourier series, n is the
   # number of Fourier components.
-  n: 3
-  n_in: 3
+  n: 2
+  n_in: 2
   n_out: null
   n_hidden: null
   periodicity: 2.0
@@ -33,7 +45,7 @@ mlp:
     width: 128
   hidden:
     segments: 8
-    layers: 1
+    layers: 2
     width: 10
 
 data:

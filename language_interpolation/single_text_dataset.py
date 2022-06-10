@@ -18,6 +18,27 @@ def float_to_ascii(float_tensor: torch.Tensor):
     return ((float_tensor + 1.0) * 64 - 0.5).int()
 
 
+def unify_ids(specific_ids: List[int], id_range: List[int]):
+    """
+    Create a single list from ids specified as a list and those
+    specified as a range.
+    Args :
+        specific_ids : [1,2,10,20,100]
+        range : [1,10] all values between 1 and 10 including 1 and 10
+    """
+    ids = []
+    if specific_ids is not None:
+        ids = specific_ids
+
+    if id_range is not None:
+        expand_ids = list(
+            range(id_range[0], id_range[1] + 1)
+        )  # User expects inclusive range
+        ids.extend(expand_ids)
+
+    return ids
+
+
 def encode_input_from_text(text_in: str, features: int) -> Tuple[torch.tensor, str]:
     """
     Convert a string to input that the network can take.  Take the last "features" number
