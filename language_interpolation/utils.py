@@ -16,6 +16,7 @@ from language_interpolation.single_text_dataset import (
     decode_output_to_text,
     ascii_to_float,
 )
+from torch import nn
 import random
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping

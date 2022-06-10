@@ -1,8 +1,5 @@
 filenames: null
-gutenberg_ids:
-  - 10 # King James Bible
-  - 2800 # Koran, English
-  - 20 # Paradise Lost
+gutenberg_ids: [10, 2800, 20]
 mlp:
   layer_type: "discontinuous"
   normalize: false

@@ -3,6 +3,9 @@ from torch.utils.data import Dataset
 from typing import List, Tuple, Callable, Union, Any
 import gutenbergpy.textget
 from torch import Tensor
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def ascii_to_float(ascii_tensor: torch.Tensor):
@@ -60,7 +63,7 @@ def generate_dataset(
     This approach needs to be used for the neural network based approach.
     """
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    print("text[1:100", text[1:100])
+    logger.info(f"text[1:100 {text[1:100]}")
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []
@@ -86,7 +89,7 @@ def dataset_centered(
     t_right = targets - t_left
 
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    print("text[1:100", text[1:100])
+    logger.info(f"text[1:100 {text[1:100]}")
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []
@@ -112,7 +115,7 @@ def generate_dataset_char(
     Generate dataset as characters for use in random forest approaches.
     """
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    print("text[1:100", text[1:100])
+    logger.info(f"text[1:100 {text[1:100]}")
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []
@@ -139,7 +142,7 @@ def dataset_centered_char(
     t_right = targets - t_left
 
     text = text_in.encode("ascii", "ignore").decode("ascii")
-    print("text[1:100", text[1:100])
+    logger.info(f"text[1:100 {text[1:100]}")
     final = len(text) - (targets + features)
     feature_list = []
     target_list = []
