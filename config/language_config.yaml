@@ -13,7 +13,7 @@ data: # TODO: should this be part of the above?
 
   test:
     filenames: null
-    gutenberg_ids: [9]
+    gutenberg_ids: [50133] # I actually want the test same as train
     gutenberg_range: null
 
   val:
