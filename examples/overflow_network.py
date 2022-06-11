@@ -131,7 +131,7 @@ def run_language_interpolation(cfg: DictConfig):
         trainer.fit(model, datamodule=datamodule)
         logger.info("testing")
 
-        result = trainer.test(model)
+        result = trainer.test(model, datamodule=datamodule)
         logger.info(f"result {result}")
         logger.info("finished testing")
         logger.info(f"best check_point {trainer.checkpoint_callback.best_model_path}")

@@ -23,7 +23,7 @@ data: # TODO: should this be part of the above?
 
   # Number of workers to use processing gutenberg books
   # each book is processed by a single process!
-  pre_process_workers: 10
+  pre_process_workers: 0
 
 mlp:
   layer_type: "discontinuous"
@@ -53,7 +53,7 @@ mlp:
     layers: 2
     width: 10
 
-max_epochs: 100
+max_epochs: 40
 gpus: 1
 lr: 1e-4
 batch_size: 256
