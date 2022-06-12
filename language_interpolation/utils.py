@@ -1,16 +1,8 @@
 from typing import List
 
-import os
-from omegaconf import DictConfig, OmegaConf
-import hydra
-from torchmetrics.functional import accuracy
 from high_order_layers_torch.layers import *
-from pytorch_lightning import LightningModule, Trainer, Callback
-import torch.optim as optim
-import torch
+from pytorch_lightning import Callback
 from high_order_layers_torch.networks import *
-from language_interpolation.single_text_dataset import SingleTextDataset
-from torchsummary import summary
 from language_interpolation.single_text_dataset import (
     encode_input_from_text,
     decode_output_to_text,
@@ -18,8 +10,6 @@ from language_interpolation.single_text_dataset import (
 )
 from torch import nn
 import random
-from torchmetrics import Accuracy
-from pytorch_lightning.callbacks import EarlyStopping
 from gutenbergpy.gutenbergcache import GutenbergCache, GutenbergCacheSettings
 import logging
 from pathlib import Path
