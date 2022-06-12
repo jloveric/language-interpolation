@@ -94,49 +94,55 @@ def run_language_interpolation(cfg: DictConfig):
 
     if cfg.train is True:
 
-        if cfg.data.type in dataset_registry:
-            dataset_generator = dataset_registry[cfg.data.type]
-        else:
-            raise ValueError(
-                f"data.type must be centered or sequence. recieved {cfg.data.type}"
+        try:  # Try is needed for multirun case
+            if cfg.data.type in dataset_registry:
+                dataset_generator = dataset_registry[cfg.data.type]
+            else:
+                raise ValueError(
+                    f"data.type must be centered or sequence. recieved {cfg.data.type}"
+                )
+
+            datamodule = GutenbergDataModule(
+                features=cfg.mlp.features,
+                targets=1,
+                num_workers=cfg.data.num_workers,
+                pre_process_workers=cfg.data.pre_process_workers,
+                gutenberg_ids_train=cfg.data.train.gutenberg_ids,
+                gutenberg_ids_val=cfg.data.val.gutenberg_ids,
+                gutenberg_ids_test=cfg.data.test.gutenberg_ids,
+                gutenberg_range_train=cfg.data.train.gutenberg_range,
+                gutenberg_range_val=cfg.data.val.gutenberg_range,
+                gutenberg_range_test=cfg.data.test.gutenberg_range,
+                train_filenames=cfg.data.train.filenames,
+                val_filenames=cfg.data.val.filenames,
+                test_filenames=cfg.data.test.filenames,
+                max_size=cfg.data.max_size,
+                dataset_generator=dataset_generator,
             )
 
-        datamodule = GutenbergDataModule(
-            features=cfg.mlp.features,
-            targets=1,
-            num_workers=cfg.data.num_workers,
-            pre_process_workers=cfg.data.pre_process_workers,
-            gutenberg_ids_train=cfg.data.train.gutenberg_ids,
-            gutenberg_ids_val=cfg.data.val.gutenberg_ids,
-            gutenberg_ids_test=cfg.data.test.gutenberg_ids,
-            gutenberg_range_train=cfg.data.train.gutenberg_range,
-            gutenberg_range_val=cfg.data.val.gutenberg_range,
-            gutenberg_range_test=cfg.data.test.gutenberg_range,
-            train_filenames=cfg.data.train.filenames,
-            val_filenames=cfg.data.val.filenames,
-            test_filenames=cfg.data.test.filenames,
-            max_size=cfg.data.max_size,
-            dataset_generator=dataset_generator,
-        )
+            early_stopping = EarlyStopping(monitor="train_loss", patience=20)
+            trainer = Trainer(
+                callbacks=[early_stopping, TextGenerationSampler(cfg)],
+                max_epochs=cfg.max_epochs,
+                gpus=cfg.gpus,
+                gradient_clip_val=cfg.gradient_clip,
+            )
 
-        early_stopping = EarlyStopping(monitor="train_loss", patience=10)
-        trainer = Trainer(
-            callbacks=[early_stopping, TextGenerationSampler(cfg)],
-            max_epochs=cfg.max_epochs,
-            gpus=cfg.gpus,
-            gradient_clip_val=cfg.gradient_clip,
-        )
+            model = Net(cfg)
+            trainer.fit(model, datamodule=datamodule)
+            logger.info("testing")
 
-        model = Net(cfg)
-        trainer.fit(model, datamodule=datamodule)
-        logger.info("testing")
-
-        result = trainer.test(model, datamodule=datamodule)
-        logger.info(f"result {result}")
-        logger.info("finished testing")
-        logger.info(f"best check_point {trainer.checkpoint_callback.best_model_path}")
-        logger.info(f"loss {result[0]['train_loss']}")
-        return result[0]["train_loss"]
+            result = trainer.test(model, datamodule=datamodule)
+            logger.info(f"result {result}")
+            logger.info("finished testing")
+            logger.info(
+                f"best check_point {trainer.checkpoint_callback.best_model_path}"
+            )
+            logger.info(f"loss {result[0]['test_loss']}")
+            return result[0]["test_loss"]
+        except Exception as e:
+            logger.error(e)
+            return 1.0e9
     else:
         # plot some data
         logger.info("evaluating result")

@@ -1,7 +1,13 @@
 [![CI](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml/badge.svg)](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml)
 
 # Experiments in natural language generation
-High order networks
+High order and piecewise networks.  The typical high order network design with piecewise polynomial
+layers here, is a fully connected network where each link has multiple segments.  Only one segment in
+a link is active for each input so the network sparsity is determined by the number of segments
+
+
+![image](images/language-interpolation-drawing.png)
+
 
 # Language interpolation of Books
 Run with nevergrad

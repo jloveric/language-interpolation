@@ -84,17 +84,17 @@ hydra:
       # OnePlusOne is good at low budget, but may converge early
       optimizer: OnePlusOne
       # total number of function evaluations to perform
-      budget: 40
+      budget: 100
       # number of parallel workers for performing function evaluations
-      num_workers: 10
+      num_workers: 1
       # maximize: true  # comment out for maximization
     # default parametrization of the search space
     parametrization:
-      mlp.n:
-        init: 3
-        lower: 2
-        upper: 4
-        integer: true
+      #mlp.n:
+      #  init: 3
+      #  lower: 2
+      #  upper: 4
+      #  integer: true
       mlp.layer_type:
         #- continuous
         - discontinuous
