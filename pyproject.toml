@@ -8,7 +8,6 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = ">=3.9"
 torchsummary = "^1.5.1"
-lightgbm = "^3.3.1"
 omegaconf = "^2.1.1"
 pytorch-lightning = "^1.5.2"
 torchmetrics = "^0.6.2"
@@ -18,10 +17,12 @@ hydra-core = "^1.2.0"
 hydra-nevergrad-sweeper = "^1.2.0"
 gutenbergpy = {git = "https://github.com/jloveric/gutenbergpy.git"}
 torch = "^1.11.0"
+torch-intermediate-layer-getter = "^0.1.post1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 black = "^22.3.0"
+lightgbm = "^3.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

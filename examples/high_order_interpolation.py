@@ -1,5 +1,6 @@
 from typing import List
 
+from language_interpolation.networks import ASCIIPredictionNet
 import os
 from omegaconf import DictConfig, OmegaConf
 import hydra
@@ -23,63 +24,6 @@ import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logging.getLogger().setLevel(logging.DEBUG)
-
-
-class Net(LightningModule):
-    def __init__(self, cfg: DictConfig):
-        super().__init__()
-        self.save_hyperparameters(cfg)
-        self.cfg = cfg
-
-        normalization = None
-        if cfg.mlp.normalize is True:
-            normalization = torch.nn.LazyBatchNorm1d
-
-        self.model = HighOrderMLP(
-            layer_type=cfg.mlp.layer_type,
-            n=cfg.mlp.n,
-            n_in=cfg.mlp.n_in,
-            n_hidden=cfg.mlp.n_in,
-            n_out=cfg.mlp.n_out,
-            in_width=cfg.mlp.input.width,
-            in_segments=cfg.mlp.input.segments,
-            out_width=128,  # ascii has 128 characters
-            out_segments=cfg.mlp.output.segments,
-            hidden_width=cfg.mlp.hidden.width,
-            hidden_layers=cfg.mlp.hidden.layers,
-            hidden_segments=cfg.mlp.hidden.segments,
-            normalization=normalization,
-        )
-        self.root_dir = f"{hydra.utils.get_original_cwd()}"
-        self.loss = torch.nn.CrossEntropyLoss()
-        self.accuracy = Accuracy(top_k=2)
-
-    def forward(self, x):
-        return self.model(x)
-
-    def eval_step(self, batch: Tensor, name: str):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.loss(y_hat, y.flatten())
-
-        diff = torch.argmax(y_hat, dim=1) - y.flatten()
-        accuracy = torch.where(diff == 0, 1, 0).sum() / len(diff)
-
-        self.log(f"{name}_loss", loss, prog_bar=True)
-        self.log(f"{name}_acc", accuracy, prog_bar=True)
-        return loss
-
-    def training_step(self, batch, batch_idx):
-        return self.eval_step(batch, "train")
-
-    def validation_step(self, batch, batch_idx):
-        return self.eval_step(batch, "val")
-
-    def test_step(self, batch, batch_idx):
-        return self.eval_step(batch, "test")
-
-    def configure_optimizers(self):
-        return optim.Adam(self.parameters(), lr=self.cfg.lr)
 
 
 @hydra.main(config_path="../config", config_name="language_config")
@@ -125,8 +69,9 @@ def run_language_interpolation(cfg: DictConfig):
                 gpus=cfg.gpus,
                 gradient_clip_val=cfg.gradient_clip,
             )
+            root_dir = f"{hydra.utils.get_original_cwd()}"
 
-            model = Net(cfg)
+            model = ASCIIPredictionNet(cfg, root_dir=root_dir)
             trainer.fit(model, datamodule=datamodule)
             logger.info("testing")
 
@@ -147,7 +92,7 @@ def run_language_interpolation(cfg: DictConfig):
         logger.info(f"cfg.checkpoint {cfg.checkpoint}")
         checkpoint_path = f"{hydra.utils.get_original_cwd()}/{cfg.checkpoint}"
         logger.info(f"checkpoint_path {checkpoint_path}")
-        model = Net.load_from_checkpoint(checkpoint_path)
+        model = ASCIIPredictionNet.load_from_checkpoint(checkpoint_path)
 
         text_in = cfg.text
         features = cfg.mlp.input.width
