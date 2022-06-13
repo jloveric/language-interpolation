@@ -1,14 +1,14 @@
 from torch.nn import Module
 from torch import Tensor
 import logging
-from typing import List
+from typing import List, Tuple
 from torch_intermediate_layer_getter import IntermediateLayerGetter as MidGetter
 import torch
 
 logger = logging.getLogger(__name__)
 
 
-def dataset_from_model(
+def embedding_from_model(
     model: Module,
     model_input: List[Tensor],
     layer_name: str = None,
@@ -56,3 +56,37 @@ def dataset_from_model(
     result = torch.cat(out)
     logger.info(f"Embeddings of size {result.shape}")
     return result
+
+
+def dataset_from_sequential_embedding(
+    feature_sequence: List[Tensor], window_size: int = 1, skip: int = 1
+) -> Tuple[List[List[Tensor]], List[List[Tensor]]]:
+    """
+    Create an ordered dataset from a list of sequences.  The datasets are sequence sets
+    where a window_size number of features is used to predict the next feature.
+    Args :
+      feature_sequence : A list of tensor representing sequences.  A list is used, where each
+      element in the list could be the features from a single book.  We don't want to append
+      the lists as the sequence makes no sense at the join.
+      window_size : number of features to collect in the new feature list
+      skip : The number of features to skip to grab the target value.  If the embedding represents
+      10 characters [0:10], then we want the target to be the [10] variable (probably), so skip
+      would be 10.
+    Returns :
+      a tuple of Lists of features and targets where the features and targets are sequential
+      for each of the "books" and every element of the list represents a different "book".
+    """
+
+    features_list = []
+    targets_list = []
+    for sequence in feature_sequence:
+        features = []
+        targets = []
+        for j in range(len(sequence) - skip):
+            features.append(sequence[j : (j + window_size), :])
+            targets.append(sequence[j + skip, :])
+
+        features_list.append(features)
+        targets_list.append(targets)
+
+    return features_list, targets_list

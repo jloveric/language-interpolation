@@ -1,6 +1,6 @@
 [![CI](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml/badge.svg)](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml)
 
-# Natural Language Generation with High Order Layers
+# Natural Language Generation with Sparse High Order Layers
 High order and piecewise networks for natural language generation (see [here](https://github.com/jloveric/high-order-layers-torch) for a description of High order layers being used).  The typical high order network design with piecewise polynomial
 layers here is a fully connected network where each link has multiple segments.  Only one segment in
 a link is active for each input so the network sparsity is determined by the number of segments. Although it looks like a standard MLP, the structure is more complicated and is a form of routing network with piecewise polynomials.
