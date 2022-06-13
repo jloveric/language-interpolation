@@ -3,14 +3,14 @@
 # Natural Language Generation with High Order Layers
 High order and piecewise networks for natural language generation (see [here](https://github.com/jloveric/high-order-layers-torch) for a description of High order layers being used).  The typical high order network design with piecewise polynomial
 layers here is a fully connected network where each link has multiple segments.  Only one segment in
-a link is active for each input so the network sparsity is determined by the number of segments. So all though it looks like a standard MLP, the structure is more complicated and is a form of routing network with piecwise polynomials.
+a link is active for each input so the network sparsity is determined by the number of segments. Although it looks like a standard MLP, the structure is more complicated and is a form of routing network with piecewise polynomials.
 
 
 ![image](images/language-interpolation-drawing.png)
 
 # Dataset
 
-Data from project gutenberg are used, either single or multiple books.  Training is done on the character level.  A pytorch lightning data module for project Gutenberg has been implemented for data loading.
+Data from project Gutenberg are used, either single or multiple books.  Training is done on the character level.  A pytorch lightning data module for project Gutenberg has been implemented for data loading.
 
 # Language interpolation of Books
 Run with nevergrad
