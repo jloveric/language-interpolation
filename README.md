@@ -24,7 +24,7 @@ python examples/high_order_interpolation.py -m data.type=sequence
 # Decent parameters
 I've done some nevergrad optimization runs to try and figure out good parameters for this type of network.  You can actually
 do quite well with a single hidden layer with a huge number of segments and large number of units.  As the depth gets greater
-it seems the optimal number of segments reduces and as usual the optimal optimizer parameters are different.  Still need to do more
+it seems the optimal number of segments reduces.  Still need to do more
 investigation.
 
 1 hidden layer (87 segments per link)
