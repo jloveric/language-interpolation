@@ -22,20 +22,20 @@ with nevergrad (data appears in multirun)
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
 # Decent parameters
-I've done some nevergrad optimization runs to try and figure out good parameters for this type of network.  You can actually
-do quite well with a single hidden layer with a huge number of segments and large number of units.  As the depth gets greater
-it seems the optimal number of segments reduces.  Still need to do more
-investigation.
+A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short. Using Adam + Reduce learning rate on plateau. 
 
-1 hidden layer (87 segments per link)
+1 hidden layer (8 segments per link piecewise linear)
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=500 max_epochs=100 optimizer.lr=1e-4
 ```
-2 hidden layers (15 segments per link)
+2 hidden layers (15 segments per link piecewise linear)
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_double_layer max_epochs=100 mlp.hidden.width=250 optimizer.lr=1e-5
 ``` 
-
+1 hidden layer (8 segments piecewise quadratic)
+```
+python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=500 max_epochs=100 mlp.n=3 mlp.hidden.segments=8 optimizer.lr=1e-5
+```
 # With conv layers (not yet working)
 ```
 python examples/language_interpolation_conv.py data.type=sequence

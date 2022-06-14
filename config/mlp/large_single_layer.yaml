@@ -16,13 +16,13 @@ n_hidden: null
 periodicity: 2.0
 rescale_output: False
 input:
-  segments: 84
+  segments: 128
   width: ${mlp.features}
 output:
   segments: 8
   width: 128
 hidden:
-  segments: 8
+  segments: 84
   layers: 1
   # 250 was the maximum width in the experiments
   width: 250
