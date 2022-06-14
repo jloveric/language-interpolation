@@ -21,6 +21,21 @@ with nevergrad (data appears in multirun)
 ```
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
+# Decent parameters
+I've done some nevergrad optimization runs to try and figure out good parameters for this type of network.  You can actually
+do quite well with a single hidden layer with a huge number of segments and large number of units.  As the depth gets greater
+it seems the optimal number of segments reduces and as usual the optimal optimizer parameters are different.  Still need to do more
+investigation.
+
+1 hidden layer (87 segments per link)
+```
+python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=500 max_epochs=100 optimizer.lr=1e-4
+```
+2 hidden layers (15 segments per link)
+```
+python examples/high_order_interpolation.py data.type=sequence mlp=large_double_layer max_epochs=100 mlp.hidden.width=250 optimizer.lr=1e-5
+``` 
+
 # With conv layers (not yet working)
 ```
 python examples/language_interpolation_conv.py data.type=sequence
