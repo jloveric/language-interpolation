@@ -259,7 +259,7 @@ class SingleTextDataset(Dataset):
         dataset_generator: Callable[
             [str, int, int], Tuple[Any, Any]
         ] = generate_dataset,
-        num_workers: int = 5,
+        num_workers: int = 0,
     ):
         """
         Args :

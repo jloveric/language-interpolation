@@ -4,7 +4,6 @@ from language_interpolation.single_text_dataset import (
     dataset_from_file,
     SingleTextDataset,
 )
-from language_interpolation.utils import create_gutenberg_cache
 
 
 def test_dataset_from_gutenberg():
@@ -14,7 +13,7 @@ def test_dataset_from_gutenberg():
     features, targets = dataset_from_gutenberg(
         gutenberg_id=1000, features=num_features, targets=num_targets, max_size=-1
     )
-
+    print("got gutenberg data")
     assert features.shape[0] == targets.shape[0]
     assert features.shape[1] == num_features
     assert targets.shape[1] == num_targets
@@ -31,7 +30,7 @@ def test_dataset_from_file():
         max_size=-1,
     )
 
-    print("features.shape", features.shape, targets.shape)
+    print("read dataset from file")
 
     assert features.shape[0] == targets.shape[0]
     assert features.shape[1] == num_features
@@ -43,9 +42,9 @@ def test_single_text_dataset():
     num_targets = 1
 
     dataset = SingleTextDataset(
-        gutenberg_ids=[1, 2, 3], features=num_features, targets=num_targets
+        gutenberg_ids=[1, 2], features=num_features, targets=num_targets, num_workers=0
     )
-
+    print("got dataset from ids")
     assert dataset.inputs.shape[0] == dataset.output.shape[0]
     assert dataset.inputs.shape[1] == num_features
     assert dataset.output.shape[1] == num_targets
