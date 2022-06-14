@@ -1,0 +1,28 @@
+layer_type: "discontinuous"
+normalize: true
+
+# Number of characters as input
+features: 16
+
+# Polynomial interpolation points.  Polynomial order
+# is (n-1).  In the case of Fourier series, n is the
+# number of Fourier components.
+n: 2
+n_in: 2
+n_out: null
+n_hidden: null
+periodicity: 2.0
+rescale_output: False
+input:
+  segments: 128
+  width: ${mlp.features}
+output:
+  segments: 8
+  width: 128
+hidden:
+  # Number of segments in the 2 layer is substantially
+  # lower than in the single layer network.
+  segments: 15
+  layers: 2
+  # 250 was the maximum width and it seems clear things converged faster with greater values
+  width: 217

@@ -1,0 +1,28 @@
+# Best results from a large a
+# huge series of runs.
+layer_type: "discontinuous"
+normalize: true
+
+# Number of characters as input
+features: 16
+
+# Polynomial interpolation points.  Polynomial order
+# is (n-1).  In the case of Fourier series, n is the
+# number of Fourier components.
+n: 2
+n_in: 2
+n_out: null
+n_hidden: null
+periodicity: 2.0
+rescale_output: False
+input:
+  segments: 84
+  width: ${mlp.features}
+output:
+  segments: 8
+  width: 128
+hidden:
+  segments: 8
+  layers: 1
+  # 250 was the maximum width in the experiments
+  width: 250

@@ -25,34 +25,6 @@ data: # TODO: should this be part of the above?
   # each book is processed by a single process!
   pre_process_workers: 0
 
-mlp:
-  layer_type: "discontinuous"
-  normalize: true
-
-  # Number of characters as input
-  features: 16
-
-  # Polynomial interpolation points.  Polynomial order
-  # is (n-1).  In the case of Fourier series, n is the
-  # number of Fourier components.
-  n: 2
-  n_in: 2
-  n_out: null
-  n_hidden: null
-  periodicity: 2.0
-  rescale_output: False
-  # scale: 2.0
-  input:
-    segments: 128
-    width: ${mlp.features}
-  output:
-    segments: 8
-    width: 128
-  hidden:
-    segments: 8
-    layers: 2
-    width: 10
-
 max_epochs: 40
 gpus: 1
 lr: 1e-4
@@ -75,6 +47,7 @@ prompts:
 topk: 3
 num_predict: 100
 defaults:
+  - mlp: small
   - override hydra/sweeper: nevergrad
 
 hydra:

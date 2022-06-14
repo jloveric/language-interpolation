@@ -13,7 +13,11 @@ a link is active for each input so the network sparsity is determined by the num
 Data from project Gutenberg are used, either single or multiple books.  Training is done on the character level.  A pytorch lightning data module for project Gutenberg has been implemented for data loading.
 
 # Language interpolation of Books
-Run with nevergrad
+Run single case (data appears in outputs)
+```
+python examples/high_order_interpolation.py data.type=sequence
+```
+with nevergrad (data appears in multirun)
 ```
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
