@@ -1,4 +1,4 @@
-data: # TODO: should this be part of the above?
+data:
   type: centered # sequence # centered
   reapply: 10 # number of times to reapply calculation
   max_size: -1
@@ -27,7 +27,6 @@ data: # TODO: should this be part of the above?
 
 max_epochs: 40
 gpus: 1
-lr: 1e-4
 batch_size: 256
 gradient_clip: null # 5.0
 
@@ -48,6 +47,7 @@ prompts:
 topk: 3
 num_predict: 100
 defaults:
+  - optimizer: adam
   - mlp: small
   - override hydra/sweeper: nevergrad
 

@@ -2,6 +2,7 @@ from omegaconf import DictConfig
 from high_order_layers_torch.layers import *
 from pytorch_lightning import LightningModule
 import torch.optim as optim
+import torch_optimizer as alt_optim
 import torch
 from high_order_layers_torch.networks import *
 from torchmetrics import Accuracy
@@ -64,5 +65,49 @@ class ASCIIPredictionNet(LightningModule):
     def test_step(self, batch, batch_idx):
         return self.eval_step(batch, "test")
 
+    # def configure_optimizers(self):
+    #    return optim.Adam(self.parameters(), lr=self.cfg.lr)
+
     def configure_optimizers(self):
-        return optim.Adam(self.parameters(), lr=self.cfg.lr)
+        if self.cfg.optimizer.name == "adahessian":
+            return alt_optim.Adahessian(
+                self.parameters(),
+                lr=self.cfg.optimizer.lr,
+                betas=self.cfg.optimizer.betas,
+                eps=self.cfg.optimizer.eps,
+                weight_decay=self.cfg.optimizer.weight_decay,
+                hessian_power=self.cfg.optimizer.hessian_power,
+            )
+        elif self.cfg.optimizer.name == "adam":
+
+            optimizer = optim.Adam(
+                params=self.parameters(),
+                lr=self.cfg.optimizer.lr,
+            )
+
+            reduce_on_plateau = False
+            if self.cfg.optimizer.scheduler == "plateau":
+                logger.info("Reducing lr on plateau")
+                lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+                    optimizer,
+                    patience=self.cfg.optimizer.patience,
+                    factor=self.cfg.optimizer.factor,
+                    verbose=True,
+                )
+                reduce_on_plateau = True
+            elif self.cfg.optimizer.scheduler == "exponential":
+                logger.info("Reducing lr exponentially")
+                lr_scheduler = optim.lr_scheduler.ExponentialLR(
+                    optimizer, gamma=self.cfg.optimizer.gamma
+                )
+            else:
+                return optimizer
+
+            scheduler = {
+                "scheduler": lr_scheduler,
+                "reduce_on_plateau": reduce_on_plateau,
+                "monitor": "train_loss",
+            }
+            return [optimizer], [scheduler]
+        else:
+            raise ValueError(f"Optimizer {self.cfg.optimizer.name} not recognized")
