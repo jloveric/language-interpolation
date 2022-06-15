@@ -60,7 +60,7 @@ def embedding_from_model(
 
 def dataset_from_sequential_embedding(
     feature_sequence: List[Tensor], window_size: int = 1, skip: int = 1
-) -> Tuple[List[List[Tensor]], List[List[Tensor]]]:
+) -> Tuple[List[Tensor], List[Tensor]]:
     """
     Create an ordered dataset from a list of sequences.  The datasets are sequence sets
     where a window_size number of features is used to predict the next feature.
@@ -77,6 +77,9 @@ def dataset_from_sequential_embedding(
       for each of the "books" and every element of the list represents a different "book".
     """
 
+    if window_size > skip:
+        raise ValueError(f"window_size {window_size} must be greater than {skip}.")
+
     features_list = []
     targets_list = []
     for sequence in feature_sequence:
@@ -84,9 +87,9 @@ def dataset_from_sequential_embedding(
         targets = []
         for j in range(len(sequence) - skip):
             features.append(sequence[j : (j + window_size), :])
-            targets.append(sequence[j + skip, :])
+            targets.append(sequence[j + skip, :].reshape(1, -1))
 
-        features_list.append(features)
-        targets_list.append(targets)
+        features_list.append(torch.cat(features))
+        targets_list.append(torch.cat(targets))
 
     return features_list, targets_list

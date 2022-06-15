@@ -1,4 +1,7 @@
-from language_interpolation.dataset_from_representation import embedding_from_model
+from language_interpolation.dataset_from_representation import (
+    embedding_from_model,
+    dataset_from_sequential_embedding,
+)
 from language_interpolation.single_text_dataset import dataset_from_file
 from language_interpolation.networks import ASCIIPredictionNet
 from omegaconf import DictConfig
@@ -57,7 +60,20 @@ def test_dataset_from_model():
     ]
     print("modules", modules)
 
-    ans = embedding_from_model(model, [features], layer_name="model.model.5")
+    embedding = embedding_from_model(model, [features], layer_name="model.model.5")
 
-    assert ans.shape[0] == 82
-    assert ans.shape[1] == 10
+    assert embedding.shape[0] == 82
+    assert embedding.shape[1] == 10
+
+    em_features, em_targets = dataset_from_sequential_embedding(
+        [embedding], window_size=1, skip=1
+    )
+    assert em_features[0].shape[0] == em_targets[0].shape[0]
+    assert em_features[0].shape[1] == 10
+    assert em_targets[0].shape[1] == 10
+
+    em_features, em_targets = dataset_from_sequential_embedding(
+        [embedding], window_size=1, skip=10
+    )
+    assert em_features[0].shape[0] == em_targets[0].shape[0]
+    assert em_features[0].shape[0] == 72
