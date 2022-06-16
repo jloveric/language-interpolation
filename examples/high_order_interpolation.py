@@ -90,14 +90,14 @@ def run_language_interpolation(cfg: DictConfig):
         logger.info(f"checkpoint_path {checkpoint_path}")
         model = ASCIIPredictionNet.load_from_checkpoint(checkpoint_path)
 
-        text_in = cfg.text
+        text_in = cfg.prompts
         features = cfg.mlp.input.width
 
         final = generate_text(
             model=model,
             features=features,
-            text_list=[text_in],
-            output_size=1,
+            text_list=text_in,
+            output_size=cfg.num_predict,
             topk=cfg.topk,
         )
 

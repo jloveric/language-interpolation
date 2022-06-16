@@ -1,5 +1,5 @@
 data:
-  type: centered # sequence # centered
+  type: sequence # centered
   reapply: 10 # number of times to reapply calculation
   max_size: -1
   num_workers: 10
@@ -25,7 +25,7 @@ data:
   # each book is processed by a single process!
   pre_process_workers: 0
 
-max_epochs: 40
+max_epochs: 100
 gpus: 1
 batch_size: 256
 gradient_clip: null # 5.0

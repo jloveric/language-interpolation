@@ -22,11 +22,11 @@ with nevergrad (data appears in multirun)
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
 # Decent parameters
-A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short. Using Adam + learning rate scheduler. 
+A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Adam + learning rate scheduler. 
 
 1 hidden layer 2 segments per link
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=250 max_epochs=100 optimizer.lr=1e-4
+python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=200 max_epochs=100 optimizer.lr=1e-4 batch_size=1000
 ```
 2 hidden layers 2 segments per link
 ```
@@ -55,13 +55,13 @@ python examples/language_cellular_automata.py mlp.features=11 data.type=centered
 ```
 ## Apply a model using sequence model
 ```
-python examples/high_order_interpolation.py train=False checkpoint=\"multirun/2021-05-16/17-27-58/2/lightning_logs/version_0/checkpoints/epoch=19-step=34199.ckpt\" topk=2 num_predict=200 text="Who are you?"
+python examples/high_order_interpolation.py train=False checkpoint=\"outputs/2022-06-15/16-13-08/lightning_logs/version_0/checkpoints/epoch=32-step=104577.ckpt\" topk=2 num_predict=1000 prompts=["Who are you?"]
 ```
-example output (model trained to predict the next character given the preceeding 16) using a single hidden layer.  The prompt is not in the
+example output (model trained to predict the next character given the preceeding 16) using a single hidden layer. The prompt is not in the
 dataset, however, the data eventually evolves into something that is in the dataset.
 ```
 prompt: Who are you? 
-result: the ceatoles and of as that not one of them could feel even slightly inclined to treat the diary as
+result: Who are you? I the set it wall night, and the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she
 ```
 # As cellular automaton
 A centered model can be repeatedly applied to the same text as a moving window and will work with arbitrary length sentences.  This
