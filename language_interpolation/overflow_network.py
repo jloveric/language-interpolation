@@ -10,7 +10,6 @@ from language_interpolation.dataset_from_representation import (
 from lightning_datamodule import GutenbergDataModule
 import logging
 import torch.nn
-import pytorch_lightning as pl
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,12 @@ class OverFlowNetwork:
         self,
         network_list: List[nn.Module],
         embedding_layer: List[str],
-        base_datamodule: pl.LightningDataModule,
+        base_features_train: List[List[Tensor]],
+        base_targets_train: List[List[Tensor]],
+        base_features_val: List[List[Tensor]],
+        base_targets_val: List[List[Tensor]],
+        base_features_test: List[List[Tensor]],
+        base_targets_test: List[List[Tensor]],
         window_size: int = 10,
         skip: int = 10,
     ):
@@ -28,7 +32,12 @@ class OverFlowNetwork:
         self._embedding_layer = embedding_layer
         self._window_size = window_size
         self._skip = skip
-        self._base_datamodule = base_datamodule
+        self._base_features_train = base_features_train
+        self._base_targets_train = base_targets_train
+        self._base_features_val = base_features_val
+        self._base_targets_val = base_targets_val
+        self._base_features_test = base_features_test
+        self._base_targets_test = base_targets_test
 
     def compute_dataset_from_network(self, index):
         """
@@ -55,7 +64,16 @@ class OverFlowNetwork:
         """
 
         if index == 0:
-            return self._base_datamodule
+            return (
+                self._base_features_train,
+                self._base_targets_train,
+                self._base_features_val,
+                self._base_targets_val,
+                self._base_features_test,
+                self._base_targets_test,
+            )
+        else:
+            pass
 
     def train_network(self, index: int):
         pass
