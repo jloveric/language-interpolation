@@ -58,7 +58,7 @@ def run_language_interpolation(cfg: DictConfig):
             )
 
             lr_monitor = LearningRateMonitor(logging_interval="epoch")
-            early_stopping = EarlyStopping(monitor="train_loss", patience=20)
+            early_stopping = EarlyStopping(monitor="train_loss", patience=10)
             trainer = Trainer(
                 callbacks=[early_stopping, TextGenerationSampler(cfg), lr_monitor],
                 max_epochs=cfg.max_epochs,

@@ -47,6 +47,9 @@ look like a standard MLP.
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_standard mlp.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
 ```
+## Notes
+I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
+
 ## Apply a model using sequence model
 ```
 python examples/high_order_interpolation.py train=False checkpoint=\"outputs/2022-06-15/16-13-08/lightning_logs/version_0/checkpoints/epoch=32-step=104577.ckpt\" topk=2 num_predict=1000 prompts=["Who are you?"]
@@ -75,3 +78,7 @@ approach is similar to stencils used in solving partial differential equations.
 ```
 python examples/language_cellular_automata.py mlp.features=11 data.type=centered train=False checkpoint=\"outputs/2021-08-21/20-14-40/lightning_logs/version_0/checkpoints/epoch=20-step=35909.ckpt\" topk=2 num_predict=200 text="The monster awakes" topk=1 data.reapply=10
 ```
+
+# Interesting papers related to sparse mlps for language
+
+[Efficient Language Modeling with Sparse all-MLP](https://arxiv.org/pdf/2203.06850.pdf)

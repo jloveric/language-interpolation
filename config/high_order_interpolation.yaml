@@ -49,52 +49,51 @@ num_predict: 100
 defaults:
   - optimizer: adam
   - mlp: small
-  - override hydra/sweeper: nevergrad
-
-hydra:
-  sweeper:
-    optim:
-      # name of the nevergrad optimizer to use
-      # OnePlusOne is good at low budget, but may converge early
-      optimizer: OnePlusOne
-      # total number of function evaluations to perform
-      budget: 100
-      # number of parallel workers for performing function evaluations
-      num_workers: 1
-      # maximize: true  # comment out for maximization
-    # default parametrization of the search space
-    parametrization:
-      #mlp.n:
-      #  init: 3
-      #  lower: 2
-      #  upper: 4
-      #  integer: true
-      mlp.layer_type:
-        #- continuous
-        - discontinuous
-      #lr :
-      #  init : 1e-4
-      #  lower : 1e-5
-      #  upper : 1e-3
-      #  step : 2
-      #  log : true
-      mlp.hidden.segments:
-        init: 8
-        lower: 8
-        upper: 100
-        integer: true
-      mlp.hidden.layers:
-        init: 1
-        lower: 1
-        upper: 3
-        integer: true
-      mlp.hidden.width:
-        init: 10
-        lower: 2
-        upper: 250
-        integer: true
-      mlp.output.segments:
-        init: 8
-        lower: 8
-        upper: 20
-        integer: true
+  #- override hydra/sweeper: nevergrad
+# hydra:
+#   sweeper:
+#     optim:
+#       # name of the nevergrad optimizer to use
+#       # OnePlusOne is good at low budget, but may converge early
+#       optimizer: OnePlusOne
+#       # total number of function evaluations to perform
+#       budget: 100
+#       # number of parallel workers for performing function evaluations
+#       num_workers: 1
+#       # maximize: true  # comment out for maximization
+#     # default parametrization of the search space
+#     parametrization:
+#       #mlp.n:
+#       #  init: 3
+#       #  lower: 2
+#       #  upper: 4
+#       #  integer: true
+#       mlp.layer_type:
+#         #- continuous
+#         - discontinuous
+#       #lr :
+#       #  init : 1e-4
+#       #  lower : 1e-5
+#       #  upper : 1e-3
+#       #  step : 2
+#       #  log : true
+#       mlp.hidden.segments:
+#         init: 8
+#         lower: 8
+#         upper: 100
+#         integer: true
+#       mlp.hidden.layers:
+#         init: 1
+#         lower: 1
+#         upper: 3
+#         integer: true
+#       mlp.hidden.width:
+#         init: 10
+#         lower: 2
+#         upper: 250
+#         integer: true
+#       mlp.output.segments:
+#         init: 8
+#         lower: 8
+#         upper: 20
+#         integer: true
