@@ -8,6 +8,8 @@ a link is active for each input so the network sparsity is determined by the num
 
 ![image](images/language-interpolation-drawing.png)
 
+I'm interested in creating larger language models from an ensemble of smaller models.  This would give better flexibility in adding or removing specific sources.
+
 # Dataset
 
 Data from project Gutenberg are used, either single or multiple books.  Training is done on the character level.  A pytorch lightning data module for project Gutenberg has been implemented for data loading.
@@ -22,7 +24,7 @@ with nevergrad (data appears in multirun)
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
 # Decent parameters
-A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Adam + learning rate scheduler. 
+A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Adam + learning rate scheduler.
 
 1 hidden layer 2 segments per link
 ```
@@ -45,14 +47,6 @@ look like a standard MLP.
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_standard mlp.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
 ```
-# With conv layers (not yet working)
-```
-python examples/language_interpolation_conv.py data.type=sequence
-```
-# Run with centered model (language cellular automaton)
-```
-python examples/language_cellular_automata.py mlp.features=11 data.type=centered
-```
 ## Apply a model using sequence model
 ```
 python examples/high_order_interpolation.py train=False checkpoint=\"outputs/2022-06-15/16-13-08/lightning_logs/version_0/checkpoints/epoch=32-step=104577.ckpt\" topk=2 num_predict=1000 prompts=["Who are you?"]
@@ -63,7 +57,19 @@ dataset, however, the data eventually evolves into something that is in the data
 prompt: Who are you? 
 result: Who are you? I the set it wall night, and the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she
 ```
-# As cellular automaton
+
+# Other Stuff
+
+## With conv layers (not yet working)
+```
+python examples/language_interpolation_conv.py data.type=sequence
+```
+## Run with centered model (language cellular automaton)
+```
+python examples/language_cellular_automata.py mlp.features=11 data.type=centered
+```
+
+## As cellular automaton
 A centered model can be repeatedly applied to the same text as a moving window and will work with arbitrary length sentences.  This
 approach is similar to stencils used in solving partial differential equations.
 ```
