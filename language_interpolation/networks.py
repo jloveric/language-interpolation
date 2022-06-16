@@ -22,21 +22,60 @@ class ASCIIPredictionNet(LightningModule):
         if cfg.mlp.normalize is True:
             normalization = torch.nn.LazyBatchNorm1d
 
-        self.model = HighOrderMLP(
-            layer_type=cfg.mlp.layer_type,
-            n=cfg.mlp.n,
-            n_in=cfg.mlp.n_in,
-            n_hidden=cfg.mlp.n_in,
-            n_out=cfg.mlp.n_out,
-            in_width=cfg.mlp.input.width,
-            in_segments=cfg.mlp.input.segments,
-            out_width=128,  # ascii has 128 characters
-            out_segments=cfg.mlp.output.segments,
-            hidden_width=cfg.mlp.hidden.width,
-            hidden_layers=cfg.mlp.hidden.layers,
-            hidden_segments=cfg.mlp.hidden.segments,
-            normalization=normalization,
-        )
+        if self.cfg.mlp.model_type == "high_order_input":
+
+            layer_list = []
+            input_layer = high_order_fc_layers(
+                layer_type=cfg.mlp.layer_type,
+                n=cfg.mlp.n,
+                in_features=cfg.mlp.input.width,
+                out_features=cfg.mlp.hidden.width,
+                segments=cfg.mlp.input.segments,
+                # rescale_output=cfg.mlp.rescale_output,
+                # scale=cfg.mlp.scale,
+                # periodicity=cfg.mlp.periodicity,
+            )
+            layer_list.append(input_layer)
+
+            if normalization is not None:
+                layer_list.append(normalization())
+            # if non_linearity is not None:
+            #    layer_list.append(non_linearity)
+
+            lower_layers = LowOrderMLP(
+                in_width=cfg.mlp.hidden.width,
+                out_width=128,  # ascii has 128 characters
+                hidden_width=cfg.mlp.hidden.width,
+                hidden_layers=cfg.mlp.hidden.layers - 1,
+                non_linearity=torch.nn.ReLU(),
+                normalization=normalization,
+            )
+            layer_list.append(lower_layers)
+
+            self.model = nn.Sequential(*layer_list)
+
+        elif self.cfg.mlp.model_type == "high_order":
+
+            self.model = HighOrderMLP(
+                layer_type=cfg.mlp.layer_type,
+                n=cfg.mlp.n,
+                n_in=cfg.mlp.n_in,
+                n_hidden=cfg.mlp.n_in,
+                n_out=cfg.mlp.n_out,
+                in_width=cfg.mlp.input.width,
+                in_segments=cfg.mlp.input.segments,
+                out_width=128,  # ascii has 128 characters
+                out_segments=cfg.mlp.output.segments,
+                hidden_width=cfg.mlp.hidden.width,
+                hidden_layers=cfg.mlp.hidden.layers,
+                hidden_segments=cfg.mlp.hidden.segments,
+                normalization=normalization,
+            )
+        else:
+            raise ValueError(
+                f"Unrecognized model_dype {self.cfg.model_type} should be high_order or high_order_input!"
+            )
+
         self.root_dir = root_dir
         self.loss = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(top_k=2)

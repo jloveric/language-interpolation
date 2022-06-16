@@ -22,7 +22,7 @@ with nevergrad (data appears in multirun)
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
 # Decent parameters
-A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short. Using Adam + Reduce learning rate on plateau. 
+A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short. Using Adam + learning rate scheduler. 
 
 1 hidden layer (8 segments per link piecewise linear)
 ```
@@ -35,6 +35,15 @@ python examples/high_order_interpolation.py data.type=sequence mlp=large_double_
 1 hidden layer (8 segments piecewise quadratic)
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=500 max_epochs=100 mlp.n=3 mlp.hidden.segments=8 optimizer.lr=1e-5
+```
+3 layers quadratic
+```
+python examples/high_order_interpolation.py data.type=sequence mlp=small mlp.hidden.width=250 max_epochs=100 mlp.n=3 mlp.hidden.layers=3 mlp.hidden.segments=8 optimizer.lr=1e-5
+```
+Standard ReLU network, however, the input layer is piecwise linear so that it can bin the characters into each pieces.  The rest of the network
+look like a standard MLP.
+```
+python examples/high_order_interpolation.py data.type=sequence mlp=large_standard mlp.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
 ```
 # With conv layers (not yet working)
 ```

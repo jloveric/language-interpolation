@@ -10,6 +10,7 @@ features: 16
 # Polynomial interpolation points.  Polynomial order
 # is (n-1).  In the case of Fourier series, n is the
 # number of Fourier components.
+model_type: high_order
 n: 2
 n_in: 2
 n_out: null

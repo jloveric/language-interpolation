@@ -1,14 +1,11 @@
-# Best results from a large a
-# huge series of runs.
-layer_type: "discontinuous"
+# Network sufficient to memorize data
+layer_type: "continuous"
 normalize: true
 
 # Number of characters as input
 features: 16
 
-# Polynomial interpolation points.  Polynomial order
-# is (n-1).  In the case of Fourier series, n is the
-# number of Fourier components.
+model_type: high_order
 n: 2
 n_in: 2
 n_out: null
@@ -19,10 +16,9 @@ input:
   segments: 128
   width: ${mlp.features}
 output:
-  segments: 8
+  segments: 2
   width: 128
 hidden:
-  segments: 84
+  segments: 2
   layers: 1
-  # 250 was the maximum width in the experiments
   width: 250

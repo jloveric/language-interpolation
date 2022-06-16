@@ -1,4 +1,7 @@
-layer_type: "continuous"
+# Large network where only the input uses a segmented
+# layer.
+model_type: high_order_input
+layer_type: discontinuous
 normalize: true
 
 # Number of characters as input
@@ -7,22 +10,15 @@ features: 16
 # Polynomial interpolation points.  Polynomial order
 # is (n-1).  In the case of Fourier series, n is the
 # number of Fourier components.
-model_type: high_order
 n: 2
 n_in: 2
-n_out: null
-n_hidden: null
 periodicity: 2.0
 rescale_output: False
 input:
   segments: 128
   width: ${mlp.features}
 output:
-  segments: 2
   width: 128
 hidden:
-  # Number of segments in the 2 layer is substantially
-  # lower than in the single layer network.
-  segments: 2
-  layers: 2
+  layers: 1
   width: 250

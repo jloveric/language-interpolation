@@ -1,18 +1,13 @@
-from typing import List
-
 from language_interpolation.networks import ASCIIPredictionNet
 import os
 from omegaconf import DictConfig, OmegaConf
 import hydra
 from high_order_layers_torch.layers import *
-from pytorch_lightning import LightningModule, Trainer
-import torch.optim as optim
-import torch
+from pytorch_lightning import Trainer
 from high_order_layers_torch.networks import *
 from language_interpolation.single_text_dataset import dataset_registry
 from language_interpolation.utils import generate_text
 from language_interpolation.lightning_datamodule import GutenbergDataModule
-from torchmetrics import Accuracy
 from pytorch_lightning.callbacks import EarlyStopping
 from language_interpolation.utils import (
     generate_text,

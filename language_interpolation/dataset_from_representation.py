@@ -86,7 +86,7 @@ def dataset_from_sequential_embedding(
         features = []
         targets = []
         for j in range(len(sequence) - skip):
-            features.append(sequence[j : (j + window_size), :])
+            features.append(sequence[j : (j + window_size * skip) : skip, :])
             targets.append(sequence[j + skip, :].reshape(1, -1))
 
         features_list.append(torch.cat(features))
