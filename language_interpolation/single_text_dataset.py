@@ -6,6 +6,7 @@ from torch import Tensor
 import logging
 from multiprocessing import Pool
 from functools import partial
+import itertools
 
 logger = logging.getLogger(__name__)
 
@@ -247,6 +248,98 @@ def dataset_from_gutenberg(
     )
 
 
+def dataset_sequential(
+    filenames: List[str] = None,
+    gutenberg_ids: List[int] = None,
+    text: str = None,
+    features: int = 10,
+    targets: int = 1,
+    max_size: int = -1,
+    dataset_generator: Callable[[str, int, int], Tuple[Any, Any]] = generate_dataset,
+    num_workers: int = 0,
+) -> Tuple[List[Tensor], List[Tensor]]:
+    """
+    Load the datasets from different sources, but keep the different sources
+    as lists so that they can be considered specific sequences.  This is needed
+    when deriving new datasets from embeddings, which are meant to remain in sequence.
+
+    Args :
+        filenames : List of filenames to load data from
+        features : Number of input features (characters)
+        targets : Number of output features (characters)
+        max_size : Set the maximum number of characters to read from file.  Defaults
+        to -1 which is to read everything.
+        dataset_generator: A function that converts text into a tuple of features, targets
+        num_workers: Number of parallel workers when more than one book is being
+        processed.
+
+    """
+    if filenames is None and text is None and gutenberg_ids is None:
+        raise ValueError(f"Must define either filenames, text or gutenberg ids.")
+    if (filenames is not None) and (text is not None):
+        raise ValueError(f"Either filenames, text, or gutenberg_ids must be defined.")
+
+    list_features = []
+    list_targets = []
+
+    if filenames is not None:
+        feature_list, target_list = dataset_from_file(
+            filenames[0],
+            features=features,
+            targets=targets,
+            max_size=max_size,
+            dataset_generator=dataset_generator,
+        )
+
+        list_features.append(feature_list)
+        list_targets.append(target_list)
+
+    if text is not None:
+        feature_list, target_list = dataset_generator(
+            text_in=text, features=features, targets=targets
+        )
+
+        list_features.append(feature_list)
+        list_targets.append(target_list)
+
+    if gutenberg_ids is not None:
+
+        if num_workers > 0:  # Run in parallel
+
+            pdataset = partial(
+                dataset_from_gutenberg,
+                features=features,
+                targets=targets,
+                max_size=max_size,
+                dataset_generator=dataset_generator,
+            )
+            with Pool(num_workers) as p:
+                results = p.map(
+                    pdataset,
+                    gutenberg_ids,
+                )
+
+            for feature_res, target_res in results:
+                list_features.append(feature_res)
+                list_targets.append(target_res)
+
+        else:  # Run in serial
+            for index in gutenberg_ids:
+
+                feature_list, target_list = dataset_from_gutenberg(
+                    index,
+                    features=features,
+                    targets=targets,
+                    max_size=max_size,
+                    dataset_generator=dataset_generator,
+                )
+
+                list_features.append(feature_list)
+                list_targets.append(target_list)
+
+    return list_features, list_targets
+
+
 class SingleTextDataset(Dataset):
     def __init__(
         self,
@@ -272,70 +365,20 @@ class SingleTextDataset(Dataset):
             num_workers: Number of parallel workers when more than one book is being
             processed.
         """
-        if filenames is None and text is None and gutenberg_ids is None:
-            raise ValueError(f"Must define either filenames, text or gutenberg ids.")
-        if (filenames is not None) and (text is not None):
-            raise ValueError(
-                f"Either filenames, text, or gutenberg_ids must be defined."
-            )
 
-        list_features = []
-        list_targets = []
+        list_features, list_targets = dataset_sequential(
+            filenames=filenames,
+            gutenberg_ids=gutenberg_ids,
+            text=text,
+            features=features,
+            targets=targets,
+            max_size=max_size,
+            dataset_generator=dataset_generator,
+            num_workers=num_workers,
+        )
 
-        if filenames is not None:
-            feature_list, target_list = dataset_from_file(
-                filenames[0],
-                features=features,
-                targets=targets,
-                max_size=max_size,
-                dataset_generator=dataset_generator,
-            )
-
-            list_features.extend(feature_list)
-            list_targets.extend(target_list)
-
-        if text is not None:
-            feature_list, target_list = dataset_generator(
-                text_in=text, features=features, targets=targets
-            )
-
-            list_features.extend(feature_list)
-            list_targets.extend(target_list)
-
-        if gutenberg_ids is not None:
-
-            if num_workers > 0:  # Run in parallel
-
-                pdataset = partial(
-                    dataset_from_gutenberg,
-                    features=features,
-                    targets=targets,
-                    max_size=max_size,
-                    dataset_generator=dataset_generator,
-                )
-                with Pool(num_workers) as p:
-                    results = p.map(
-                        pdataset,
-                        gutenberg_ids,
-                    )
-
-                for feature_res, target_res in results:
-                    list_features.extend(feature_res)
-                    list_targets.extend(target_res)
-
-            else:  # Run in serial
-                for index in gutenberg_ids:
-
-                    feature_list, target_list = dataset_from_gutenberg(
-                        index,
-                        features=features,
-                        targets=targets,
-                        max_size=max_size,
-                        dataset_generator=dataset_generator,
-                    )
-
-                    list_features.extend(feature_list)
-                    list_targets.extend(target_list)
+        list_features = list(itertools.chain(*list_features))
+        list_targets = list(itertools.chain(*list_targets))
 
         self.inputs = torch.stack(list_features)
         self.output = torch.stack(list_targets)
@@ -345,7 +388,7 @@ class SingleTextDataset(Dataset):
     def __len__(self):
         return len(self.output)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> Tensor:
         if torch.is_tensor(idx):
             idx = idx.tolist()
 

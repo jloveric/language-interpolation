@@ -1,9 +1,11 @@
 from torch.nn import Module
 from torch import Tensor
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 from torch_intermediate_layer_getter import IntermediateLayerGetter as MidGetter
 import torch
+from torch.utils.data import Dataset
+
 
 logger = logging.getLogger(__name__)
 
@@ -93,3 +95,19 @@ def dataset_from_sequential_embedding(
         targets_list.append(torch.cat(targets))
 
     return features_list, targets_list
+
+
+class DatasetFromRepresentation(Dataset):
+    def __init__(self, features: List[Tensor], targets: List[Tensor]):
+
+        self.features = torch.cat(features)
+        self.targets = torch.cat(targets)
+
+    def __len__(self):
+        return len(self.features)
+
+    def __getitem__(self, idx) -> Tensor:
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        return self.features[idx], self.targets[idx]
