@@ -32,11 +32,11 @@ python examples/high_order_interpolation.py data.type=sequence mlp=large_single_
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_double_layer max_epochs=100 mlp.hidden.width=250 optimizer.lr=1e-5
 ``` 
-1 hidden layer 2
+1 hidden layer 2 segments per link
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=250 max_epochs=100 mlp.n=3 optimizer.lr=1e-4
 ```
-3 layers quadratic
+3 layers quadratic 2 segments per link
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=small mlp.hidden.width=250 max_epochs=100 mlp.n=3 mlp.hidden.layers=3 optimizer.lr=1e-5
 ```
