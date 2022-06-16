@@ -18,6 +18,7 @@ def test_dataset_from_model():
             "batch_size": 256,
             "segments": 2,
             "mlp": {
+                "model_type": "high_order",
                 "layer_type": "discontinuous",
                 "normalize": True,
                 "features": 16,
