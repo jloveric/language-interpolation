@@ -31,16 +31,11 @@ class ASCIIPredictionNet(LightningModule):
                 in_features=cfg.mlp.input.width,
                 out_features=cfg.mlp.hidden.width,
                 segments=cfg.mlp.input.segments,
-                # rescale_output=cfg.mlp.rescale_output,
-                # scale=cfg.mlp.scale,
-                # periodicity=cfg.mlp.periodicity,
             )
             layer_list.append(input_layer)
 
             if normalization is not None:
                 layer_list.append(normalization())
-            # if non_linearity is not None:
-            #    layer_list.append(non_linearity)
 
             lower_layers = LowOrderMLP(
                 in_width=cfg.mlp.hidden.width,

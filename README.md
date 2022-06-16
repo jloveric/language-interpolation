@@ -24,21 +24,21 @@ python examples/high_order_interpolation.py -m data.type=sequence
 # Decent parameters
 A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short. Using Adam + learning rate scheduler. 
 
-1 hidden layer (8 segments per link piecewise linear)
+1 hidden layer 2 segments per link
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=500 max_epochs=100 optimizer.lr=1e-4
+python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=250 max_epochs=100 optimizer.lr=1e-4
 ```
-2 hidden layers (15 segments per link piecewise linear)
+2 hidden layers 2 segments per link
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_double_layer max_epochs=100 mlp.hidden.width=250 optimizer.lr=1e-5
 ``` 
-1 hidden layer (8 segments piecewise quadratic)
+1 hidden layer 2
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=500 max_epochs=100 mlp.n=3 mlp.hidden.segments=8 optimizer.lr=1e-5
+python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=250 max_epochs=100 mlp.n=3 optimizer.lr=1e-4
 ```
 3 layers quadratic
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=small mlp.hidden.width=250 max_epochs=100 mlp.n=3 mlp.hidden.layers=3 mlp.hidden.segments=8 optimizer.lr=1e-5
+python examples/high_order_interpolation.py data.type=sequence mlp=small mlp.hidden.width=250 max_epochs=100 mlp.n=3 mlp.hidden.layers=3 optimizer.lr=1e-5
 ```
 Standard ReLU network, however, the input layer is piecwise linear so that it can bin the characters into each pieces.  The rest of the network
 look like a standard MLP.
