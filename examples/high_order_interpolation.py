@@ -8,7 +8,7 @@ from high_order_layers_torch.networks import *
 from language_interpolation.single_text_dataset import dataset_registry
 from language_interpolation.utils import generate_text
 from language_interpolation.lightning_datamodule import GutenbergDataModule
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor
 from language_interpolation.utils import (
     generate_text,
     TextGenerationSampler,
@@ -57,9 +57,10 @@ def run_language_interpolation(cfg: DictConfig):
                 dataset_generator=dataset_generator,
             )
 
+            lr_monitor = LearningRateMonitor(logging_interval="epoch")
             early_stopping = EarlyStopping(monitor="train_loss", patience=20)
             trainer = Trainer(
-                callbacks=[early_stopping, TextGenerationSampler(cfg)],
+                callbacks=[early_stopping, TextGenerationSampler(cfg), lr_monitor],
                 max_epochs=cfg.max_epochs,
                 gpus=cfg.gpus,
                 gradient_clip_val=cfg.gradient_clip,

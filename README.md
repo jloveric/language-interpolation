@@ -40,7 +40,7 @@ python examples/high_order_interpolation.py data.type=sequence mlp=large_single_
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=small mlp.hidden.width=250 max_epochs=100 mlp.n=3 mlp.hidden.layers=3 optimizer.lr=1e-5
 ```
-Standard ReLU network, however, the input layer is piecwise linear so that it can bin the characters into each pieces.  The rest of the network
+Standard ReLU network, however, the input layer is piecewise linear so that it can bin the characters into each segment.  The rest of the network
 look like a standard MLP.
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_standard mlp.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
