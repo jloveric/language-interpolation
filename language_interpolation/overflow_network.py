@@ -7,7 +7,7 @@ from language_interpolation.dataset_from_representation import (
     dataset_from_sequential_embedding,
     DatasetFromRepresentation,
 )
-from lightning_datamodule import GutenbergDataModule
+from language_interpolation.lightning_datamodule import GutenbergDataModule
 import logging
 import torch.nn
 
