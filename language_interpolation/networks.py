@@ -73,7 +73,7 @@ class ASCIIPredictionNet(LightningModule):
 
         self.root_dir = root_dir
         self.loss = torch.nn.CrossEntropyLoss()
-        self.accuracy = Accuracy(top_k=2)
+        self.accuracy = Accuracy(top_k=1)
 
     def forward(self, x):
         return self.model(x)

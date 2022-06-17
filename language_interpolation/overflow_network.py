@@ -19,12 +19,12 @@ class OverFlowNetwork:
         self,
         network_list: List[nn.Module],
         embedding_layer: List[str],
-        base_features_train: List[List[Tensor]],
-        base_targets_train: List[List[Tensor]],
-        base_features_val: List[List[Tensor]],
-        base_targets_val: List[List[Tensor]],
-        base_features_test: List[List[Tensor]],
-        base_targets_test: List[List[Tensor]],
+        base_features_train: List[Tensor],
+        base_targets_train: List[Tensor],
+        base_features_val: List[Tensor],
+        base_targets_val: List[Tensor],
+        base_features_test: List[Tensor],
+        base_targets_test: List[Tensor],
         window_size: int = 10,
         skip: int = 10,
     ):
@@ -39,24 +39,37 @@ class OverFlowNetwork:
         self._base_features_test = base_features_test
         self._base_targets_test = base_targets_test
 
-    def compute_dataset_from_network(self, index):
+    def compute_dataset_from_network(self, index) -> List[List[Tensor]]:
         """
         Args :
-            The arguments
+            index : Index of the network
         Returns :
-            The dataset
+            List of datasets [
+                feature_train,
+                target_train,
+                feature_val,
+                targets_val,
+                features_test,
+                targets_test
+            ]
         """
-        data = self.get_dataset(index)
-        embeddings: List[Tensor] = embedding_from_model(
-            self._network_list[index],
-            model_input=data,
-            layer_name=self._embedding_layer[index],
-        )
-        features, targets = dataset_from_sequential_embedding(
-            embeddings, self._window_size, self._skip
-        )
-        dataset = DatasetFromRepresentation(features=features, targets=targets)
-        return dataset
+
+        data_list = []
+        all_data = self.get_dataset(index)
+        for data in all_data:
+
+            embeddings: List[Tensor] = embedding_from_model(
+                self._network_list[index],
+                model_input=data,
+                layer_name=self._embedding_layer[index],
+            )
+            features, targets = dataset_from_sequential_embedding(
+                embeddings, self._window_size, self._skip
+            )
+            dataset = DatasetFromRepresentation(features=features, targets=targets)
+            data_list.append(dataset)
+
+        return data_list
 
     def get_dataset(self, index: int):
         """
@@ -75,5 +88,18 @@ class OverFlowNetwork:
         else:
             pass
 
-    def train_network(self, index: int):
-        pass
+    def train(self, train_function: List):
+
+        data_list = [
+            self._base_features_train,
+            self._base_targets_train,
+            self._base_features_val,
+            self._base_targets_val,
+            self._base_features_test,
+            self._base_targets_test,
+        ]
+
+        for index in range(len(train_function)):
+
+            train_function[index](data_list)
+            data_list = self.compute_dataset_from_network(index)
