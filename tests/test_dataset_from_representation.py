@@ -59,22 +59,21 @@ def test_dataset_from_model():
         for module in model.model.modules()
         if not isinstance(module, torch.nn.Sequential)
     ]
-    print("modules", modules)
 
     embedding = embedding_from_model(model, [features], layer_name="model.model.5")
 
-    assert embedding.shape[0] == 82
-    assert embedding.shape[1] == 10
+    assert embedding[0].shape[0] == 82
+    assert embedding[0].shape[1] == 10
 
     em_features, em_targets = dataset_from_sequential_embedding(
-        [embedding], window_size=1, skip=1
+        embedding, window_size=1, skip=1
     )
     assert em_features[0].shape[0] == em_targets[0].shape[0]
     assert em_features[0].shape[1] == 10
     assert em_targets[0].shape[1] == 10
 
     em_features, em_targets = dataset_from_sequential_embedding(
-        [embedding], window_size=1, skip=10
+        embedding, window_size=1, skip=10
     )
     assert em_features[0].shape[0] == em_targets[0].shape[0]
     assert em_features[0].shape[0] == 72

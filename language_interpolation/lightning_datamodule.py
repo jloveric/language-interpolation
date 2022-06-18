@@ -183,13 +183,13 @@ class DataModuleFromSequentialDatasets(pl.LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
 
-        logger.info(f"Training dataset has {len(self.train_dataset)} samples.")
-        logger.info(f"Validation dataset has {len(self.val_dataset)} samples.")
-        logger.info(f"Test dataset has {len(self.test_dataset)} samples.")
-
-        self._test_dataset = DatasetFromRepresentation(self._train[0], self._train[1])
-        self._train_dataset = DatasetFromRepresentation(self._test[0], self._test[1])
+        self._train_dataset = DatasetFromRepresentation(self._train[0], self._train[1])
+        self._test_dataset = DatasetFromRepresentation(self._test[0], self._test[1])
         self._val_dataset = DatasetFromRepresentation(self._val[0], self._val[1])
+
+        logger.info(f"Training dataset has {len(self._train_dataset)} samples.")
+        logger.info(f"Validation dataset has {len(self._val_dataset)} samples.")
+        logger.info(f"Test dataset has {len(self._test_dataset)} samples.")
 
     @property
     def train_dataset(self) -> Dataset:

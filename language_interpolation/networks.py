@@ -152,25 +152,23 @@ def select_network(cfg: DictConfig):
 
 
 class ASCIIPredictionNet(ClassificationMixin, PredictionNetMixin, LightningModule):
-    def __init__(self, cfg: DictConfig, root_dir: str = None):
+    def __init__(self, cfg: DictConfig):
         super().__init__()
         self.save_hyperparameters(cfg)
         self.cfg = cfg
 
         self.model = select_network(cfg)
 
-        self.root_dir = root_dir
         self.loss = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(top_k=1)
 
 
 class RegressionNet(RegressionMixin, PredictionNetMixin, LightningModule):
-    def __init__(self, cfg: DictConfig, root_dir: str = None):
+    def __init__(self, cfg: DictConfig):
         super().__init__()
         self.save_hyperparameters(cfg)
         self.cfg = cfg
 
         self.model = select_network(cfg)
 
-        self.root_dir = root_dir
         self.loss = F.mse_loss

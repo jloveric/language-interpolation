@@ -65,9 +65,8 @@ def run_language_interpolation(cfg: DictConfig):
                 gpus=cfg.gpus,
                 gradient_clip_val=cfg.gradient_clip,
             )
-            root_dir = f"{hydra.utils.get_original_cwd()}"
 
-            model = ASCIIPredictionNet(cfg, root_dir=root_dir)
+            model = ASCIIPredictionNet(cfg)
             trainer.fit(model, datamodule=datamodule)
             logger.info("testing")
 

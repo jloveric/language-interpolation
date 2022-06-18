@@ -43,21 +43,22 @@ def embedding_from_model(
             sequence[k * batch_size : (k + 1) * batch_size, :] for k in range(batches)
         ]
 
+        these_samples = []
         for features in batch_list:
 
             model.eval()
             return_layers = {
                 layer_name: "embedding",
             }
-
             mid_getter = MidGetter(model, return_layers=return_layers, keep_output=True)
             mid_outputs, model_output = mid_getter(features)
 
-            out.append(mid_outputs["embedding"])
+            these_samples.append(mid_outputs["embedding"])
+        out.append(torch.cat(these_samples))
 
-    result = torch.cat(out)
-    logger.info(f"Embeddings of size {result.shape}")
-    return result
+    # result = torch.cat(out)
+    # logger.info(f"Embeddings of size {result.shape}")
+    return out
 
 
 def dataset_from_sequential_embedding(
@@ -81,18 +82,26 @@ def dataset_from_sequential_embedding(
 
     if window_size > skip:
         raise ValueError(f"window_size {window_size} must be greater than {skip}.")
+    if isinstance(feature_sequence, list) is False:
+        raise ValueError(f"Feature sequence must be a list (not a tensor or other)")
 
     features_list = []
     targets_list = []
+
     for sequence in feature_sequence:
         features = []
         targets = []
-        for j in range(len(sequence) - skip):
+        for j in range(len(sequence) - window_size * skip):
             features.append(sequence[j : (j + window_size * skip) : skip, :])
-            targets.append(sequence[j + skip, :].reshape(1, -1))
+            targets.append(sequence[j + window_size * skip, :].reshape(1, -1))
 
-        features_list.append(torch.cat(features))
-        targets_list.append(torch.cat(targets))
+        if len(features) == 0:
+            raise ValueError(
+                f"Sequence length is too short to produce data. Length is {len(sequence)} and size is {window_size*skip}"
+            )
+        else:
+            features_list.append(torch.cat(features))
+            targets_list.append(torch.cat(targets))
 
     return features_list, targets_list
 
