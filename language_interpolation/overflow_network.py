@@ -47,6 +47,7 @@ class OverFlowNetwork:
         Returns :
             The dataset in a list of SequentialSamples for train, test, val
         """
+
         datasets = []
         all_data = self.get_data_sequence(index)
         for i in range(len(all_data)):
@@ -76,8 +77,6 @@ class OverFlowNetwork:
     def train(self, train_function: List):
 
         for index in range(len(train_function)):
-            # self.compute_dataset_from_network(index)
-            # data_list = self.get_data_sequence(index)
 
             logger.info(f"Training function {index}")
             train_function[index]()

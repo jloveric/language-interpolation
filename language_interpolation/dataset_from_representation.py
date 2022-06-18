@@ -92,8 +92,11 @@ def dataset_from_sequential_embedding(
         features = []
         targets = []
         for j in range(len(sequence) - window_size * skip):
-            features.append(sequence[j : (j + window_size * skip) : skip, :])
-            targets.append(sequence[j + window_size * skip, :].reshape(1, -1))
+
+            features.append(
+                sequence[j : (j + window_size * skip) : skip, :].reshape(1, -1).detach()
+            )
+            targets.append(sequence[j + window_size * skip, :].reshape(1, -1).detach())
 
         if len(features) == 0:
             raise ValueError(

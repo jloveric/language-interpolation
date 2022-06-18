@@ -9,7 +9,7 @@ from omegaconf import DictConfig
 from pytorch_lightning import Trainer
 
 
-def test_dataset_from_gutenberg():
+def test_overflow_network():
     num_features = 10
     num_targets = 1
 
@@ -107,10 +107,12 @@ def test_dataset_from_gutenberg():
         }
     )
 
-    model = ASCIIPredictionNet(cfg)
+    model1 = ASCIIPredictionNet(cfg)
+    model2 = RegressionNet(parent_cfg)
+    model3 = RegressionNet(parent_cfg)
 
-    network_list = [model]
-    embedding_layer_list = ["model.model.5"]
+    network_list = [model1, model2, model3]
+    embedding_layer_list = ["model.model.5", "model.model.5", "model.model.5"]
 
     overflow = OverFlowNetwork(
         network_list=network_list,
@@ -129,7 +131,7 @@ def test_dataset_from_gutenberg():
         )
 
         base = overflow.get_data_sequence(0)
-        model = ASCIIPredictionNet(cfg)
+        model = network_list[0]
         trainer.fit(
             model,
             datamodule=DataModuleFromSequentialDatasets(
@@ -150,8 +152,8 @@ def test_dataset_from_gutenberg():
             )
 
             base = overflow.get_data_sequence(index)
-
-            model = RegressionNet(parent_cfg)
+            print("base[0].shape", base[0].features[0].shape, base[0].targets[0].shape)
+            model = network_list[index]
             trainer.fit(
                 model,
                 datamodule=DataModuleFromSequentialDatasets(
@@ -167,4 +169,4 @@ def test_dataset_from_gutenberg():
         return compute
 
     train_function_list = [train_base, train_other(1), train_other(2)]
-    # overflow.train(train_function=train_function_list)
+    overflow.train(train_function=train_function_list)

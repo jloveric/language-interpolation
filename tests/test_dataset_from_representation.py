@@ -77,3 +77,9 @@ def test_dataset_from_model():
     )
     assert em_features[0].shape[0] == em_targets[0].shape[0]
     assert em_features[0].shape[0] == 72
+
+    em_features, em_targets = dataset_from_sequential_embedding(
+        embedding, window_size=2, skip=2
+    )
+    assert em_features[0].shape[0] == em_targets[0].shape[0]
+    assert em_features[0].shape[0] == 78
