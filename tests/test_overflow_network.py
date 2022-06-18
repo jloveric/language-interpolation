@@ -93,5 +93,8 @@ def test_dataset_from_gutenberg():
             ),
         )
 
+    def train_other():
+        pass
+
     train_function_list = []
     overflow.train(train_function=train_function_list)

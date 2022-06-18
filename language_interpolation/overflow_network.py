@@ -50,13 +50,13 @@ class OverFlowNetwork:
 
         datasets = []
         all_data = self.get_data_sequence(index)
-        for i in range(0, len(all_data), 2):
+        for i in range(len(all_data)):
 
             data = all_data[i]
 
             embeddings: List[Tensor] = embedding_from_model(
                 self._network_list[index],
-                model_input=data,
+                model_input=data.feature,
                 layer_name=self._embedding_layer[index],
             )
             features, targets = dataset_from_sequential_embedding(
