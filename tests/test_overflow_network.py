@@ -2,9 +2,11 @@ import pytest
 from language_interpolation.single_text_dataset import (
     dataset_sequential,
 )
-from language_interpolation.overflow_network import OverFlowNetwork
+from language_interpolation.overflow_network import OverFlowNetwork, SequentialSamples
 from language_interpolation.networks import ASCIIPredictionNet
+from language_interpolation.lightning_datamodule import DataModuleFromSequentialDatasets
 from omegaconf import DictConfig
+from pytorch_lightning import Trainer
 
 
 def test_dataset_from_gutenberg():
@@ -57,21 +59,39 @@ def test_dataset_from_gutenberg():
 
     model = ASCIIPredictionNet(cfg)
 
-    network_list = []
-    embedding_layer_list = []
+    network_list = [model]
+    embedding_layer_list = ["model.model.5"]
 
     overflow = OverFlowNetwork(
         network_list=network_list,
         embedding_layer=embedding_layer_list,
-        base_features_train=features,
-        base_features_val=features,
-        base_features_test=features,
-        base_targets_train=features,
-        base_targets_test=targets,
-        base_targets_val=targets,
+        train=SequentialSamples(feature=features, target=targets),
+        test=SequentialSamples(feature=features, target=targets),
+        val=SequentialSamples(feature=features, target=targets),
         window_size=10,
         skip=10,
     )
+
+    def train_base():
+        trainer = Trainer(
+            max_epochs=cfg.max_epochs,
+            gpus=0,
+        )
+
+        base = overflow.get_data_sequence(0)
+        model = ASCIIPredictionNet(cfg, root_dir="/tmp")
+        trainer.fit(
+            model,
+            datamodule=DataModuleFromSequentialDatasets(
+                train_features=base[0].features,
+                train_targets=base[0].targets,
+                test_features=base[1].features,
+                test_targets=base[1].targets,
+                val_features=base[2].features,
+                val_targets=base[2].targets,
+                max_size=100,
+            ),
+        )
 
     train_function_list = []
     overflow.train(train_function=train_function_list)

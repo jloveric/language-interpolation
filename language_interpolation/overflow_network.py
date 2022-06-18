@@ -7,11 +7,17 @@ from language_interpolation.dataset_from_representation import (
     dataset_from_sequential_embedding,
     DatasetFromRepresentation,
 )
-from language_interpolation.lightning_datamodule import GutenbergDataModule
+from language_interpolation.lightning_datamodule import DataModuleFromSequentialDatasets
 import logging
 import torch.nn
+from typing import NamedTuple
 
 logger = logging.getLogger(__name__)
+
+
+class SequentialSamples(NamedTuple):
+    feature: List[Tensor]
+    target: List[Tensor]
 
 
 class OverFlowNetwork:
@@ -19,12 +25,9 @@ class OverFlowNetwork:
         self,
         network_list: List[nn.Module],
         embedding_layer: List[str],
-        base_features_train: List[Tensor],
-        base_targets_train: List[Tensor],
-        base_features_val: List[Tensor],
-        base_targets_val: List[Tensor],
-        base_features_test: List[Tensor],
-        base_targets_test: List[Tensor],
+        train: SequentialSamples,
+        test: SequentialSamples,
+        val: SequentialSamples,
         window_size: int = 10,
         skip: int = 10,
     ):
@@ -32,31 +35,24 @@ class OverFlowNetwork:
         self._embedding_layer = embedding_layer
         self._window_size = window_size
         self._skip = skip
-        self._base_features_train = base_features_train
-        self._base_targets_train = base_targets_train
-        self._base_features_val = base_features_val
-        self._base_targets_val = base_targets_val
-        self._base_features_test = base_features_test
-        self._base_targets_test = base_targets_test
 
-    def compute_dataset_from_network(self, index) -> List[List[Tensor]]:
+        self._data_sequence = {0: [train, test, val]}
+
+    def compute_dataset_from_network(self, index) -> List[SequentialSamples]:
         """
+        Compute the dataset at index+1 from the dataset at index and
+        store in data_sequence[index+1]
         Args :
-            index : Index of the network
+            index : Index of the network and dataset to use
         Returns :
-            List of datasets [
-                feature_train,
-                target_train,
-                feature_val,
-                targets_val,
-                features_test,
-                targets_test
-            ]
+            The dataset in a list of SequentialSamples for train, test, val
         """
 
-        data_list = []
-        all_data = self.get_dataset(index)
-        for data in all_data:
+        datasets = []
+        all_data = self.get_data_sequence(index)
+        for i in range(0, len(all_data), 2):
+
+            data = all_data[i]
 
             embeddings: List[Tensor] = embedding_from_model(
                 self._network_list[index],
@@ -66,40 +62,23 @@ class OverFlowNetwork:
             features, targets = dataset_from_sequential_embedding(
                 embeddings, self._window_size, self._skip
             )
-            dataset = DatasetFromRepresentation(features=features, targets=targets)
-            data_list.append(dataset)
 
-        return data_list
+            # To use in computing next datasets
+            datasets.append(SequentialSamples(features=features, targets=targets))
 
-    def get_dataset(self, index: int):
-        """
-        Get the dataset to feed into the later
-        """
+        self._data_sequence[index + 1] = datasets
+        return datasets
 
-        if index == 0:
-            return (
-                self._base_features_train,
-                self._base_targets_train,
-                self._base_features_val,
-                self._base_targets_val,
-                self._base_features_test,
-                self._base_targets_test,
-            )
-        else:
-            pass
+    def get_data_sequence(self, index: int):
+        if index not in self._data_sequence:
+            raise ValueError(f"No data sequence computed for index {index} yet.")
+
+        return self._data_sequence[index]
 
     def train(self, train_function: List):
 
-        data_list = [
-            self._base_features_train,
-            self._base_targets_train,
-            self._base_features_val,
-            self._base_targets_val,
-            self._base_features_test,
-            self._base_targets_test,
-        ]
-
         for index in range(len(train_function)):
-
+            self.compute_dataset_from_network(index)
+            data_list = self.get_data_sequence(index)
             train_function[index](data_list)
             data_list = self.compute_dataset_from_network(index)

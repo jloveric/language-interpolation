@@ -10,6 +10,7 @@ from language_interpolation.single_text_dataset import (
     unify_ids,
     create_full_paths,
 )
+from language_interpolation.dataset_from_representation import DatasetFromRepresentation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -105,6 +106,90 @@ class GutenbergDataModule(pl.LightningDataModule):
         logger.info(f"Training dataset has {len(self.train_dataset)} samples.")
         logger.info(f"Validation dataset has {len(self.val_dataset)} samples.")
         logger.info(f"Test dataset has {len(self.test_dataset)} samples.")
+
+    @property
+    def train_dataset(self) -> Dataset:
+        return self._train_dataset
+
+    @property
+    def test_dataset(self) -> Dataset:
+        return self._test_dataset
+
+    @property
+    def val_dataset(self) -> Dataset:
+        return self._val_dataset
+
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self._train_dataset,
+            batch_size=self._batch_size,
+            shuffle=self._shuffle,
+            pin_memory=self._pin_memory,
+            num_workers=self._num_workers,
+            drop_last=True,  # Needed for batchnorm
+        )
+
+    def val_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self._val_dataset,
+            batch_size=self._batch_size,
+            shuffle=False,
+            pin_memory=self._pin_memory,
+            num_workers=self._num_workers,
+            drop_last=True,
+        )
+
+    def test_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self._test_dataset,
+            batch_size=self._batch_size,
+            shuffle=False,
+            pin_memory=self._pin_memory,
+            num_workers=self._num_workers,
+            drop_last=True,
+        )
+
+
+class DataModuleFromSequentialDatasets(pl.LightningDataModule):
+    def __init__(
+        self,
+        train_features: List[Tensor],
+        train_targets: List[Tensor],
+        test_features: List[Tensor] = None,
+        test_targets: List[Tensor] = None,
+        val_features: List[Tensor] = None,
+        val_targets: List[Tensor] = None,
+        batch_size: int = 32,
+        num_workers: int = 10,
+        shuffle: bool = True,
+        pin_memory: bool = True,
+        pre_process_workers: int = 10,
+        max_size: int = -1,
+    ):
+        """
+        Data module for project gutenberg
+        """
+        super().__init__()
+        self._batch_size = batch_size
+        self._num_workers = num_workers
+        self._shuffle = shuffle
+        self._pin_memory = pin_memory
+        self._pre_process_workers = pre_process_workers
+        self._max_size = max_size
+
+        self._train = [train_features, train_targets]
+        self._test = [test_features, test_targets]
+        self._val = [val_features, val_targets]
+
+    def setup(self, stage: Optional[str] = None):
+
+        logger.info(f"Training dataset has {len(self.train_dataset)} samples.")
+        logger.info(f"Validation dataset has {len(self.val_dataset)} samples.")
+        logger.info(f"Test dataset has {len(self.test_dataset)} samples.")
+
+        self._test_dataset = DatasetFromRepresentation(self._train[0], self._train[1])
+        self._train_dataset = DatasetFromRepresentation(self._test[0], self._test[1])
+        self._val_dataset = DatasetFromRepresentation(self._val[0], self._val[1])
 
     @property
     def train_dataset(self) -> Dataset:
