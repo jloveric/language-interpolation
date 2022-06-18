@@ -47,6 +47,12 @@ look like a standard MLP.
 ```
 python examples/high_order_interpolation.py data.type=sequence mlp=large_standard mlp.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
 ```
+can you memorize with just input and output layers with no hidden layers?  In this example we get to about 95% accuracy.  Discontinuous works
+better than continuous as it has double the parameters for piecewise linear.  Increase the order of accuracy does nothing since the inputs are
+discrete and not continuous - in this case we should have a piecewise constant option, but then the gradients would be 0.
+```
+python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.layers=0 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 mlp.layer_type=discontinuous
+```
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
 
