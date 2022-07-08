@@ -6,6 +6,7 @@ import torch_optimizer as alt_optim
 import torch
 from high_order_layers_torch.networks import *
 from torchmetrics import Accuracy
+from torch import Tensor
 
 import logging
 
@@ -100,7 +101,10 @@ def select_network(cfg: DictConfig):
         normalization = torch.nn.LazyBatchNorm1d
 
     if cfg.mlp.model_type == "high_order_input":
-
+        """
+        Only the input layer is high order, the rest
+        of the layers are standard linear+relu and normalization.
+        """
         layer_list = []
         input_layer = high_order_fc_layers(
             layer_type=cfg.mlp.layer_type,
@@ -127,7 +131,9 @@ def select_network(cfg: DictConfig):
         model = nn.Sequential(*layer_list)
 
     elif cfg.mlp.model_type == "high_order":
-
+        """
+        Uniform high order model. All layers are high order.
+        """
         model = HighOrderMLP(
             layer_type=cfg.mlp.layer_type,
             n=cfg.mlp.n,
