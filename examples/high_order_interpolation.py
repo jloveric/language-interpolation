@@ -15,6 +15,7 @@ from language_interpolation.utils import (
     create_gutenberg_cache,
 )
 import logging
+import traceback
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ def run_language_interpolation(cfg: DictConfig):
                 )
 
             datamodule = GutenbergDataModule(
-                features=cfg.mlp.features,
+                features=cfg.net.features,
                 targets=1,
                 num_workers=cfg.data.num_workers,
                 pre_process_workers=cfg.data.pre_process_workers,
@@ -55,6 +56,7 @@ def run_language_interpolation(cfg: DictConfig):
                 test_filenames=cfg.data.test.filenames,
                 max_size=cfg.data.max_size,
                 dataset_generator=dataset_generator,
+                add_channel_dimension=cfg.data.add_channel_dimension,
             )
 
             lr_monitor = LearningRateMonitor(logging_interval="epoch")
@@ -79,6 +81,7 @@ def run_language_interpolation(cfg: DictConfig):
             logger.info(f"loss {result[0]['test_loss']}")
             return result[0]["test_loss"]
         except Exception as e:
+            print(traceback.format_exc())
             logger.error(e)
             return 1.0e9
     else:
@@ -90,7 +93,7 @@ def run_language_interpolation(cfg: DictConfig):
         model = ASCIIPredictionNet.load_from_checkpoint(checkpoint_path)
 
         text_in = cfg.prompts
-        features = cfg.mlp.input.width
+        features = cfg.net.input.width
 
         final = generate_text(
             model=model,

@@ -10,7 +10,8 @@ from language_interpolation.dataset_from_representation import (
 from language_interpolation.lightning_datamodule import DataModuleFromSequentialDatasets
 import logging
 import torch.nn
-from typing import NamedTuple
+from torch import Tensor
+from typing import NamedTuple, List
 
 logger = logging.getLogger(__name__)
 

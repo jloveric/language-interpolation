@@ -59,6 +59,7 @@ def generate_text(
     text_list: List[str],
     output_size: int,
     topk: int = 1,
+    add_channel_dimension: bool = False,
 ):
 
     model.eval()
@@ -77,6 +78,9 @@ def generate_text(
                 text_in=text_in, features=features
             )
             encoding = ascii_to_float(encoding).unsqueeze(dim=0).to(model.device)
+            if add_channel_dimension is True:
+                encoding = encoding.unsqueeze(1)
+
             model.eval()
             output = model(encoding)
             values, indices, ascii = decode_output_to_text(
@@ -99,19 +103,20 @@ class TextGenerationSampler(Callback):
         self._cfg = cfg
 
     def on_train_epoch_end(self, trainer, pl_module, outputs=None):
-
-        for topk in range(1, self._cfg.topk + 1):
-            predictions = generate_text(
-                pl_module,
-                features=self._cfg.mlp.features,
-                text_list=self._cfg.prompts,
-                output_size=self._cfg.num_predict,
-                topk=topk,
-            )
-
-            for index, text in enumerate(predictions):
-                trainer.logger.experiment.add_text(
-                    f"topk={topk}_prompt={self._cfg.prompts[index]}",
-                    text,
-                    global_step=trainer.global_step,
+        with torch.no_grad():
+            for topk in range(1, self._cfg.topk + 1):
+                predictions = generate_text(
+                    pl_module,
+                    features=self._cfg.net.features,
+                    text_list=self._cfg.prompts,
+                    output_size=self._cfg.num_predict,
+                    topk=topk,
+                    add_channel_dimension=self._cfg.data.add_channel_dimension,
                 )
+
+                for index, text in enumerate(predictions):
+                    trainer.logger.experiment.add_text(
+                        f"topk={topk}_prompt={self._cfg.prompts[index]}",
+                        text,
+                        global_step=trainer.global_step,
+                    )

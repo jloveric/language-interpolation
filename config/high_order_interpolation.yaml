@@ -4,6 +4,9 @@ data:
   max_size: -1
   num_workers: 10
 
+  # for convolutional input you need to set this to true
+  add_channel_dimension: false
+
   train:
     filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
 
@@ -48,7 +51,7 @@ topk: 3
 num_predict: 100
 defaults:
   - optimizer: adam
-  - mlp: small
+  - net: small
   #- override hydra/sweeper: nevergrad
 # hydra:
 #   sweeper:

@@ -48,3 +48,21 @@ def test_single_text_dataset():
     assert dataset.inputs.shape[0] == dataset.output.shape[0]
     assert dataset.inputs.shape[1] == num_features
     assert dataset.output.shape[1] == num_targets
+
+
+def test_single_text_dataset_for_conv():
+    num_features = 10
+    num_targets = 1
+
+    dataset = SingleTextDataset(
+        gutenberg_ids=[1, 2],
+        features=num_features,
+        targets=num_targets,
+        num_workers=0,
+        add_channel_dimension=True,
+    )
+    print("got dataset from ids")
+    assert dataset.inputs.shape[0] == dataset.output.shape[0]
+    assert dataset.inputs.shape[1] == 1
+    assert dataset.inputs.shape[2] == num_features
+    assert dataset.output.shape[1] == num_targets

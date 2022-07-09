@@ -25,7 +25,7 @@ from pytorch_lightning.callbacks import EarlyStopping
 from language_interpolation import Net
 
 
-@hydra.main(config_path="./config", config_name="language_config")
+@hydra.main(config_path="./config", config_name="high_order_interpolation")
 def run_language_cellular_automata(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
     print("Working directory : {}".format(os.getcwd()))
@@ -60,13 +60,13 @@ def run_language_cellular_automata(cfg: DictConfig):
         model.eval()
 
         text_in = cfg.text
-        features = cfg.mlp.input.width
+        features = cfg.net.input.width
         result_list = []
 
-        text = (cfg.text).center(len(cfg.text) + cfg.mlp.features + 3)
+        text = (cfg.text).center(len(cfg.text) + cfg.net.features + 3)
         for step in range(cfg.data.reapply):
             # print('text is : ', text)
-            text = text.center(len(text) + cfg.mlp.features + 3)
+            text = text.center(len(text) + cfg.net.features + 3)
             dataset = list(SingleTextDataset(text=text, features=features))
             dataset = torch.stack([a[0] for a in dataset])
             model.eval()

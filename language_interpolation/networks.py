@@ -97,21 +97,21 @@ class PredictionNetMixin:
 
 def select_network(cfg: DictConfig):
     normalization = None
-    if cfg.mlp.normalize is True:
+    if cfg.net.normalize is True:
         normalization = torch.nn.LazyBatchNorm1d
 
-    if cfg.mlp.model_type == "high_order_input":
+    if cfg.net.model_type == "high_order_input":
         """
         Only the input layer is high order, the rest
         of the layers are standard linear+relu and normalization.
         """
         layer_list = []
         input_layer = high_order_fc_layers(
-            layer_type=cfg.mlp.layer_type,
-            n=cfg.mlp.n,
-            in_features=cfg.mlp.input.width,
-            out_features=cfg.mlp.hidden.width,
-            segments=cfg.mlp.input.segments,
+            layer_type=cfg.net.layer_type,
+            n=cfg.net.n,
+            in_features=cfg.net.input.width,
+            out_features=cfg.net.hidden.width,
+            segments=cfg.net.input.segments,
         )
         layer_list.append(input_layer)
 
@@ -119,10 +119,10 @@ def select_network(cfg: DictConfig):
             layer_list.append(normalization())
 
         lower_layers = LowOrderMLP(
-            in_width=cfg.mlp.hidden.width,
+            in_width=cfg.net.hidden.width,
             out_width=cfg.output.width,
-            hidden_width=cfg.mlp.hidden.width,
-            hidden_layers=cfg.mlp.hidden.layers - 1,
+            hidden_width=cfg.net.hidden.width,
+            hidden_layers=cfg.net.hidden.layers - 1,
             non_linearity=torch.nn.ReLU(),
             normalization=normalization,
         )
@@ -130,28 +130,44 @@ def select_network(cfg: DictConfig):
 
         model = nn.Sequential(*layer_list)
 
-    elif cfg.mlp.model_type == "high_order":
+    elif cfg.net.model_type == "high_order":
         """
         Uniform high order model. All layers are high order.
         """
         model = HighOrderMLP(
-            layer_type=cfg.mlp.layer_type,
-            n=cfg.mlp.n,
-            n_in=cfg.mlp.n_in,
-            n_hidden=cfg.mlp.n_in,
-            n_out=cfg.mlp.n_out,
-            in_width=cfg.mlp.input.width,
-            in_segments=cfg.mlp.input.segments,
-            out_width=cfg.mlp.output.width,
-            out_segments=cfg.mlp.output.segments,
-            hidden_width=cfg.mlp.hidden.width,
-            hidden_layers=cfg.mlp.hidden.layers,
-            hidden_segments=cfg.mlp.hidden.segments,
+            layer_type=cfg.net.layer_type,
+            n=cfg.net.n,
+            n_in=cfg.net.n_in,
+            n_hidden=cfg.net.n_in,
+            n_out=cfg.net.n_out,
+            in_width=cfg.net.input.width,
+            in_segments=cfg.net.input.segments,
+            out_width=cfg.net.output.width,
+            out_segments=cfg.net.output.segments,
+            hidden_width=cfg.net.hidden.width,
+            hidden_layers=cfg.net.hidden.layers,
+            hidden_segments=cfg.net.hidden.segments,
             normalization=normalization,
         )
+    elif cfg.net.model_type == "high_order_conv":
+        conv = HighOrderFullyConvolutionalNetwork(
+            layer_type=cfg.net.layer_type,
+            n=cfg.net.n,
+            channels=cfg.net.channels,
+            segments=cfg.net.segments,
+            kernel_size=cfg.net.kernel_size,
+            rescale_output=False,
+            periodicity=cfg.net.periodicity,
+            normalization=torch.nn.LazyBatchNorm1d,
+            stride=cfg.net.stride,
+            pooling=None,  # don't add an average pooling layer
+        )
+
+        linear = torch.nn.LazyLinear(out_features=cfg.net.out_features)
+        model = nn.Sequential(conv, linear)
     else:
         raise ValueError(
-            f"Unrecognized model_dype {cfg.model_type} should be high_order or high_order_input!"
+            f"Unrecognized model_type {cfg.model_type} should be high_order, high_order_input or high_order_conv!"
         )
 
     return model

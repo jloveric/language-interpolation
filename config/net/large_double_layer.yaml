@@ -1,7 +1,4 @@
-# Small network that runs pretty fast.  See at
-# most 50% accuracy.
-
-layer_type: "discontinuous"
+layer_type: "continuous"
 normalize: true
 
 # Number of characters as input
@@ -17,14 +14,15 @@ n_out: null
 n_hidden: null
 periodicity: 2.0
 rescale_output: False
-# scale: 2.0
 input:
   segments: 128
-  width: ${mlp.features}
+  width: ${net.features}
 output:
-  segments: 8
+  segments: 2
   width: 128
 hidden:
-  segments: 8
+  # Number of segments in the 2 layer is substantially
+  # lower than in the single layer network.
+  segments: 2
   layers: 2
-  width: 10
+  width: 250

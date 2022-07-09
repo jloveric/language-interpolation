@@ -353,6 +353,7 @@ class SingleTextDataset(Dataset):
             [str, int, int], Tuple[Any, Any]
         ] = generate_dataset,
         num_workers: int = 0,
+        add_channel_dimension: bool = False,
     ):
         """
         Args :
@@ -364,6 +365,7 @@ class SingleTextDataset(Dataset):
             dataset_generator: A function that converts text into a tuple of features, targets
             num_workers: Number of parallel workers when more than one book is being
             processed.
+            add_channel_dimension: For convnets we need to add a channel dimension to the data
         """
 
         list_features, list_targets = dataset_sequential(
@@ -382,7 +384,9 @@ class SingleTextDataset(Dataset):
 
         self.inputs = torch.stack(list_features)
         self.output = torch.stack(list_targets)
-        self.features = features
+        if add_channel_dimension is True:
+            self.inputs = self.inputs.unsqueeze(1)
+
         self.targets = targets
 
     def __len__(self):

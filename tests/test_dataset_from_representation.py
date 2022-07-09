@@ -17,7 +17,7 @@ def test_dataset_from_model():
             "lr": 1e-4,
             "batch_size": 256,
             "segments": 2,
-            "mlp": {
+            "net": {
                 "model_type": "high_order",
                 "layer_type": "discontinuous",
                 "normalize": True,

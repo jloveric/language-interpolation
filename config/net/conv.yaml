@@ -1,0 +1,16 @@
+layer_type: "continuous1d"
+normalize: true
+
+# Number of characters as input. Convnet can
+# have a much larger context
+features: 1000
+out_features: 128 # ascii characters
+
+model_type: high_order_conv
+
+n: 3
+periodicity: 2.0
+kernel_size: [10, 10, 10, 10]
+stride: [10, 10, 10, 10]
+channels: [1, 2, 4, 16]
+segments: [128, 2, 2, 2]

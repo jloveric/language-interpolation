@@ -37,7 +37,7 @@ def test_overflow_network():
                 "patience": 10,
                 "factor": 0.1,
             },
-            "mlp": {
+            "net": {
                 "model_type": "high_order",
                 "layer_type": "discontinuous",
                 "normalize": True,
@@ -79,7 +79,7 @@ def test_overflow_network():
                 "patience": 10,
                 "factor": 0.1,
             },
-            "mlp": {
+            "net": {
                 "model_type": "high_order",
                 "layer_type": "discontinuous",
                 "normalize": True,

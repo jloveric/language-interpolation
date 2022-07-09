@@ -16,7 +16,7 @@ periodicity: 2.0
 rescale_output: False
 input:
   segments: 128
-  width: ${mlp.features}
+  width: ${net.features}
 output:
   width: 128
 hidden:

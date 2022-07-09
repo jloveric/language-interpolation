@@ -28,30 +28,34 @@ A few networks which are large enough to memorize "The Dunwich Horror" which is 
 
 1 hidden layer 2 segments per link
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=200 max_epochs=100 optimizer.lr=1e-4 batch_size=1000
+python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.width=200 max_epochs=100 optimizer.lr=1e-4 batch_size=1000
 ```
 2 hidden layers 2 segments per link
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_double_layer max_epochs=100 mlp.hidden.width=250 optimizer.lr=1e-5
+python examples/high_order_interpolation.py data.type=sequence net=large_double_layer max_epochs=100 net.hidden.width=250 optimizer.lr=1e-5
 ``` 
 1 hidden layer 2 segments per link
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.width=250 max_epochs=100 mlp.n=3 optimizer.lr=1e-4
+python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.width=250 max_epochs=100 net.n=3 optimizer.lr=1e-4
 ```
 3 layers quadratic 2 segments per link
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=small mlp.hidden.width=250 max_epochs=100 mlp.n=3 mlp.hidden.layers=3 optimizer.lr=1e-5
+python examples/high_order_interpolation.py data.type=sequence net=small net.hidden.width=250 max_epochs=100 net.n=3 net.hidden.layers=3 optimizer.lr=1e-5
 ```
 Standard ReLU network, however, the input layer is piecewise linear so that it can bin the characters into each segment.  The rest of the network
-look like a standard MLP.
+look like a standard net.
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_standard mlp.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
+python examples/high_order_interpolation.py data.type=sequence net=large_standard net.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
 ```
 can you memorize with just input and output layers with no hidden layers?  In this example we get to about 95% accuracy.  Discontinuous works
 better than continuous as it has double the parameters for piecewise linear.  Increase the order of accuracy does nothing since the inputs are
 discrete and not continuous - in this case we should have a piecewise constant option, but then the gradients would be 0.
 ```
-python examples/high_order_interpolation.py data.type=sequence mlp=large_single_layer mlp.hidden.layers=0 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 mlp.layer_type=discontinuous
+python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.layers=0 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 net.layer_type=discontinuous
+```
+Using conv layers
+```
+python examples/high_order_interpolation.py data.type=sequence net=conv max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
 ```
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
@@ -67,22 +71,19 @@ prompt: Who are you?
 result: Who are you? I the set it wall night, and the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she
 ```
 
-# Other Stuff
 
-## With conv layers (not yet working)
-```
-python examples/language_interpolation_conv.py data.type=sequence
-```
+
+# Other Stuff
 ## Run with centered model (language cellular automaton)
 ```
-python examples/language_cellular_automata.py mlp.features=11 data.type=centered
+python examples/language_cellular_automata.py net.features=11 data.type=centered
 ```
 
 ## As cellular automaton
 A centered model can be repeatedly applied to the same text as a moving window and will work with arbitrary length sentences.  This
 approach is similar to stencils used in solving partial differential equations.
 ```
-python examples/language_cellular_automata.py mlp.features=11 data.type=centered train=False checkpoint=\"outputs/2021-08-21/20-14-40/lightning_logs/version_0/checkpoints/epoch=20-step=35909.ckpt\" topk=2 num_predict=200 text="The monster awakes" topk=1 data.reapply=10
+python examples/language_cellular_automata.py net.features=11 data.type=centered train=False checkpoint=\"outputs/2021-08-21/20-14-40/lightning_logs/version_0/checkpoints/epoch=20-step=35909.ckpt\" topk=2 num_predict=200 text="The monster awakes" topk=1 data.reapply=10
 ```
 
 # Interesting papers related to sparse mlps for language
