@@ -95,7 +95,7 @@ class PredictionNetMixin:
             raise ValueError(f"Optimizer {self.cfg.optimizer.name} not recognized")
 
 
-def select_network(cfg: DictConfig):
+def select_network(cfg: DictConfig, device: str = None):
     normalization = None
     if cfg.net.normalize is True:
         normalization = torch.nn.LazyBatchNorm1d
@@ -165,6 +165,22 @@ def select_network(cfg: DictConfig):
 
         linear = torch.nn.LazyLinear(out_features=cfg.net.out_features)
         model = nn.Sequential(conv, linear)
+    elif cfg.net.model_type == "high_order_tail_focus":
+        tail_focus = HighOrderTailFocusNetwork(
+            layer_type=cfg.net.layer_type,
+            n=cfg.net.n,
+            channels=cfg.net.channels,
+            segments=cfg.net.segments,
+            kernel_size=cfg.net.kernel_size,
+            rescale_output=False,
+            periodicity=cfg.net.periodicity,
+            normalization=torch.nn.LazyBatchNorm1d,
+            stride=cfg.net.stride,
+            focus=cfg.net.focus,
+        )
+
+        linear = torch.nn.LazyLinear(out_features=cfg.net.out_features)
+        model = nn.Sequential(tail_focus, linear)
     else:
         raise ValueError(
             f"Unrecognized model_type {cfg.model_type} should be high_order, high_order_input or high_order_conv!"

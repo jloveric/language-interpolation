@@ -17,8 +17,8 @@ hydra-nevergrad-sweeper = "^1.2.0"
 gutenbergpy = {git = "https://github.com/jloveric/gutenbergpy.git"}
 torch-intermediate-layer-getter = "^0.1.post1"
 torch-optimizer = "^0.3.0"
-high-order-layers-torch = "^1.1.14"
 torch = "^1.12.0"
+high-order-layers-torch = "^1.1.15"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

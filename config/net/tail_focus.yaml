@@ -6,7 +6,7 @@ normalize: true
 features: 10000
 out_features: 128 # ascii characters
 
-model_type: high_order_conv
+model_type: high_order_tail_focus
 
 n: 2
 periodicity: 2.0
@@ -14,3 +14,4 @@ kernel_size: [10, 10, 10, 10]
 stride: [10, 10, 10, 10]
 channels: [1, 10, 100, 100]
 segments: [128, 10, 10, 10]
+focus: [10, 10, 10, 10] # focus takes all of the final output

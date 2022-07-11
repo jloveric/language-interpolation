@@ -117,6 +117,6 @@ class TextGenerationSampler(Callback):
                 for index, text in enumerate(predictions):
                     trainer.logger.experiment.add_text(
                         f"topk={topk}_prompt={self._cfg.prompts[index]}",
-                        text,
+                        text.strip(),
                         global_step=trainer.global_step,
                     )
