@@ -24,6 +24,7 @@ with nevergrad (data appears in multirun)
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
 # Decent parameters
+### sparse mlp
 A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Adam + learning rate scheduler.
 
 1 hidden layer 2 segments per link
@@ -53,14 +54,25 @@ discrete and not continuous - in this case we should have a piecewise constant o
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.layers=0 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 net.layer_type=discontinuous
 ```
-Using conv layers
+### sparse convolutional network
+Using conv layers (not done too much here, see below for a possibly better network)
 ```
 python examples/high_order_interpolation.py data.type=sequence net=conv max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
 ```
-Using tail focus network
+### tail focus network
+Using tail focus network you can handle much much longer sequences, however the accuracy needs to be much higher to not get garbage (random ascii characters that don't look like any language) for a given input
 ```
 python examples/high_order_interpolation.py data.type=sequence net=tail_focus max_epochs=100 optimizer.lr=1e-3 batch_size=8000 data.add_channel_dimension=true
 ```
+to run a prediction
+```
+python examples/high_order_interpolation.py train=False checkpoint=\"outputs/2022-07-12/12-26-21/lightning_logs/version_0/checkpoints/'epoch=74-step=237075.ckpt'\" topk=1 num_predict=10000 prompts=["Who are you?"] data.add_channel_dimension=true net=tail_focus
+```
+and the result is jibberish sentences with a context of 256 characters and a single book and choosing the next best character.  I'll try this again at some point with a much larger context window and a much larger dataset.
+```
+Who are you?hhhIhr II hham hahe _I wa hhhar hit wohe _ower_ him hI whosow, hhough I wan og .hI. ht. __aday. Out hi sg them Cacler --a stabke wist his _Treag art unt.. The worn in the boumd di no ce. The hracises. Onte canheremhis counded teghing the hacling che conders. so collel, and as thing the eot to sheed an the wan or the lliused to the grom- of corning in. He who pout timetime, cu\' to e onled. The opar nor ly the notike.. The that ,uen\' forss will, liff us of that dert, the st bouthis spon the rills abec sire gors.  Then\'t alite alline the scomery dowped distured the _ anda stipy rouse pre. The comch bor, the tale hotives to frows in the cagane of cearsite to giss it a mameverise on the ping, as if withh doed crown onligriat ffmled afisht to crothin sing it aningstib catedep with tilled, and tather it nowms a sraned the eNid that hef on  follitines reas of in the lights he at the listent frog the and arenguy the consus dis, and it that himm--thoold y\'t heous. Ilikepad to was it ans on the tole of the shey. They mongite folker    sorece\'s abon the loud sote mathers verite to Corgass. Thele. Octereried to enttones of the vision inse frabity.
+```
+
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
 

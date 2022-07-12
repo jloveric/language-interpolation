@@ -92,8 +92,15 @@ def run_language_interpolation(cfg: DictConfig):
         logger.info(f"checkpoint_path {checkpoint_path}")
         model = ASCIIPredictionNet.load_from_checkpoint(checkpoint_path)
 
+        add_channel_dimension = True
+        if (
+            cfg.net.model_type == "high_order"
+            or cfg.net.model_type == "high_order_input"
+        ):
+            add_channel_dimension = False
+
         text_in = cfg.prompts
-        features = cfg.net.input.width
+        features = cfg.net.features
 
         final = generate_text(
             model=model,
@@ -101,6 +108,7 @@ def run_language_interpolation(cfg: DictConfig):
             text_list=text_in,
             output_size=cfg.num_predict,
             topk=cfg.topk,
+            add_channel_dimension=add_channel_dimension,
         )
 
         logger.info(f"output: {final}")
