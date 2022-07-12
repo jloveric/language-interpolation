@@ -181,6 +181,10 @@ def select_network(cfg: DictConfig, device: str = None):
 
         linear = torch.nn.LazyLinear(out_features=cfg.net.out_features)
         model = nn.Sequential(tail_focus, linear)
+
+        widths, output_sizes = tail_focus.compute_sizes(cfg.net.features)
+        logger.info(f"TailFocusNetwork widths {widths} output_sizes {output_sizes}")
+
     else:
         raise ValueError(
             f"Unrecognized model_type {cfg.model_type} should be high_order, high_order_input or high_order_conv!"

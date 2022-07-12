@@ -302,7 +302,7 @@ resolved_reference = "1ae3215b096289eeb1dfdd6fe48fd76d5fe6b55e"
 
 [[package]]
 name = "high-order-layers-torch"
-version = "1.1.15"
+version = "1.1.16"
 description = "High order layers in pytorch"
 category = "main"
 optional = false
@@ -1005,7 +1005,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9"
-content-hash = "998fa0947837e1aec8115086b2c5c885f52ed2424b9bb24f04a0420a87c56b7c"
+content-hash = "afd538b10cca1f79722892084a8ef4822bec61ec1af995ecfc966aa039a30941"
 
 [metadata.files]
 absl-py = [
