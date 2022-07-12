@@ -59,7 +59,7 @@ python examples/high_order_interpolation.py data.type=sequence net=conv max_epoc
 ```
 Using tail focus network
 ```
-python examples/high_order_interpolation.py data.type=sequence net=tail_focus max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
+python examples/high_order_interpolation.py data.type=sequence net=tail_focus max_epochs=100 optimizer.lr=1e-3 batch_size=8000 data.add_channel_dimension=true
 ```
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
