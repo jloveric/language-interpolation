@@ -340,6 +340,37 @@ def dataset_sequential(
     return list_features, list_targets
 
 
+class RandomizeCharacters:
+    def __init__(
+        self,
+        features: int,
+        symbols: int,
+        random_frac: float,
+        add_channel_dimension: bool = False,
+    ):
+        self._features = features
+        self._symbols = symbols
+        self._random_frac = random_frac
+        self._num_rand = int(random_frac * features)
+        self._add_channel_dimension = add_channel_dimension
+
+    def __call__(self, sample: Tensor):
+        """
+        Args :
+            sample : tensor with values between 0 and features
+        """
+
+        rand_id = torch.randint(low=0, high=self._features, size=(self._num_rand,))
+        rand_values = torch.randint(low=0, high=self._symbols, size=(self._num_rand,))
+
+        if self._add_channel_dimension is True:
+            sample[:, rand_id] = rand_values
+        else:
+            sample[rand_id] = rand_values
+
+        return sample
+
+
 class SingleTextDataset(Dataset):
     def __init__(
         self,
@@ -354,6 +385,7 @@ class SingleTextDataset(Dataset):
         ] = generate_dataset,
         num_workers: int = 0,
         add_channel_dimension: bool = False,
+        transforms: Callable[[Tensor], Tensor] = None,
     ):
         """
         Args :
@@ -388,12 +420,20 @@ class SingleTextDataset(Dataset):
             self.inputs = self.inputs.unsqueeze(1)
 
         self.targets = targets
+        self.transforms = transforms
 
     def __len__(self):
         return len(self.output)
+
+    def normalize(self, data):
+        return (data - 64 + 0.5) / 64.0
 
     def __getitem__(self, idx) -> Tensor:
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        return (self.inputs[idx] - 64 + 0.5) / 64.0, self.output[idx]
+        inputs = self.inputs[idx].clone()
+        if self.transforms is not None:
+            inputs = self.transforms(inputs)
+
+        return self.normalize(inputs), self.output[idx]
