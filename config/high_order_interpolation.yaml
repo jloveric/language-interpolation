@@ -3,6 +3,7 @@ data:
   reapply: 10 # number of times to reapply calculation
   max_size: -1
   num_workers: 10
+  random_char_frac: 0.0
 
   # for convolutional input you need to set this to true
   add_channel_dimension: false

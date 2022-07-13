@@ -41,6 +41,7 @@ class GutenbergDataModule(pl.LightningDataModule):
         ] = generate_dataset,
         root_dir: str = ".",
         add_channel_dimension: bool = False,
+        transforms: Callable[[Tensor], Tensor] = None,
     ):
         """
         Data module for project gutenberg
@@ -66,6 +67,7 @@ class GutenbergDataModule(pl.LightningDataModule):
         self._dataset_generator = dataset_generator
         self._root_dir = root_dir
         self._add_channel_dimension = add_channel_dimension
+        self._transforms = transforms
 
     def setup(self, stage: Optional[str] = None):
 
@@ -86,6 +88,7 @@ class GutenbergDataModule(pl.LightningDataModule):
             dataset_generator=self._dataset_generator,
             num_workers=self._pre_process_workers,
             add_channel_dimension=self._add_channel_dimension,
+            transforms=self._transforms,
         )
         self._val_dataset = SingleTextDataset(
             filenames=val_files,
@@ -96,6 +99,7 @@ class GutenbergDataModule(pl.LightningDataModule):
             dataset_generator=self._dataset_generator,
             num_workers=self._pre_process_workers,
             add_channel_dimension=self._add_channel_dimension,
+            transforms=self._transforms,
         )
         self._test_dataset = SingleTextDataset(
             filenames=test_files,
@@ -106,6 +110,7 @@ class GutenbergDataModule(pl.LightningDataModule):
             dataset_generator=self._dataset_generator,
             num_workers=self._pre_process_workers,
             add_channel_dimension=self._add_channel_dimension,
+            transforms=self._transforms,
         )
 
         logger.info(f"Training dataset has {len(self.train_dataset)} samples.")

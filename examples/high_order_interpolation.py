@@ -5,7 +5,10 @@ import hydra
 from high_order_layers_torch.layers import *
 from pytorch_lightning import Trainer
 from high_order_layers_torch.networks import *
-from language_interpolation.single_text_dataset import dataset_registry
+from language_interpolation.single_text_dataset import (
+    dataset_registry,
+    RandomizeCharacters,
+)
 from language_interpolation.utils import generate_text
 from language_interpolation.lightning_datamodule import GutenbergDataModule
 from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor
@@ -57,6 +60,12 @@ def run_language_interpolation(cfg: DictConfig):
                 max_size=cfg.data.max_size,
                 dataset_generator=dataset_generator,
                 add_channel_dimension=cfg.data.add_channel_dimension,
+                transforms=RandomizeCharacters(
+                    features=cfg.net.features,
+                    symbols=128,
+                    random_frac=cfg.data.random_char_frac,
+                    add_channel_dimension=cfg.data.add_channel_dimension,
+                ),
             )
 
             lr_monitor = LearningRateMonitor(logging_interval="epoch")
