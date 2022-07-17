@@ -86,7 +86,21 @@ dataset, however, the data eventually evolves into something that is in the data
 prompt: Who are you? 
 result: Who are you? I the set it wall night, and the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she could of the second phase of the horror.  The next day all the countryside. Trees, grass, and underbrush were whipped into a fury; and the frightened crowd at the mountain\'s base huddled still closer, and winced as if in expectation of a blow.  "_Ygnaiih ... ygnaiih ... thflthkh\'ngha ... Yog-Sothoth...._" They trailed off into nothingness as the whippoorwills in the glen, Selina Frye tottered to the telephone and spread what news she
 ```
+# Using lightgbm
+Early experiments with lightgbm.
 
+Training
+```
+python examples/language_interpolation_gbm.py 
+```
+Using
+```
+python examples/language_interpolation_gbm.py train=false checkpoint=outputs/2022-07-17/08-16-29/model.txt text="What did they say?"
+```
+sample output
+```
+prompt: What did they say? response: y.oon. These,ins onchased,by,sesionic subelaborishor, wondse trentel opowed my fould a midd, attrow 
+```
 
 
 # Other Stuff

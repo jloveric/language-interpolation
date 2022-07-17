@@ -66,7 +66,7 @@ def predict(text: str):
     pass
 
 
-@hydra.main(config_path="./config", config_name="language_config_gbm")
+@hydra.main(config_path="../config", config_name="language_config_gbm")
 def run_language_interpolation(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
     print("Working directory : {}".format(os.getcwd()))
