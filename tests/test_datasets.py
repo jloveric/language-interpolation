@@ -100,7 +100,7 @@ def test_randomize_characters(add_channel_dimension: bool):
     )
 
     it = iter(dataloader)
-    vals = it.next()
+    vals = next(it)
 
     if add_channel_dimension is True:
         assert vals[0].shape == torch.Size([2, 1, 10])
