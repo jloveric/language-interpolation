@@ -5,6 +5,7 @@ import torch.optim as optim
 import torch_optimizer as alt_optim
 import torch
 from high_order_layers_torch.networks import *
+from high_order_layers_torch.layers import MaxAbsNormalization
 from torchmetrics import Accuracy
 from torch import Tensor
 
@@ -98,7 +99,7 @@ class PredictionNetMixin:
 def select_network(cfg: DictConfig, device: str = None):
     normalization = None
     if cfg.net.normalize is True:
-        normalization = torch.nn.LazyBatchNorm1d
+        normalization = MaxAbsNormalization #torch.nn.LazyBatchNorm1d
 
     if cfg.net.model_type == "high_order_input":
         """
@@ -174,7 +175,7 @@ def select_network(cfg: DictConfig, device: str = None):
             kernel_size=cfg.net.kernel_size,
             rescale_output=False,
             periodicity=cfg.net.periodicity,
-            normalization=torch.nn.LazyBatchNorm1d,
+            normalization=normalization, #torch.nn.LazyBatchNorm1d,
             stride=cfg.net.stride,
             focus=cfg.net.focus,
         )
