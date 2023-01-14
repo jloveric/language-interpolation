@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class SequentialSamples(NamedTuple):
-    features: List[Tensor]
-    targets: List[Tensor]
+    features: list[Tensor]
+    targets: list[Tensor]
+    index: int
 
 
 class OverFlowNetwork:
@@ -39,7 +40,7 @@ class OverFlowNetwork:
 
         self._data_sequence = {0: [train, test, val]}
 
-    def compute_dataset_from_network(self, index) -> List[SequentialSamples]:
+    def compute_dataset_from_network(self, index) -> list[SequentialSamples]:
         """
         Compute the dataset at index+1 from the dataset at index and
         store in data_sequence[index+1]
@@ -55,7 +56,7 @@ class OverFlowNetwork:
 
             data = all_data[i]
 
-            embeddings: List[Tensor] = embedding_from_model(
+            embeddings: list[Tensor] = embedding_from_model(
                 self._network_list[index],
                 model_input=data.features,
                 layer_name=self._embedding_layer[index],
@@ -64,7 +65,9 @@ class OverFlowNetwork:
                 embeddings, self._window_size, self._skip
             )
             # To use in computing next datasets
-            datasets.append(SequentialSamples(features=features, targets=targets))
+            datasets.append(
+                SequentialSamples(features=features, targets=targets, index=i)
+            )
 
         self._data_sequence[index + 1] = datasets
         return datasets

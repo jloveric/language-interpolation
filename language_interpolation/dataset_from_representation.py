@@ -122,4 +122,4 @@ class DatasetFromRepresentation(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        return self.features[idx], self.targets[idx]
+        return self.features[idx], self.targets[idx], 0

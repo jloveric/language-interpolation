@@ -421,19 +421,21 @@ class SingleTextDataset(Dataset):
 
         self.targets = targets
         self.transforms = transforms
+        self.valid_ids = list(range(0, len(list_features)))
 
     def __len__(self):
-        return len(self.output)
+        return len(self.valid_ids)
 
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
 
     def __getitem__(self, idx) -> Tensor:
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
+        index = self.valid_ids[idx]
+        if torch.is_tensor(index):
+            index = index.tolist()
 
-        inputs = self.inputs[idx].clone()
+        inputs = self.inputs[index].clone()
         if self.transforms is not None:
             inputs = self.transforms(inputs)
 
-        return self.normalize(inputs), self.output[idx]
+        return self.normalize(inputs), self.output[index], idx

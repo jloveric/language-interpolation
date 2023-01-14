@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class ClassificationMixin:
     def eval_step(self, batch: Tensor, name: str):
-        x, y = batch
+        x, y, idx = batch
         y_hat = self(x)
         loss = self.loss(y_hat, y.flatten())
 
@@ -30,7 +30,7 @@ class ClassificationMixin:
 
 class RegressionMixin:
     def eval_step(self, batch: Tensor, name: str):
-        x, y = batch
+        x, y, idx = batch
         y_hat = self(x)
         loss = self.loss(y_hat.flatten(), y.flatten())
 
@@ -99,7 +99,7 @@ class PredictionNetMixin:
 def select_network(cfg: DictConfig, device: str = None):
     normalization = None
     if cfg.net.normalize is True:
-        normalization = MaxAbsNormalization #torch.nn.LazyBatchNorm1d
+        normalization = MaxAbsNormalization  # torch.nn.LazyBatchNorm1d
 
     if cfg.net.model_type == "high_order_input":
         """
@@ -175,7 +175,7 @@ def select_network(cfg: DictConfig, device: str = None):
             kernel_size=cfg.net.kernel_size,
             rescale_output=False,
             periodicity=cfg.net.periodicity,
-            normalization=normalization, #torch.nn.LazyBatchNorm1d,
+            normalization=normalization,  # torch.nn.LazyBatchNorm1d,
             stride=cfg.net.stride,
             focus=cfg.net.focus,
         )

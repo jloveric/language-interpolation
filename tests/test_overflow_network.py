@@ -117,9 +117,9 @@ def test_overflow_network():
     overflow = OverFlowNetwork(
         network_list=network_list,
         embedding_layer=embedding_layer_list,
-        train=SequentialSamples(features=features, targets=targets),
-        test=SequentialSamples(features=features, targets=targets),
-        val=SequentialSamples(features=features, targets=targets),
+        train=SequentialSamples(features=features, targets=targets, index=0),
+        test=SequentialSamples(features=features, targets=targets, index=0),
+        val=SequentialSamples(features=features, targets=targets, index=0),
         window_size=10,
         skip=10,
     )
