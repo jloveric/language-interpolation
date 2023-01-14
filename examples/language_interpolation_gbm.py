@@ -59,7 +59,7 @@ def train(cfg: DictConfig):
         num_boost_round=cfg.num_boost_round,
         valid_sets=[train_data],
     )
-    bst.save_model("model.txt")
+    bst.save_model("model.txt", num_iteration=bst.best_iteration)
 
 
 def predict(text: str):
