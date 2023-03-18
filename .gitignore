@@ -132,3 +132,4 @@ outputs/
 texts/
 gutenberg/
 lightning_logs/
+poetry.lock
