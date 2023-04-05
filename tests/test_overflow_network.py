@@ -26,7 +26,7 @@ def test_overflow_network():
     cfg = DictConfig(
         content={
             "max_epochs": 1,
-            "gpus": 0,
+            "accelerator": "cpu",
             "lr": 1e-4,
             "batch_size": 16,
             "segments": 2,
@@ -68,7 +68,7 @@ def test_overflow_network():
     parent_cfg = DictConfig(
         content={
             "max_epochs": 1,
-            "gpus": 0,
+            "accelerator": "cpu",
             "lr": 1e-4,
             "batch_size": 16,
             "segments": 2,
@@ -127,7 +127,7 @@ def test_overflow_network():
     def train_base():
         trainer = Trainer(
             max_epochs=cfg.max_epochs,
-            gpus=0,
+            accelerator="cpu",
         )
 
         base = overflow.get_data_sequence(0)
@@ -148,7 +148,7 @@ def test_overflow_network():
         def compute():
             trainer = Trainer(
                 max_epochs=cfg.max_epochs,
-                gpus=0,
+                accelerator="cpu",
             )
 
             base = overflow.get_data_sequence(index)

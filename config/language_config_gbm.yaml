@@ -13,7 +13,7 @@ num_boost_round: 100
 data:
   max_size: -1
 
-gpus: 1
+accelerator: gpu
 
 # Are you training? Otherwise plot the result
 train: True

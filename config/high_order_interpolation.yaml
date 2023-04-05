@@ -30,7 +30,7 @@ data:
   pre_process_workers: 0
 
 max_epochs: 100
-gpus: 1
+accelerator: gpu
 batch_size: 256
 gradient_clip: null # 5.0
 

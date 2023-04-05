@@ -36,7 +36,7 @@ def run_language_cellular_automata(cfg: DictConfig):
         trainer = Trainer(
             callbacks=[early_stopping],
             max_epochs=cfg.max_epochs,
-            gpus=cfg.gpus,
+            accelerator=cfg.accelerator,
             gradient_clip_val=cfg.gradient_clip,
         )
 

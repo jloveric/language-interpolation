@@ -73,7 +73,7 @@ def run_language_interpolation(cfg: DictConfig):
             trainer = Trainer(
                 callbacks=[early_stopping, TextGenerationSampler(cfg), lr_monitor],
                 max_epochs=cfg.max_epochs,
-                gpus=cfg.gpus,
+                accelerator=cfg.accelerator,
                 gradient_clip_val=cfg.gradient_clip,
             )
 

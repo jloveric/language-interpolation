@@ -13,7 +13,7 @@ def test_dataset_from_model():
     cfg = DictConfig(
         content={
             "max_epochs": 1,
-            "gpus": 0,
+            "accelerator": 'cpu',
             "lr": 1e-4,
             "batch_size": 256,
             "segments": 2,
