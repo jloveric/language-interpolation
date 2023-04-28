@@ -95,6 +95,69 @@ class PredictionNetMixin:
         else:
             raise ValueError(f"Optimizer {self.cfg.optimizer.name} not recognized")
 
+class HighOrderAttention(torch.nn.Module):
+    """
+    Basic attention. Done for no other reason than may own understanding
+    and experimentation.
+    """
+
+    def __init__(self, embed_dim: int, out_dim: int, normalization: None):
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.out_dim = out_dim
+
+        self.query_layer = torch.nn.Linear(
+            in_features=self.embed_dim, out_features=self.out_dim
+        )
+        self.key_layer = torch.nn.Linear(
+            in_features=self.embed_dim, out_features=self.out_dim
+        )
+        self.value_layer = torch.nn.Linear(
+            in_features=self.embed_dim, out_features=self.out_dim
+        )
+        if normalization is None:
+            self.normalization = lambda x: x
+
+        self.normalization = normalization
+
+    def forward(
+        self,
+        query: torch.Tensor,
+        key: torch.Tensor,
+        value: torch.Tensor,
+    ) -> torch.Tensor:
+        """
+        Expecting tensors of the form [batch, sequence length, embedding]
+        """
+
+        # We want to run each embedding through the same network
+        # 1d cnn style.  So we just make a vector with a much larger
+        # batch out of the data where each batch contains 1 embedding
+        # then convert it back at the end.
+        q = query.reshape(query.shape[0] * query.shape[1], -1)
+        k = key.reshape(key.shape[0] * key.shape[1], -1)
+        v = value.reshape(value.shape[0] * value.shape[1], -1)
+
+        qt = self.query_layer(q)
+        kt = self.key_layer(k)
+        vt = self.value_layer(v)
+
+        qt = qt.reshape(query.shape[0], query.shape[1], qt.shape[1])
+        kt = kt.reshape(key.shape[0], key.shape[1], kt.shape[1])
+        vt = vt.reshape(value.shape[0], value.shape[1], vt.shape[1])
+
+        # print("qt.shape", qt.shape, "kt.shape", kt.shape)
+        qk = self.normalization(qt @ kt.transpose(1, 2))
+        # print("qk.shape", qk.shape)
+
+        # qkv = self.normalization(qk) * vt
+        qkv = qk @ vt
+        # print("qkv.shape", qkv.shape)
+
+        return qkv
+
+
+
 
 def select_network(cfg: DictConfig, device: str = None):
     normalization = None
