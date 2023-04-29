@@ -62,7 +62,6 @@ class PredictionNetMixin:
                 hessian_power=self.cfg.optimizer.hessian_power,
             )
         elif self.cfg.optimizer.name == "adam":
-
             optimizer = optim.Adam(
                 params=self.parameters(),
                 lr=self.cfg.optimizer.lr,
@@ -178,6 +177,22 @@ class HighOrderAttention(torch.nn.Module):
         return qkv
 
 
+def high_order_attention_block(
+    embed_dim: int, out_dim: int, normalization=None
+) -> None:
+    query = high_order_fc_layers()
+    key = high_order_fc_layers()
+    value = high_order_fc_layers()
+    HighOrderAttention(
+        embed_dim=embed_dim,
+        out_dim=out_dim,
+        normalization=normalization,
+        query_layer=query,
+        key_layer=key,
+        value_layer=value,
+    )
+
+
 def select_network(cfg: DictConfig, device: str = None):
     normalization = None
     if cfg.net.normalize is True:
@@ -212,6 +227,8 @@ def select_network(cfg: DictConfig, device: str = None):
         layer_list.append(lower_layers)
 
         model = nn.Sequential(*layer_list)
+    elif cfg.net.model_type == "high_order_transformer":
+        HighOrderAttention()
 
     elif cfg.net.model_type == "high_order":
         """
