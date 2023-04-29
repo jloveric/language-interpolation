@@ -95,26 +95,47 @@ class PredictionNetMixin:
         else:
             raise ValueError(f"Optimizer {self.cfg.optimizer.name} not recognized")
 
+
 class HighOrderAttention(torch.nn.Module):
     """
     Basic attention. Done for no other reason than may own understanding
     and experimentation.
     """
 
-    def __init__(self, embed_dim: int, out_dim: int, normalization: None):
+    def __init__(
+        self,
+        embed_dim: int,
+        out_dim: int,
+        normalization: None,
+        query_layer: None,
+        key_layer: None,
+        value_layer: None,
+    ):
         super().__init__()
         self.embed_dim = embed_dim
         self.out_dim = out_dim
 
-        self.query_layer = torch.nn.Linear(
-            in_features=self.embed_dim, out_features=self.out_dim
-        )
-        self.key_layer = torch.nn.Linear(
-            in_features=self.embed_dim, out_features=self.out_dim
-        )
-        self.value_layer = torch.nn.Linear(
-            in_features=self.embed_dim, out_features=self.out_dim
-        )
+        if query_layer is None:
+            self.query_layer = torch.nn.Linear(
+                in_features=self.embed_dim, out_features=self.out_dim
+            )
+        else:
+            self.query_layer = query_layer
+
+        if key_layer is None:
+            self.key_layer = torch.nn.Linear(
+                in_features=self.embed_dim, out_features=self.out_dim
+            )
+        else:
+            self.key_layer = key_layer
+
+        if value_layer is None:
+            self.value_layer = torch.nn.Linear(
+                in_features=self.embed_dim, out_features=self.out_dim
+            )
+        else:
+            self.value_layer = value_layer
+
         if normalization is None:
             self.normalization = lambda x: x
 
@@ -155,8 +176,6 @@ class HighOrderAttention(torch.nn.Module):
         # print("qkv.shape", qkv.shape)
 
         return qkv
-
-
 
 
 def select_network(cfg: DictConfig, device: str = None):
