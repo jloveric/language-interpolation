@@ -178,12 +178,35 @@ class HighOrderAttention(torch.nn.Module):
 
 
 def high_order_attention_block(
-    embed_dim: int, out_dim: int, normalization=None
+    embed_dim: int,
+    out_dim: int,
+    layer_type: str,
+    n: int,
+    segments: int,
+    normalization=None,
 ) -> None:
-    query = high_order_fc_layers()
-    key = high_order_fc_layers()
-    value = high_order_fc_layers()
-    HighOrderAttention(
+    query = high_order_fc_layers(
+        layer_type=layer_type,
+        n=n,
+        in_features=embed_dim,
+        out_features=out_dim,
+        segments=segments,
+    )
+    key = high_order_fc_layers(
+        layer_type=layer_type,
+        n=n,
+        in_features=embed_dim,
+        out_features=out_dim,
+        segments=segments,
+    )
+    value = high_order_fc_layers(
+        layer_type=layer_type,
+        n=n,
+        in_features=embed_dim,
+        out_features=out_dim,
+        segments=segments,
+    )
+    layer = HighOrderAttention(
         embed_dim=embed_dim,
         out_dim=out_dim,
         normalization=normalization,
@@ -191,6 +214,7 @@ def high_order_attention_block(
         key_layer=key,
         value_layer=value,
     )
+    return layer
 
 
 def select_network(cfg: DictConfig, device: str = None):
