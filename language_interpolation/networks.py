@@ -217,6 +217,23 @@ def high_order_attention_block(
     return layer
 
 
+class HighOrderAttentionNetwork(torch.nn.Module):
+    def __init__(self, layers: list):
+        layer = []
+        for element in layers:
+            embed_dim = element[0]
+            out_dim = element[1]
+            new_layer = HighOrderAttention(
+                embed_dim=embed_dim, out_dim=out_dim, normalization=None
+            )
+            layer.append(new_layer)
+
+        self.model = nn.Sequential(*layer)
+
+    def forward(self, x: Tensor) -> Tensor:
+        return self.model(x)
+
+
 def select_network(cfg: DictConfig, device: str = None):
     normalization = None
     if cfg.net.normalize is True:
