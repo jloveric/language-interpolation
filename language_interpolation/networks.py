@@ -218,13 +218,22 @@ def high_order_attention_block(
 
 
 class HighOrderAttentionNetwork(torch.nn.Module):
-    def __init__(self, layers: list):
+    def __init__(
+        self,
+        layers: list,
+        n: int,
+        segments: int,
+    ):
         layer = []
         for element in layers:
             embed_dim = element[0]
             out_dim = element[1]
-            new_layer = HighOrderAttention(
-                embed_dim=embed_dim, out_dim=out_dim, normalization=None
+            new_layer = high_order_attention_block(
+                embed_dim=embed_dim,
+                out_dim=out_dim,
+                segments=segments,
+                n=n,
+                normalization=None,
             )
             layer.append(new_layer)
 
