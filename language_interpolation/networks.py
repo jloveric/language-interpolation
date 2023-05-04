@@ -218,12 +218,7 @@ def high_order_attention_block(
 
 
 class HighOrderAttentionNetwork(torch.nn.Module):
-    def __init__(
-        self,
-        layers: list,
-        n: int,
-        segments: int,
-    ):
+    def __init__(self, layers: list, n: int, segments: int, normalization: None):
         layer = []
         for element in layers:
             embed_dim = element[0]
@@ -233,7 +228,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
                 out_dim=out_dim,
                 segments=segments,
                 n=n,
-                normalization=None,
+                normalization=normalization,
             )
             layer.append(new_layer)
 
@@ -278,7 +273,9 @@ def select_network(cfg: DictConfig, device: str = None):
 
         model = nn.Sequential(*layer_list)
     elif cfg.net.model_type == "high_order_transformer":
-        HighOrderAttention()
+        model = HighOrderAttentionNetwork(
+            cfg.net.layers, cfg.net.n, cfg.net.segments, normalization=None
+        )
 
     elif cfg.net.model_type == "high_order":
         """
