@@ -386,6 +386,8 @@ class SingleTextDataset(Dataset):
         num_workers: int = 0,
         add_channel_dimension: bool = False,
         transforms: Callable[[Tensor], Tensor] = None,
+        transformer: bool = False,
+        embedding_size: int = None,
     ):
         """
         Args :
@@ -398,6 +400,8 @@ class SingleTextDataset(Dataset):
             num_workers: Number of parallel workers when more than one book is being
             processed.
             add_channel_dimension: For convnets we need to add a channel dimension to the data
+            transformer: Whether it should be formatted for a (high order) transformer or not
+            embedding_size: Size of the embedding if a transformer is being used.
         """
 
         list_features, list_targets = dataset_sequential(
@@ -422,6 +426,8 @@ class SingleTextDataset(Dataset):
         self.targets = targets
         self.transforms = transforms
         self.valid_ids = list(range(0, len(list_features)))
+        self._transformer = transformer
+        self._embedding_size = embedding_size
 
     def __len__(self):
         return len(self.valid_ids)
@@ -429,7 +435,10 @@ class SingleTextDataset(Dataset):
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
 
-    def __getitem__(self, idx) -> Tensor:
+    def flat(self, idx) -> Tensor:
+        """
+        Flat text sequence
+        """
         index = self.valid_ids[idx]
         if torch.is_tensor(index):
             index = index.tolist()
@@ -439,3 +448,30 @@ class SingleTextDataset(Dataset):
             inputs = self.transforms(inputs)
 
         return self.normalize(inputs), self.output[index], idx
+
+    def group(self, idx) -> Tensor:
+        """
+        Group the characters into equal
+        sized embeddings.  Since I'm using high order layers these
+        aren't actual embeddings, they are just groups of n
+        characters
+        """
+        index = self.valid_ids[idx]
+        if torch.is_tensor(index):
+            index = index.tolist()
+
+        inputs = self.inputs[index].clone()
+        if self.transforms is not None:
+            inputs = self.transforms(inputs)
+
+        return (
+            self.normalize(inputs).reshape(inputs.shape[0], -1, self._embedding_size),
+            self.output[index].reshape(self.output.shape[0], -1, self._embedding_size),
+            idx,
+        )
+
+    def __getitem__(self, idx) -> Tensor:
+        if self._transformer is True:
+            return self.group(idx)
+        else:
+            return self.flat(idx)
