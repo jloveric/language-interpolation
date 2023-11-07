@@ -71,6 +71,27 @@ def test_single_text_dataset_for_conv():
     assert dataset.output.shape[1] == num_targets
 
 
+def test_single_text_dataset_transformer():
+    num_features = 10
+    num_targets = 1
+    embedding_size=100
+
+    dataset = SingleTextDataset(
+        gutenberg_ids=[1, 2],
+        features=num_features,
+        targets=num_targets,
+        num_workers=0,
+        add_channel_dimension=True,
+        embedding_size=embedding_size,
+    )
+    print("got dataset from ids")
+    print("values", iter(dataset(10))
+    assert dataset.inputs.shape[0] == dataset.output.shape[0]
+    assert dataset.inputs.shape[1] == 1
+    assert dataset.inputs.shape[2] == num_features
+    assert dataset.output.shape[1] == num_targets
+
+
 @pytest.mark.parametrize("add_channel_dimension", [True, False])
 def test_randomize_characters(add_channel_dimension: bool):
     num_features = 10

@@ -454,7 +454,7 @@ class SingleTextDataset(Dataset):
         Group the characters into equal
         sized embeddings.  Since I'm using high order layers these
         aren't actual embeddings, they are just groups of n
-        characters
+        characters where the number of characters is "embedding_size"
         """
         index = self.valid_ids[idx]
         if torch.is_tensor(index):
@@ -475,3 +475,6 @@ class SingleTextDataset(Dataset):
             return self.group(idx)
         else:
             return self.flat(idx)
+
+    def __call__(self, idx) -> Tensor:
+        return self.__getitem__(idx)
