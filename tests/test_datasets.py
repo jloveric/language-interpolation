@@ -82,10 +82,13 @@ def test_single_text_dataset_transformer():
         targets=num_targets,
         num_workers=0,
         add_channel_dimension=True,
+        transformer=True,
         embedding_size=embedding_size,
     )
+    data = dataset(10)
+
     print("got dataset from ids")
-    print("values", iter(dataset(10))
+    print("values", data)
     assert dataset.inputs.shape[0] == dataset.output.shape[0]
     assert dataset.inputs.shape[1] == 1
     assert dataset.inputs.shape[2] == num_features
