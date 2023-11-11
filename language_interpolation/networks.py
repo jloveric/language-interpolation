@@ -4,8 +4,8 @@ from pytorch_lightning import LightningModule
 import torch.optim as optim
 import torch_optimizer as alt_optim
 import torch
-from high_order_layers_torch.networks import *
-from high_order_layers_torch.layers import MaxAbsNormalization
+from high_order_layers_torch.networks import LowOrderMLP, HighOrderMLP, HighOrderFullyConvolutionalNetwork, HighOrderTailFocusNetwork
+from high_order_layers_torch.layers import MaxAbsNormalization, high_order_fc_layers
 from torchmetrics import Accuracy
 from torch import Tensor
 
@@ -97,7 +97,7 @@ class PredictionNetMixin:
 
 class HighOrderAttention(torch.nn.Module):
     """
-    Basic attention. Done for no other reason than may own understanding
+    Basic attention. Done for no other reason than my own understanding
     and experimentation.
     """
 
@@ -232,7 +232,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             )
             layer.append(new_layer)
 
-        self.model = nn.Sequential(*layer)
+        self.model = torch.nn.Sequential(*layer)
 
     def forward(self, x: Tensor) -> Tensor:
         return self.model(x)
@@ -271,7 +271,7 @@ def select_network(cfg: DictConfig, device: str = None):
         )
         layer_list.append(lower_layers)
 
-        model = nn.Sequential(*layer_list)
+        model = torch.nn.Sequential(*layer_list)
     elif cfg.net.model_type == "high_order_transformer":
         model = HighOrderAttentionNetwork(
             cfg.net.layers, cfg.net.n, cfg.net.segments, normalization=None
@@ -311,7 +311,7 @@ def select_network(cfg: DictConfig, device: str = None):
         )
 
         linear = torch.nn.LazyLinear(out_features=cfg.net.out_features)
-        model = nn.Sequential(conv, linear)
+        model = torch.nn.Sequential(conv, linear)
     elif cfg.net.model_type == "high_order_tail_focus":
         tail_focus = HighOrderTailFocusNetwork(
             layer_type=cfg.net.layer_type,
@@ -327,7 +327,7 @@ def select_network(cfg: DictConfig, device: str = None):
         )
 
         linear = torch.nn.LazyLinear(out_features=cfg.net.out_features)
-        model = nn.Sequential(tail_focus, linear)
+        model = torch.nn.Sequential(tail_focus, linear)
 
         widths, output_sizes = tail_focus.compute_sizes(cfg.net.features)
         logger.info(f"TailFocusNetwork widths {widths} output_sizes {output_sizes}")
@@ -360,4 +360,4 @@ class RegressionNet(RegressionMixin, PredictionNetMixin, LightningModule):
 
         self.model = select_network(cfg)
 
-        self.loss = F.mse_loss
+        self.loss = torch.nn.functional.mse_loss

@@ -7,6 +7,7 @@ import logging
 from multiprocessing import Pool
 from functools import partial
 import itertools
+from langchain.text_splitter import CharacterTextSplitter, TokenTextSplitter
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +105,9 @@ def generate_dataset(
     """
     Generate dataset and convert to ordinal values for each character.
     This approach needs to be used for the neural network based approach.
+
+    This is memory inefficient as it accumulates the datasets as a moving
+    window with 1 character.
     """
     text = text_in.encode("ascii", "ignore").decode("ascii")
     print_lines(text)
@@ -201,6 +205,32 @@ def dataset_centered_char(
         target_list.append(n_target)
 
     return feature_list, target_list
+
+def generate_transformer_dataset(
+    text_in: str, features: int
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Generate dataset based on sentences.
+    """
+    text = text_in.encode("ascii", "ignore").decode("ascii")
+    print_lines(text)
+
+    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=100, chunk_overlap=0
+    )
+    
+    texts = text_splitter.split_text(text_in)
+
+
+    feature_list = []
+    target_list = []
+    for i in range(len(text)):
+        n_feature = [ord(val) for val in text[i : (i + features)]]
+        feature_list.append(n_feature)
+        n_target = [ord(val) for val in text[(i + features) : (i + features + targets)]]
+        target_list.append(n_target)
+
+    return torch.tensor(feature_list), torch.tensor([])
 
 
 dataset_registry = {

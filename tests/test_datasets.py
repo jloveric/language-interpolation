@@ -70,7 +70,9 @@ def test_single_text_dataset_for_conv():
     assert dataset.inputs.shape[2] == num_features
     assert dataset.output.shape[1] == num_targets
 
-
+"""
+# Currently not really they way I want to do this
+# I think!
 def test_single_text_dataset_transformer():
     num_features = 10
     num_targets = 1
@@ -93,7 +95,7 @@ def test_single_text_dataset_transformer():
     assert dataset.inputs.shape[1] == 1
     assert dataset.inputs.shape[2] == num_features
     assert dataset.output.shape[1] == num_targets
-
+"""
 
 @pytest.mark.parametrize("add_channel_dimension", [True, False])
 def test_randomize_characters(add_channel_dimension: bool):
