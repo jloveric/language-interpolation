@@ -206,31 +206,20 @@ def dataset_centered_char(
 
     return feature_list, target_list
 
-def generate_transformer_dataset(
-    text_in: str, features: int
+def generate_flat_dataset(
+    text_in: str, features: int, targets: int
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
-    Generate dataset based on sentences.
+    Generate dataset based on sentences. Just return the 
+    text as ascii character codes (0-n). Features and targets
+    are ignored.
     """
     text = text_in.encode("ascii", "ignore").decode("ascii")
     print_lines(text)
 
-    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-        chunk_size=100, chunk_overlap=0
-    )
-    
-    texts = text_splitter.split_text(text_in)
+    text_as_ord = [ord(val) for val in text]
 
-
-    feature_list = []
-    target_list = []
-    for i in range(len(text)):
-        n_feature = [ord(val) for val in text[i : (i + features)]]
-        feature_list.append(n_feature)
-        n_target = [ord(val) for val in text[(i + features) : (i + features + targets)]]
-        target_list.append(n_target)
-
-    return torch.tensor(feature_list), torch.tensor([])
+    return torch.tensor(text_as_ord), torch.tensor([])
 
 
 dataset_registry = {
@@ -238,6 +227,7 @@ dataset_registry = {
     "centered": dataset_centered,
     "sequence_of_char": generate_dataset_char,
     "centered_char": dataset_centered_char,
+    "flat" : generate_flat_dataset,
 }
 
 
@@ -506,5 +496,110 @@ class SingleTextDataset(Dataset):
         else:
             return self.flat(idx)
 
+    def __call__(self, idx) -> Tensor:
+        return self.__getitem__(idx)
+    
+
+class TextTransformerDataset(Dataset):
+    """
+    This dataset is different than the typical transformer dataset. Instead
+    of using a mask, I select random locations an make sure each sample
+    is the same size for a batch. Samples are randomized within a batch, but
+    sample width is only randomized per batch.
+    """
+    
+    def __init__(
+        self,
+        filenames: List[str] = None,
+        gutenberg_ids: List[int] = None,
+        text: str = None,
+        characters_per_feature: int = 10,
+        max_features=100,
+        targets: int = 1,
+        max_size: int = -1,
+        dataset_generator: Callable[
+            [str, int, int], Tuple[Any, Any]
+        ] = generate_flat_dataset,
+        num_workers: int = 0,
+        add_channel_dimension: bool = False,
+        transforms: Callable[[Tensor], Tensor] = None,
+        embedding_size: int = None,
+        
+    ):
+        """
+        Args :
+            filenames : List of filenames to load data from
+            characters_per_feature : Number of characters that define a feature (characters - this is basically the token size)
+            max_features : maximum number of features to use (4k for a 4k context windows)
+            targets : Number of output features (characters)
+            max_size : Set the maximum number of characters to read from file.  Defaults
+            to -1 which is to read everything.
+            dataset_generator: A function that converts text into a tuple of features, targets
+            num_workers: Number of parallel workers when more than one book is being
+            processed.
+            add_channel_dimension: For convnets we need to add a channel dimension to the data
+            embedding_size: Size of the embedding if a transformer is being used.
+        """
+
+        list_features, list_targets = dataset_sequential(
+            filenames=filenames,
+            gutenberg_ids=gutenberg_ids,
+            text=text,
+            features=None,
+            targets=None,
+            max_size=max_size,
+            dataset_generator=dataset_generator,
+            num_workers=num_workers,
+        )
+
+        list_features = list(itertools.chain(*list_features))
+        #list_targets = list(itertools.chain(*list_targets))
+
+        self.inputs = torch.stack(list_features)
+        print('self.inputs', self.inputs)
+        print('self.inputs.shape', self.inputs.shape)
+        #self.output = torch.stack(list_targets)
+        if add_channel_dimension is True:
+            self.inputs = self.inputs.unsqueeze(1)
+
+        self.targets = targets
+        self.transforms = transforms
+        self.valid_ids = list(range(0, len(list_features)))
+        self._embedding_size = embedding_size
+        self._characters_per_feature = characters_per_feature
+        self._max_features = max_features
+        self._max_characters = self._characters_per_feature*max_features
+
+    def __len__(self):
+        return len(self.valid_ids)
+
+    def normalize(self, data):
+        return (data - 64 + 0.5) / 64.0
+
+    def group(self, idx) -> Tensor:
+        """
+        Group the characters into equal
+        sized embeddings.  Since I'm using high order layers these
+        aren't actual embeddings, they are just groups of n
+        characters where the number of characters is "embedding_size"
+        """
+        index = self.valid_ids[idx]
+        if torch.is_tensor(index):
+            index = index.tolist()
+
+        inputs = self.inputs[index:(index+self._max_characters)].clone()
+        if self.transforms is not None:
+            inputs = self.transforms(inputs)
+
+        print('group inputs.shape', inputs.shape)
+
+        return (
+            self.normalize(inputs).reshape(self._max_features, self._characters_per_feature),
+            idx,
+        )
+
+    def __getitem__(self, idx) -> Tensor:
+        return self.group(idx)
+        
     def __call__(self, idx) -> Tensor:
         return self.__getitem__(idx)

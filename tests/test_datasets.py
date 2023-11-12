@@ -4,6 +4,7 @@ from language_interpolation.single_text_dataset import (
     dataset_from_file,
     SingleTextDataset,
     RandomizeCharacters,
+    TextTransformerDataset
 )
 from torch.utils.data import DataLoader, Dataset
 import torch
@@ -70,32 +71,30 @@ def test_single_text_dataset_for_conv():
     assert dataset.inputs.shape[2] == num_features
     assert dataset.output.shape[1] == num_targets
 
-"""
+
 # Currently not really they way I want to do this
 # I think!
-def test_single_text_dataset_transformer():
-    num_features = 10
+def test_text_transformer_dataset():
+    characters_per_feature = 10
     num_targets = 1
     embedding_size=100
 
-    dataset = SingleTextDataset(
+    dataset =TextTransformerDataset(
         gutenberg_ids=[1, 2],
-        features=num_features,
+        characters_per_feature=characters_per_feature,
         targets=num_targets,
         num_workers=0,
         add_channel_dimension=True,
-        transformer=True,
         embedding_size=embedding_size,
     )
-    data = dataset(10)
+    data = dataset(0)
 
-    print("got dataset from ids")
-    print("values", data)
-    assert dataset.inputs.shape[0] == dataset.output.shape[0]
-    assert dataset.inputs.shape[1] == 1
-    assert dataset.inputs.shape[2] == num_features
-    assert dataset.output.shape[1] == num_targets
-"""
+    print("data size", data)
+    #assert dataset.inputs.shape[0] == dataset.output.shape[0]
+    #assert dataset.inputs.shape[1] == 1
+    #assert dataset.inputs.shape[2] == num_features
+    #assert dataset.output.shape[1] == num_targets
+
 
 @pytest.mark.parametrize("add_channel_dimension", [True, False])
 def test_randomize_characters(add_channel_dimension: bool):

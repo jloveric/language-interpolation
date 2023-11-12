@@ -162,6 +162,7 @@ class HighOrderAttention(torch.nn.Module):
         kt = self.key_layer(k)
         vt = self.value_layer(v)
 
+        # Turn into [batch,(features/encodings),encoding size]
         qt = qt.reshape(query.shape[0], query.shape[1], qt.shape[1])
         kt = kt.reshape(key.shape[0], key.shape[1], kt.shape[1])
         vt = vt.reshape(value.shape[0], value.shape[1], vt.shape[1])
@@ -171,6 +172,7 @@ class HighOrderAttention(torch.nn.Module):
         # print("qk.shape", qk.shape)
 
         # qkv = self.normalization(qk) * vt
+        # Matrix multiply of last 2 dimensions
         qkv = qk @ vt
         # print("qkv.shape", qkv.shape)
 
