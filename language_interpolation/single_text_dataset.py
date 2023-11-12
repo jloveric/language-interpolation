@@ -325,7 +325,7 @@ def dataset_sequential(
     if gutenberg_ids is not None:
 
         if num_workers > 0:  # Run in parallel
-
+            print("Downloading in parallel", num_workers)
             pdataset = partial(
                 dataset_from_gutenberg,
                 features=features,
@@ -344,6 +344,7 @@ def dataset_sequential(
                 list_targets.append(target_res)
 
         else:  # Run in serial
+            print("Downloading in serial")
             for index in gutenberg_ids:
 
                 feature_list, target_list = dataset_from_gutenberg(
@@ -356,7 +357,7 @@ def dataset_sequential(
 
                 list_features.append(feature_list)
                 list_targets.append(target_list)
-
+    print('list_features', list_features, 'list_targets', list_targets)
     return list_features, list_targets
 
 

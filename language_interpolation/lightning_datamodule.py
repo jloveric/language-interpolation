@@ -8,11 +8,14 @@ from language_interpolation.single_text_dataset import (
     SingleTextDataset,
     TextTransformerDataset,
     generate_dataset,
+    generate_flat_dataset,
     unify_ids,
     create_full_paths,
 )
 from language_interpolation.dataset_from_representation import DatasetFromRepresentation
 import logging
+import random
+import torch
 
 logger = logging.getLogger(__name__)
 
@@ -268,7 +271,7 @@ class TransformerDataModule(pl.LightningDataModule):
         max_size: int = -1,
         dataset_generator: Callable[
             [str, int, int], Tuple[Tensor, Tensor]
-        ] = generate_dataset,
+        ] = generate_flat_dataset,
         root_dir: str = ".",
         add_channel_dimension: bool = False,
         transforms: Callable[[Tensor], Tensor] = None,
@@ -300,6 +303,14 @@ class TransformerDataModule(pl.LightningDataModule):
         self._add_channel_dimension = add_channel_dimension
         self._transforms = transforms
 
+    def collate_fn(self, batch) :
+        this_size = random.randomint(0, self._max_size)
+        final_features = torch.stack([sample[:this_size] for sample in batch])
+        final_targets = torch.stack([sample[this_size] for sample in batch])
+
+        return final_features, final_targets
+
+
     def setup(self, stage: Optional[str] = None):
 
         train_files = create_full_paths(self._root_dir, self._train_filenames)
@@ -313,7 +324,7 @@ class TransformerDataModule(pl.LightningDataModule):
         self._train_dataset = TextTransformerDataset(
             filenames=train_files,
             gutenberg_ids=train_ids,
-            characters_per_features=self._characters_per_feature,
+            characters_per_feature=self._characters_per_feature,
             max_features=self._max_features,
             targets=self._targets,
             max_size=self._max_size,
@@ -371,6 +382,7 @@ class TransformerDataModule(pl.LightningDataModule):
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
             drop_last=True,  # Needed for batchnorm
+            collate_fn = self.collate_fn
         )
 
     def val_dataloader(self) -> DataLoader:
@@ -381,6 +393,7 @@ class TransformerDataModule(pl.LightningDataModule):
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
             drop_last=True,
+            collate_fn = self.collate_fn
         )
 
     def test_dataloader(self) -> DataLoader:
@@ -391,4 +404,5 @@ class TransformerDataModule(pl.LightningDataModule):
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
             drop_last=True,
+            collate_fn = self.collate_fn
         )
