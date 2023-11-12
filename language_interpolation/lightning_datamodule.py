@@ -248,7 +248,8 @@ class DataModuleFromSequentialDatasets(pl.LightningDataModule):
 class TransformerDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        features: int,
+        characters_per_feature: int,
+        max_features: int,
         targets: int = 1,
         batch_size: int = 32,
         num_workers: int = 10,
@@ -273,10 +274,11 @@ class TransformerDataModule(pl.LightningDataModule):
         transforms: Callable[[Tensor], Tensor] = None,
     ):
         """
-        Data module for project gutenberg
+        Data module for this type of transformer
         """
         super().__init__()
-        self._features = features
+        self._characters_per_feature = characters_per_feature
+        self._max_features = max_features
         self._targets = targets
         self._batch_size = batch_size
         self._num_workers = num_workers
@@ -311,7 +313,8 @@ class TransformerDataModule(pl.LightningDataModule):
         self._train_dataset = TextTransformerDataset(
             filenames=train_files,
             gutenberg_ids=train_ids,
-            features=self._features,
+            characters_per_features=self._characters_per_feature,
+            max_features=self._max_features,
             targets=self._targets,
             max_size=self._max_size,
             dataset_generator=self._dataset_generator,
@@ -322,7 +325,8 @@ class TransformerDataModule(pl.LightningDataModule):
         self._val_dataset = TextTransformerDataset(
             filenames=val_files,
             gutenberg_ids=val_ids,
-            features=self._features,
+            characters_per_feature=self._characters_per_feature,
+            max_features=self._max_features,
             targets=self._targets,
             max_size=self._max_size,
             dataset_generator=self._dataset_generator,
@@ -333,7 +337,8 @@ class TransformerDataModule(pl.LightningDataModule):
         self._test_dataset = TextTransformerDataset(
             filenames=test_files,
             gutenberg_ids=test_ids,
-            features=self._features,
+            characters_per_feature=self._characters_per_feature,
+            max_features=self._max_features,
             targets=self._targets,
             max_size=self._max_size,
             dataset_generator=self._dataset_generator,
