@@ -89,7 +89,7 @@ def test_text_transformer_dataset():
     )
     data = dataset(0)
 
-    print("data size", data)
+    print("data size", data[0].shape)
     #assert dataset.inputs.shape[0] == dataset.output.shape[0]
     #assert dataset.inputs.shape[1] == 1
     #assert dataset.inputs.shape[2] == num_features
