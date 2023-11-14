@@ -17,13 +17,13 @@ def test_transformer_datamodule() :
         characters_per_feature=10,
         max_features=100,
         batch_size=32,
-        gutenberg_ids_test=[0],
-        gutenberg_ids_train=[1],
-        gutenberg_ids_val=[2],
+        gutenberg_ids_test=[1],
+        gutenberg_ids_train=[2],
+        gutenberg_ids_val=[3],
         pre_process_workers=0
     )
 
-    #data_module.setup()
+    data_module.setup()
 
-    #train_dataloader = data_module.train_dataloader()
+    train_dataloader = data_module.train_dataloader()
 
