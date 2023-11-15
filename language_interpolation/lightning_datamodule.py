@@ -304,9 +304,12 @@ class TransformerDataModule(pl.LightningDataModule):
         self._transforms = transforms
 
     def collate_fn(self, batch) :
-        this_size = random.randomint(0, self._max_size)
-        final_features = torch.stack([sample[:this_size] for sample in batch])
-        final_targets = torch.stack([sample[this_size] for sample in batch])
+        print('batch.size', batch[0][0].shape,'batch len', len(batch))
+        print('max_size', self._max_size)
+        max_size = max(self._max_size, batch[0][0].shape[0])
+        this_size = random.randint(0, max_size)
+        final_features = torch.stack([sample[0][:this_size] for sample in batch])
+        final_targets = torch.stack([sample[0][this_size] for sample in batch])
 
         return final_features, final_targets
 

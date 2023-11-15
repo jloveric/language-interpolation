@@ -557,8 +557,7 @@ class TextTransformerDataset(Dataset):
         #list_targets = list(itertools.chain(*list_targets))
 
         self.inputs = torch.stack(list_features)
-        print('self.inputs', self.inputs)
-        print('self.inputs.shape', self.inputs.shape)
+        
         #self.output = torch.stack(list_targets)
         if add_channel_dimension is True:
             self.inputs = self.inputs.unsqueeze(1)
@@ -572,7 +571,7 @@ class TextTransformerDataset(Dataset):
         self._max_characters = self._characters_per_feature*max_features
 
     def __len__(self):
-        return len(self.valid_ids)
+        return len(self.inputs)-self._max_characters
 
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
@@ -588,11 +587,11 @@ class TextTransformerDataset(Dataset):
         if torch.is_tensor(index):
             index = index.tolist()
 
-        inputs = self.inputs[index:(index+self._max_characters)].clone()
+        max_size = min(torch.numel(self.inputs)-index, self._max_characters)
+
+        inputs = self.inputs[index:(index+max_size)].clone()
         if self.transforms is not None:
             inputs = self.transforms(inputs)
-
-        print('group inputs.shape', inputs.shape)
 
         return (
             self.normalize(inputs).reshape(self._max_features, self._characters_per_feature),

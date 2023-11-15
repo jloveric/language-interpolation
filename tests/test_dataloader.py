@@ -27,3 +27,8 @@ def test_transformer_datamodule() :
 
     train_dataloader = data_module.train_dataloader()
 
+    for index, element in enumerate(iter(train_dataloader)):
+        print('index', index)
+        print('element', element)
+        break
+
