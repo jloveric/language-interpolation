@@ -19,13 +19,10 @@ high-order-layers-torch = "^2.0.0"
 langchain = "^0.0.334"
 torch = "2.0.0"
 
-[tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
-black = "^22.3.0"
-lightgbm = "^3.3.2"
-
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
+pytest = "^6.2.5"
+lightgbm = "^3.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
