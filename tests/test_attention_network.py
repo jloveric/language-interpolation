@@ -1,13 +1,5 @@
 import pytest
-from language_interpolation.single_text_dataset import (
-    dataset_from_gutenberg,
-    dataset_from_file,
-    SingleTextDataset,
-    RandomizeCharacters,
-    TextTransformerDataset
-)
-from torch.utils.data import DataLoader, Dataset
-import torch
+
 from language_interpolation.networks import HighOrderAttentionNetwork
 from language_interpolation.lightning_datamodule import TransformerDataModule
 
@@ -38,7 +30,9 @@ def test_attention_network() :
         layer_type="continuous"
     )
     result = network(input_data)
-    print('result', result)
-
+    print('result', result.shape)
+    assert result.shape[0] == 32
+    # middle size varries from batch to batch.
+    assert result.shape[2] == 5
     
 
