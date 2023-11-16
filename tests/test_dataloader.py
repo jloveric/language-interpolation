@@ -28,7 +28,7 @@ def test_transformer_datamodule() :
     train_dataloader = data_module.train_dataloader()
 
     for index, element in enumerate(iter(train_dataloader)):
-        print('index', index)
-        print('element', element)
-        break
-
+        print("element shape", element[0].shape)
+        assert element[0] is not None
+        assert element[1] is not None
+        
