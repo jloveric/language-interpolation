@@ -220,24 +220,36 @@ def high_order_attention_block(
 
 
 class HighOrderAttentionNetwork(torch.nn.Module):
-    def __init__(self, layers: list, n: int, segments: int, normalization: None):
-        layer = []
+    def __init__(self, layer_type: str, layers: list, n: int, segments: int, normalization: None):
+        super().__init__()
+        self.layer = []
         for element in layers:
             embed_dim = element[0]
             out_dim = element[1]
             new_layer = high_order_attention_block(
                 embed_dim=embed_dim,
                 out_dim=out_dim,
+                layer_type=layer_type,
                 segments=segments,
                 n=n,
                 normalization=normalization,
             )
-            layer.append(new_layer)
+            self.layer.append(new_layer)
 
-        self.model = torch.nn.Sequential(*layer)
+        #self.model = torch.nn.Sequential(*layer)
 
     def forward(self, x: Tensor) -> Tensor:
-        return self.model(x)
+        query=x
+        key = x
+        value = x
+        for layer in self.layer :
+            res = layer(query, key, value)
+            query = res
+            key = res
+            value = res
+        
+        return res
+        #return self.model(x)
 
 
 def select_network(cfg: DictConfig, device: str = None):
@@ -276,7 +288,7 @@ def select_network(cfg: DictConfig, device: str = None):
         model = torch.nn.Sequential(*layer_list)
     elif cfg.net.model_type == "high_order_transformer":
         model = HighOrderAttentionNetwork(
-            cfg.net.layers, cfg.net.n, cfg.net.segments, normalization=None
+            cfg.net.layer_type, cfg.net.layers, cfg.net.n, cfg.net.segments, normalization=None
         )
 
     elif cfg.net.model_type == "high_order":
