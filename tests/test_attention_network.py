@@ -3,7 +3,7 @@ import pytest
 from language_interpolation.networks import HighOrderAttentionNetwork
 from language_interpolation.lightning_datamodule import TransformerDataModule
 
-from language_interpolation.lightning_datamodule import TransformerDataModule
+from omegaconf import DictConfig
 
 def test_attention_network() :
     data_module = TransformerDataModule(
@@ -34,5 +34,3 @@ def test_attention_network() :
     assert result.shape[0] == 32
     # middle size varries from batch to batch.
     assert result.shape[2] == 5
-    
-

@@ -17,6 +17,8 @@ from language_interpolation.utils import (
     TextGenerationSampler,
     create_gutenberg_cache,
 )
+from language_interpolation.lightning_datamodule import TransformerDataModule
+
 import logging
 import traceback
 
@@ -43,30 +45,52 @@ def run_language_interpolation(cfg: DictConfig):
                     f"data.type must be centered or sequence. recieved {cfg.data.type}"
                 )
 
-            datamodule = GutenbergDataModule(
-                features=cfg.net.features,
-                targets=1,
-                num_workers=cfg.data.num_workers,
-                pre_process_workers=cfg.data.pre_process_workers,
-                gutenberg_ids_train=cfg.data.train.gutenberg_ids,
-                gutenberg_ids_val=cfg.data.val.gutenberg_ids,
-                gutenberg_ids_test=cfg.data.test.gutenberg_ids,
-                gutenberg_range_train=cfg.data.train.gutenberg_range,
-                gutenberg_range_val=cfg.data.val.gutenberg_range,
-                gutenberg_range_test=cfg.data.test.gutenberg_range,
-                train_filenames=cfg.data.train.filenames,
-                val_filenames=cfg.data.val.filenames,
-                test_filenames=cfg.data.test.filenames,
-                max_size=cfg.data.max_size,
-                dataset_generator=dataset_generator,
-                add_channel_dimension=cfg.data.add_channel_dimension,
-                transforms=RandomizeCharacters(
+            if cfg.net.model_type == "high_order_transformer":
+                datamodule = TransformerDataModule(
+                    characters_per_feature=10,
+                    max_features=100,
+                    batch_size=32,
+                    gutenberg_ids_test=[1],
+                    gutenberg_ids_train=[2],
+                    gutenberg_ids_val=[3],
+                    num_workers=cfg.data.num_workers,
+                    pre_process_workers=cfg.data.pre_process_workers,
+                    gutenberg_ids_train=cfg.data.train.gutenberg_ids,
+                    gutenberg_ids_val=cfg.data.val.gutenberg_ids,
+                    gutenberg_ids_test=cfg.data.test.gutenberg_ids,
+                    gutenberg_range_train=cfg.data.train.gutenberg_range,
+                    gutenberg_range_val=cfg.data.val.gutenberg_range,
+                    gutenberg_range_test=cfg.data.test.gutenberg_range,
+                    train_filenames=cfg.data.train.filenames,
+                    val_filenames=cfg.data.val.filenames,
+                    test_filenames=cfg.data.test.filenames,
+                    max_size=cfg.data.max_size,
+                )
+            else:
+                datamodule = GutenbergDataModule(
                     features=cfg.net.features,
-                    symbols=128,
-                    random_frac=cfg.data.random_char_frac,
+                    targets=1,
+                    num_workers=cfg.data.num_workers,
+                    pre_process_workers=cfg.data.pre_process_workers,
+                    gutenberg_ids_train=cfg.data.train.gutenberg_ids,
+                    gutenberg_ids_val=cfg.data.val.gutenberg_ids,
+                    gutenberg_ids_test=cfg.data.test.gutenberg_ids,
+                    gutenberg_range_train=cfg.data.train.gutenberg_range,
+                    gutenberg_range_val=cfg.data.val.gutenberg_range,
+                    gutenberg_range_test=cfg.data.test.gutenberg_range,
+                    train_filenames=cfg.data.train.filenames,
+                    val_filenames=cfg.data.val.filenames,
+                    test_filenames=cfg.data.test.filenames,
+                    max_size=cfg.data.max_size,
+                    dataset_generator=dataset_generator,
                     add_channel_dimension=cfg.data.add_channel_dimension,
-                ),
-            )
+                    transforms=RandomizeCharacters(
+                        features=cfg.net.features,
+                        symbols=128,
+                        random_frac=cfg.data.random_char_frac,
+                        add_channel_dimension=cfg.data.add_channel_dimension,
+                    ),
+                )
 
             lr_monitor = LearningRateMonitor(logging_interval="epoch")
             early_stopping = EarlyStopping(monitor="train_loss", patience=20)
