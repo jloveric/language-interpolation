@@ -32,5 +32,4 @@ def test_attention_network() :
     result = network(input_data)
     print('result', result.shape)
     assert result.shape[0] == 32
-    # middle size varries from batch to batch.
-    assert result.shape[2] == 5
+    assert result.shape[1] == 1

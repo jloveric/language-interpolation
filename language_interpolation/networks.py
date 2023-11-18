@@ -235,8 +235,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
                 normalization=normalization,
             )
             self.layer.append(new_layer)
-
-        #self.model = torch.nn.Sequential(*layer)
+        
+        out_dim = layers[-1][1]
+        self._output_layer = high_order_fc_layers(layer_type=layer_type,n=n, segments=segments, in_features=out_dim, out_features=1)
 
     def forward(self, x: Tensor) -> Tensor:
         query=x
@@ -248,7 +249,10 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             key = res
             value = res
         
-        return res
+        average = torch.sum(res, dim=1)/res.shape[1]
+        final = self._output_layer(average)
+        
+        return final
         #return self.model(x)
 
 
