@@ -8,6 +8,12 @@ data:
   # for convolutional input you need to set this to true
   add_channel_dimension: false
 
+  # for transformers
+  # trained context size is characters_per_feature*max_features
+  characters_per_feature: 10
+  max_features: 100
+
+
   train:
     filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
 

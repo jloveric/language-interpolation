@@ -47,12 +47,10 @@ def run_language_interpolation(cfg: DictConfig):
 
             if cfg.net.model_type == "high_order_transformer":
                 datamodule = TransformerDataModule(
-                    characters_per_feature=10,
-                    max_features=100,
-                    batch_size=32,
-                    gutenberg_ids_test=[1],
-                    gutenberg_ids_train=[2],
-                    gutenberg_ids_val=[3],
+                    characters_per_feature=cfg.data.characters_per_feature,
+                    max_features=cfg.data.max_features,
+                    batch_size=cfg.batch_size,
+                    targets=1,
                     num_workers=cfg.data.num_workers,
                     pre_process_workers=cfg.data.pre_process_workers,
                     gutenberg_ids_train=cfg.data.train.gutenberg_ids,
@@ -70,6 +68,7 @@ def run_language_interpolation(cfg: DictConfig):
                 datamodule = GutenbergDataModule(
                     features=cfg.net.features,
                     targets=1,
+                    batch_size=cfg.batch_size,
                     num_workers=cfg.data.num_workers,
                     pre_process_workers=cfg.data.pre_process_workers,
                     gutenberg_ids_train=cfg.data.train.gutenberg_ids,
