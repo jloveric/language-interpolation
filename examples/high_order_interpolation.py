@@ -46,6 +46,8 @@ def run_language_interpolation(cfg: DictConfig):
                 )
 
             if cfg.net.model_type == "high_order_transformer":
+
+                # dataset_generator is only one type so using the default
                 datamodule = TransformerDataModule(
                     characters_per_feature=cfg.data.characters_per_feature,
                     max_features=cfg.data.max_features,

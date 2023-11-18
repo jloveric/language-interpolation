@@ -12,19 +12,5 @@ features: 16
 # number of Fourier components.
 model_type: high_order_transformer
 n: 2
-n_in: 2
-n_out: null
-n_hidden: null
-periodicity: 2.0
-rescale_output: False
-# scale: 2.0
-input:
-  segments: 128
-  width: ${net.features}
-output:
-  segments: 8
-  width: 128
-hidden:
-  segments: 8
-  layers: 2
-  width: 10
+
+layers : [[]]
