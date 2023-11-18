@@ -22,6 +22,9 @@ def test_attention_network() :
     input_data, output = next(iter(train_dataloader))
     print('input shape', input_data.shape, "output.shape", output.shape)
 
+    assert input_data.shape[0]==32
+    assert input_data.shape[2]==10
+
     network = HighOrderAttentionNetwork(
         layers = [[10, 5],[5, 5]],
         n=3,
