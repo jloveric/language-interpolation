@@ -12,5 +12,5 @@ features: 16
 # number of Fourier components.
 model_type: high_order_transformer
 n: 2
-
-layers : [[]]
+segments: 64
+layers : [[10, 10],[10, 5],[5, 5]]

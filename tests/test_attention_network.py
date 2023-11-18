@@ -19,9 +19,11 @@ def test_attention_network() :
     data_module.setup()
 
     train_dataloader = data_module.train_dataloader()
-    input_data, output = next(iter(train_dataloader))
+    input_data, output, indexes = next(iter(train_dataloader))
+    print('indexes', indexes)
     print('input shape', input_data.shape, "output.shape", output.shape)
 
+    assert len(indexes) == 32
     assert input_data.shape[0]==32
     assert input_data.shape[2]==10
 
