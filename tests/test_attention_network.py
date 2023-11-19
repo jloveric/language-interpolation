@@ -31,7 +31,7 @@ def test_attention_network() :
         layers = [[10, 5],[5, 5]],
         n=3,
         segments=2,
-        normalization=lambda x: x,
+        normalization=None,
         layer_type="continuous",
         device='cpu'
     )

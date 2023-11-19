@@ -175,7 +175,10 @@ class HighOrderAttention(torch.nn.Module):
         vt = vt.reshape(value.shape[0], value.shape[1], vt.shape[1])
 
         # print("qt.shape", qt.shape, "kt.shape", kt.shape)
-        qk = self.normalization(qt @ kt.transpose(1, 2))
+        if self.normalization is not None:
+            qk = self.normalization(qt @ kt.transpose(1, 2))
+        else :
+            qk = qt @ kt.transpose(1, 2)
         # print("qk.shape", qk.shape)
 
         # qkv = self.normalization(qk) * vt
@@ -259,7 +262,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             n=n,
             segments=segments,
             in_features=out_dim,
-            out_features=1,
+            out_features=128,
             device = device
         )
 
@@ -322,7 +325,7 @@ def select_network(cfg: DictConfig, device: str = None):
             cfg.net.layers,
             cfg.net.n,
             cfg.net.segments,
-            normalization=lambda x: x,
+            normalization=None,
             device=cfg.accelerator,
         )
 
