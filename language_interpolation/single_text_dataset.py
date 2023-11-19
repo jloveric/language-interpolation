@@ -564,13 +564,21 @@ class TextTransformerDataset(Dataset):
         self.targets = targets
         self.transforms = transforms
         self.valid_ids = list(range(0, len(list_features)))
+
+        #print('valid_ids', self.valid_ids)
+        print('inputs.shape', self.inputs.shape)
         self._embedding_size = embedding_size
         self._characters_per_feature = characters_per_feature
         self._max_features = max_features
         self._max_characters = self._characters_per_feature*max_features
+        
+        self.data_size = len(self.inputs)-self._max_characters
 
     def __len__(self):
-        return len(self.inputs)-self._max_characters
+        return (len(self.inputs)-self._max_characters)*(self._max_characters-1)
+
+    def index_converter() :
+        pass
 
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
@@ -582,6 +590,10 @@ class TextTransformerDataset(Dataset):
         aren't actual embeddings, they are just groups of n
         characters where the number of characters is "embedding_size"
         """
+
+        # Now that's lazy
+        idx = idx % self.data_size
+
         index = self.valid_ids[idx]
         if torch.is_tensor(index):
             index = index.tolist()

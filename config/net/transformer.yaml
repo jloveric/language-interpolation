@@ -4,13 +4,10 @@
 layer_type: "discontinuous"
 normalize: true
 
-# Number of characters as input
-features: 16
-
 # Polynomial interpolation points.  Polynomial order
 # is (n-1).  In the case of Fourier series, n is the
 # number of Fourier components.
 model_type: high_order_transformer
 n: 2
 segments: 64
-layers : [[10, 10],[10, 5],[5, 5]]
+layers: [[10, 10], [10, 5], [5, 5]]
