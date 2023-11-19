@@ -54,6 +54,12 @@ discrete and not continuous - in this case we should have a piecewise constant o
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.layers=0 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 net.layer_type=discontinuous
 ```
+### High order transformers (the beginning)
+Using high order transformer blocks
+```
+python examples/high_order_interpolation.py data.type=sequence net=transformer max_epochs=10 optimizer.lr=1e-4 batch_size=32 net.layer_type=discontinuous
+```
+
 ### sparse convolutional network
 Using conv layers (not done too much here, see below for a possibly better network)
 ```

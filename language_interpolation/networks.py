@@ -4,7 +4,12 @@ from pytorch_lightning import LightningModule
 import torch.optim as optim
 import torch_optimizer as alt_optim
 import torch
-from high_order_layers_torch.networks import LowOrderMLP, HighOrderMLP, HighOrderFullyConvolutionalNetwork, HighOrderTailFocusNetwork
+from high_order_layers_torch.networks import (
+    LowOrderMLP,
+    HighOrderMLP,
+    HighOrderFullyConvolutionalNetwork,
+    HighOrderTailFocusNetwork,
+)
 from high_order_layers_torch.layers import MaxAbsNormalization, high_order_fc_layers
 from torchmetrics import Accuracy
 from torch import Tensor
@@ -109,28 +114,30 @@ class HighOrderAttention(torch.nn.Module):
         query_layer: None,
         key_layer: None,
         value_layer: None,
+        device='cpu'
     ):
         super().__init__()
         self.embed_dim = embed_dim
         self.out_dim = out_dim
+        self.device = device
 
         if query_layer is None:
             self.query_layer = torch.nn.Linear(
-                in_features=self.embed_dim, out_features=self.out_dim
+                in_features=self.embed_dim, out_features=self.out_dim, device=device
             )
         else:
             self.query_layer = query_layer
 
         if key_layer is None:
             self.key_layer = torch.nn.Linear(
-                in_features=self.embed_dim, out_features=self.out_dim
+                in_features=self.embed_dim, out_features=self.out_dim, device=device
             )
         else:
             self.key_layer = key_layer
 
         if value_layer is None:
             self.value_layer = torch.nn.Linear(
-                in_features=self.embed_dim, out_features=self.out_dim
+                in_features=self.embed_dim, out_features=self.out_dim, device=device
             )
         else:
             self.value_layer = value_layer
@@ -186,6 +193,7 @@ def high_order_attention_block(
     n: int,
     segments: int,
     normalization=None,
+    device: str='cpu'
 ) -> None:
     query = high_order_fc_layers(
         layer_type=layer_type,
@@ -193,6 +201,7 @@ def high_order_attention_block(
         in_features=embed_dim,
         out_features=out_dim,
         segments=segments,
+        device=device
     )
     key = high_order_fc_layers(
         layer_type=layer_type,
@@ -200,6 +209,7 @@ def high_order_attention_block(
         in_features=embed_dim,
         out_features=out_dim,
         segments=segments,
+        device=device,
     )
     value = high_order_fc_layers(
         layer_type=layer_type,
@@ -207,6 +217,7 @@ def high_order_attention_block(
         in_features=embed_dim,
         out_features=out_dim,
         segments=segments,
+        device=device
     )
     layer = HighOrderAttention(
         embed_dim=embed_dim,
@@ -215,13 +226,17 @@ def high_order_attention_block(
         query_layer=query,
         key_layer=key,
         value_layer=value,
+        device=device
     )
     return layer
 
 
 class HighOrderAttentionNetwork(torch.nn.Module):
-    def __init__(self, layer_type: str, layers: list, n: int, segments: int, normalization: None):
+    def __init__(
+        self, layer_type: str, layers: list, n: int, segments: int, normalization: None, device: str
+    ):
         super().__init__()
+        self._device = device
         self.layer = []
         for element in layers:
             embed_dim = element[0]
@@ -233,27 +248,36 @@ class HighOrderAttentionNetwork(torch.nn.Module):
                 segments=segments,
                 n=n,
                 normalization=normalization,
+                device=device,
             )
             self.layer.append(new_layer)
+
         
         out_dim = layers[-1][1]
-        self._output_layer = high_order_fc_layers(layer_type=layer_type,n=n, segments=segments, in_features=out_dim, out_features=1)
+        self._output_layer = high_order_fc_layers(
+            layer_type=layer_type,
+            n=n,
+            segments=segments,
+            in_features=out_dim,
+            out_features=1,
+            device = device
+        )
 
     def forward(self, x: Tensor) -> Tensor:
-        query=x
+        query = x
         key = x
         value = x
-        for layer in self.layer :
+        for layer in self.layer:
             res = layer(query, key, value)
             query = res
             key = res
             value = res
-        
-        average = torch.sum(res, dim=1)/res.shape[1]
+
+        average = torch.sum(res, dim=1) / res.shape[1]
         final = self._output_layer(average)
-        
+
         return final
-        #return self.model(x)
+        # return self.model(x)
 
 
 def select_network(cfg: DictConfig, device: str = None):
@@ -273,6 +297,7 @@ def select_network(cfg: DictConfig, device: str = None):
             in_features=cfg.net.input.width,
             out_features=cfg.net.hidden.width,
             segments=cfg.net.input.segments,
+            device=cfg.accelerator,
         )
         layer_list.append(input_layer)
 
@@ -286,13 +311,19 @@ def select_network(cfg: DictConfig, device: str = None):
             hidden_layers=cfg.net.hidden.layers - 1,
             non_linearity=torch.nn.ReLU(),
             normalization=normalization,
+            device=cfg.accelerator,
         )
         layer_list.append(lower_layers)
 
         model = torch.nn.Sequential(*layer_list)
     elif cfg.net.model_type == "high_order_transformer":
         model = HighOrderAttentionNetwork(
-            cfg.net.layer_type, cfg.net.layers, cfg.net.n, cfg.net.segments, normalization=None
+            cfg.net.layer_type,
+            cfg.net.layers,
+            cfg.net.n,
+            cfg.net.segments,
+            normalization=lambda x: x,
+            device=cfg.accelerator,
         )
 
     elif cfg.net.model_type == "high_order":
@@ -313,6 +344,7 @@ def select_network(cfg: DictConfig, device: str = None):
             hidden_layers=cfg.net.hidden.layers,
             hidden_segments=cfg.net.hidden.segments,
             normalization=normalization,
+            device=cfg.accelerator,
         )
     elif cfg.net.model_type == "high_order_conv":
         conv = HighOrderFullyConvolutionalNetwork(

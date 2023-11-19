@@ -303,15 +303,21 @@ class TransformerDataModule(pl.LightningDataModule):
         self._add_channel_dimension = add_channel_dimension
         self._transforms = transforms
 
+    def normalize(self, data):
+        return (data - 64 + 0.5) / 64.0
+
     def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
         # The max size includes the output
         max_size = max(self._max_size, batch[0][0].shape[0])
         this_size = random.randint(1, max_size-1)
         final_features = torch.stack([sample[0][:this_size] for sample in batch])
-        final_targets = torch.stack([sample[0][this_size] for sample in batch])
+        
+        # grab the first letter of the next token
+        final_targets = torch.stack([sample[0][this_size][0] for sample in batch])
+        
         final_indexes = [sample[1] for sample in batch]
 
-        return final_features, final_targets, final_indexes
+        return self.normalize(final_features), final_targets, final_indexes
 
 
     def setup(self, stage: Optional[str] = None):

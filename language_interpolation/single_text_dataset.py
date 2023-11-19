@@ -594,7 +594,7 @@ class TextTransformerDataset(Dataset):
             inputs = self.transforms(inputs)
 
         return (
-            self.normalize(inputs).reshape(self._max_features, self._characters_per_feature),
+            inputs.reshape(self._max_features, self._characters_per_feature),
             idx,
         )
 
