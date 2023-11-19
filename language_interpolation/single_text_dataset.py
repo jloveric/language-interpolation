@@ -60,7 +60,7 @@ def unify_ids(specific_ids: List[int], id_range: List[int]):
     return ids
 
 
-def encode_input_from_text(text_in: str, features: int) -> Tuple[torch.tensor, str]:
+def encode_input_from_text(text_in: str, features: int=0) -> Tuple[torch.tensor, str]:
     """
     Convert a string to input that the network can take.  Take the last "features" number
     of characters and convert to numbers.  Return those numbers as the network input, also
@@ -75,7 +75,6 @@ def encode_input_from_text(text_in: str, features: int) -> Tuple[torch.tensor, s
     raw_sample = text[-(features):]
     encoding = [ord(val) for val in raw_sample]
     return torch.tensor(encoding), raw_sample
-
 
 def decode_output_to_text(
     encoding: torch.tensor, topk: int = 1

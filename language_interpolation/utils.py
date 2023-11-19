@@ -61,7 +61,6 @@ def generate_text(
     topk: int = 1,
     add_channel_dimension: bool = False,
 ):
-
     model.eval()
 
     features = features
@@ -91,6 +90,54 @@ def generate_text(
             # prevents the same response for every query.
             actual = random.choices(ascii, values.tolist())
             text_in = text_in + actual[0]
+
+        results.append(text_in.replace("\n", " "))
+
+    return results
+
+
+def generate_transformer_text(
+    model: nn.Module,
+    characters_per_feature: int,
+    max_characters: int,
+    text_list: List[str],
+    output_size: int,
+    topk: int = 1,
+):
+    model.eval()
+
+    for index, text in enumerate(text_list):
+        just = ((len(text) // characters_per_feature)+1) * characters_per_feature
+        text_list[index] = text.rjust(just)
+
+    print('text_list', text_list)
+    print('text lengths', [len(text) for text in text_list])
+    results = []
+    for text_in in text_list:
+        for i in range(output_size):
+            encoding, text_used = encode_input_from_text(
+                text_in=text_in, features=max_characters
+            )
+            print('encoding length', len(encoding), encoding.shape)
+            encoding = (
+                ascii_to_float(encoding)
+                .to(model._device)
+                .reshape(1, -1, characters_per_feature)
+            )
+            print('encoding', encoding)
+            model.eval()
+            output = model(encoding)
+            values, indices, ascii = decode_output_to_text(
+                encoding=output[0], topk=topk
+            )
+
+            # pick the next character weighted by probabilities of each character
+            # prevents the same response for every query.
+            actual = random.choices(ascii, values.tolist())
+            text_in = text_in + actual[0]
+            just = ((len(text_in) // characters_per_feature)+1) * characters_per_feature
+            text_in = text_in.rjust(just)
+
 
         results.append(text_in.replace("\n", " "))
 
