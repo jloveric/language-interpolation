@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger().setLevel(logging.DEBUG)
 
 
-@hydra.main(config_path="../config", config_name="high_order_interpolation")
+@hydra.main(config_path="../config", config_name="high_order_interpolation", version_base="1.3")
 def run_language_interpolation(cfg: DictConfig):
     logger.info(OmegaConf.to_yaml(cfg))
     logger.info("Working directory : {}".format(os.getcwd()))

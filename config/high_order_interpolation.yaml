@@ -13,7 +13,6 @@ data:
   characters_per_feature: 10
   max_features: 100
 
-
   train:
     filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
 

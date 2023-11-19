@@ -5,10 +5,11 @@ High order and piecewise networks for natural language generation (see [here](ht
 layers here is a fully connected network where each link has multiple segments.  Only one segment in
 a link is active for each input so the network sparsity is determined by the number of segments. Although it looks like a standard MLP, the structure is more complicated and is a form of routing network with piecewise polynomials.
 
-
 ![image](images/language-interpolation-drawing.png)
 
 I'm interested in creating larger language models from an ensemble of smaller models.  This would give better flexibility in adding or removing specific sources.
+
+Currently working on sparse high-order transformers
 
 # Dataset
 
