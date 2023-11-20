@@ -32,9 +32,8 @@ def test_attention_network():
     assert input_data.shape[2] == 10
 
     network = HighOrderAttentionNetwork(
-        layers=[[10, 5], [5, 5]],
+        layers=[[10, 5, 64], [5, 5, 2]],
         n=3,
-        segments=2,
         normalization=None,
         layer_type="continuous",
         device="cpu",

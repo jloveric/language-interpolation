@@ -8,6 +8,8 @@ normalize: true
 # is (n-1).  In the case of Fourier series, n is the
 # number of Fourier components.
 model_type: high_order_transformer
-n: 2
-segments: 64
-layers: [[10, 10], [10, 5], [5, 5]]
+n: 3
+input_segments: 64
+segments: 2
+# Layers in the form [input, output, segments]
+layers: [[10, 10, 64], [10, 5,2], [5, 5, 2]]
