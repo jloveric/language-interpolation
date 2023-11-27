@@ -197,10 +197,8 @@ class HighOrderAttention(torch.nn.Module):
             qth = qt[:,:,start:end] 
             kth = kt[:,:,start:end]
             vth = vt[:,:,start:end]
-            if self.normalization is not None:
-                qkh = self.normalization(qth @ kth.transpose(1, 2))
-            else:
-                qkh = torch.nn.functional.softmax(qth @ kth.transpose(1, 2))
+            
+            qkh = torch.nn.functional.softmax(qth @ kth.transpose(1, 2))
 
             # Matrix multiply of last 2 dimensions
             qkv_list.append(qkh @ vth)
