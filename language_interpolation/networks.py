@@ -366,6 +366,7 @@ def select_network(cfg: DictConfig, device: str = None):
             cfg.net.n,
             normalization=None,
             device=cfg.accelerator,
+            heads=cfg.net.heads
         )
 
     elif cfg.net.model_type == "high_order":
