@@ -40,6 +40,7 @@ def test_attention_network():
         heads =2
     )
     result = network(input_data)
+    print('result', result)
     print("result", result.shape)
     assert result.shape[0] == 32
     assert result.shape[1] == 128
