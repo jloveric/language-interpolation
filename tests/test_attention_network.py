@@ -37,6 +37,7 @@ def test_attention_network():
         normalization=None,
         layer_type="continuous",
         device="cpu",
+        heads =2
     )
     result = network(input_data)
     print("result", result.shape)

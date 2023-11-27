@@ -114,34 +114,50 @@ class HighOrderAttention(torch.nn.Module):
         query_layer: None,
         key_layer: None,
         value_layer: None,
-        device='cpu'
+        output_layer: None,
+        heads: int = 1,
+        device="cpu",
     ):
         super().__init__()
         self.embed_dim = embed_dim
         self.out_dim = out_dim
         self.device = device
+        self.heads = heads
 
+        # Default to a linear layer
+        self.query_layer = query_layer
         if query_layer is None:
             self.query_layer = torch.nn.Linear(
-                in_features=self.embed_dim, out_features=self.out_dim, device=device
+                in_features=self.embed_dim,
+                out_features=self.out_dim * heads,
+                device=device,
             )
-        else:
-            self.query_layer = query_layer
 
+        self.key_layer = key_layer
         if key_layer is None:
             self.key_layer = torch.nn.Linear(
-                in_features=self.embed_dim, out_features=self.out_dim, device=device
+                in_features=self.embed_dim,
+                out_features=self.out_dim * heads,
+                device=device,
             )
-        else:
-            self.key_layer = key_layer
 
+        self.value_layer=value_layer
         if value_layer is None:
             self.value_layer = torch.nn.Linear(
-                in_features=self.embed_dim, out_features=self.out_dim, device=device
+                in_features=self.embed_dim,
+                out_features=self.out_dim * heads,
+                device=device,
             )
-        else:
-            self.value_layer = value_layer
+        
+        self.output_layer = output_layer
+        if output_layer is None :
+            self.output_layer = torch.nn.Linear(
+                in_features=self.out_dim*heads,
+                out_features=self.out_dim,
+                device=device,
+            )
 
+        
         if normalization is None:
             self.normalization = lambda x: x
 
@@ -169,24 +185,33 @@ class HighOrderAttention(torch.nn.Module):
         kt = self.key_layer(k)
         vt = self.value_layer(v)
 
-        # Turn into [batch,(features/encodings),encoding size]
+        # Turn into [batch,(features/encodings),(encoding size)*heads]
         qt = qt.reshape(query.shape[0], query.shape[1], qt.shape[1])
         kt = kt.reshape(key.shape[0], key.shape[1], kt.shape[1])
         vt = vt.reshape(value.shape[0], value.shape[1], vt.shape[1])
 
-        # print("qt.shape", qt.shape, "kt.shape", kt.shape)
-        if self.normalization is not None:
-            qk = self.normalization(qt @ kt.transpose(1, 2))
-        else :
-            qk = qt @ kt.transpose(1, 2)
-        # print("qk.shape", qk.shape)
+        qkv_list = []
+        for head in range(self.heads) :
+            start = head*self.out_dim
+            end = (head+1)*self.out_dim
+            qth = qt[:,:,start:end] 
+            kth = kt[:,:,start:end]
+            vth = vt[:,:,start:end]
+            if self.normalization is not None:
+                qkh = self.normalization(qth @ kth.transpose(1, 2))
+            else:
+                qkh = qth @ kth.transpose(1, 2)
 
-        # qkv = self.normalization(qk) * vt
-        # Matrix multiply of last 2 dimensions
-        qkv = qk @ vt
-        # print("qkv.shape", qkv.shape)
+            # Matrix multiply of last 2 dimensions
+            qkv_list.append(qkh @ vth)
 
-        return qkv
+        res = torch.cat(qkv_list,dim=2)
+
+        v = res.reshape(res.shape[0] * res.shape[1], -1)
+        output = self.output_layer(v)
+        final = output.reshape(res.shape[0], res.shape[1], -1)
+
+        return final
 
 
 def high_order_attention_block(
@@ -196,21 +221,22 @@ def high_order_attention_block(
     n: int,
     segments: int,
     normalization=None,
-    device: str='cpu'
+    heads: int = 1,
+    device: str = "cpu",
 ) -> None:
     query = high_order_fc_layers(
         layer_type=layer_type,
         n=n,
         in_features=embed_dim,
-        out_features=out_dim,
+        out_features=out_dim * heads,
         segments=segments,
-        device=device
+        device=device,
     )
     key = high_order_fc_layers(
         layer_type=layer_type,
         n=n,
         in_features=embed_dim,
-        out_features=out_dim,
+        out_features=out_dim * heads,
         segments=segments,
         device=device,
     )
@@ -218,10 +244,21 @@ def high_order_attention_block(
         layer_type=layer_type,
         n=n,
         in_features=embed_dim,
+        out_features=out_dim * heads,
+        segments=segments,
+        device=device,
+    )
+
+    # Applied to multi head attention to recombine (output)
+    output = high_order_fc_layers(
+        layer_type=layer_type,
+        n=n,
+        in_features=out_dim*heads,
         out_features=out_dim,
         segments=segments,
-        device=device
+        device=device,
     )
+
     layer = HighOrderAttention(
         embed_dim=embed_dim,
         out_dim=out_dim,
@@ -229,14 +266,16 @@ def high_order_attention_block(
         query_layer=query,
         key_layer=key,
         value_layer=value,
-        device=device
+        output_layer=output,
+        heads=heads,
+        device=device,
     )
     return layer
 
 
 class HighOrderAttentionNetwork(torch.nn.Module):
     def __init__(
-        self, layer_type: str, layers: list, n: int, normalization: None, device: str
+        self, layer_type: str, layers: list, n: int, normalization: None, heads:int=1, device: str='cuda'
     ):
         super().__init__()
         self._device = device
@@ -252,11 +291,11 @@ class HighOrderAttentionNetwork(torch.nn.Module):
                 segments=segments,
                 n=n,
                 normalization=normalization,
+                heads=heads,
                 device=device,
             )
             self.layer.append(new_layer)
 
-        
         out_dim = layers[-1][1]
         self._output_layer = high_order_fc_layers(
             layer_type=layer_type,
@@ -264,7 +303,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             segments=segments,
             in_features=out_dim,
             out_features=128,
-            device = device
+            device=device,
         )
 
     def forward(self, x: Tensor) -> Tensor:
