@@ -9,10 +9,11 @@ from language_interpolation.utils import generate_transformer_text
 
 def test_attention_network():
     characters_per_feature = 10
+    max_features = 100
 
     data_module = TransformerDataModule(
         characters_per_feature=10,
-        max_features=100,
+        max_features=max_features,
         batch_size=32,
         gutenberg_ids_test=[1],
         gutenberg_ids_train=[2],
@@ -37,7 +38,8 @@ def test_attention_network():
         normalization=None,
         layer_type="continuous",
         device="cpu",
-        heads =2
+        heads =2,
+        max_context=max_features
     )
     result = network(input_data)
     print('result', result)
