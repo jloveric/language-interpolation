@@ -190,6 +190,7 @@ class HighOrderAttention(torch.nn.Module):
         qt = qt.reshape(query.shape[0], query.shape[1], qt.shape[1])
         kt = kt.reshape(key.shape[0], key.shape[1], kt.shape[1])
         vt = vt.reshape(value.shape[0], value.shape[1], vt.shape[1])
+        print('vt', vt)
 
         qkv_list = []
         for head in range(self.heads):
@@ -205,10 +206,14 @@ class HighOrderAttention(torch.nn.Module):
             qkv_list.append(qkh @ vth)
 
         res = torch.cat(qkv_list, dim=2)
+        print('innner res', res)
 
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(v)
         final = output.reshape(res.shape[0], res.shape[1], -1)
+
+        
+
 
         return final
 
@@ -222,7 +227,19 @@ def high_order_attention_block(
     normalization=None,
     heads: int = 1,
     device: str = "cpu",
+    input_scale: int = 2,
 ) -> None:
+    """
+    :param embed_dim: The input embedding dimension
+    :param out_dim: The dimension of the output (as well as input to similarity)
+    :param layer_type: continuous, discontinuous etc...
+    :param segments: number of segments for high order layers
+    :param normalization: normalization function
+    :param heads: number of attention heads
+    :param device: device to run on
+    :param input_scale: 2 means input values are between [-1, 1], 20
+    means they are between [-10, 10]
+    """
     query = high_order_fc_layers(
         layer_type=layer_type,
         n=n,
@@ -230,6 +247,7 @@ def high_order_attention_block(
         out_features=out_dim * heads,
         segments=segments,
         device=device,
+        scale=input_scale,
     )
     key = high_order_fc_layers(
         layer_type=layer_type,
@@ -238,6 +256,7 @@ def high_order_attention_block(
         out_features=out_dim * heads,
         segments=segments,
         device=device,
+        scale=input_scale,
     )
     value = high_order_fc_layers(
         layer_type=layer_type,
@@ -246,6 +265,7 @@ def high_order_attention_block(
         out_features=out_dim * heads,
         segments=segments,
         device=device,
+        scale=input_scale,
     )
 
     # Applied to multi head attention to recombine (output)
@@ -286,7 +306,13 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         super().__init__()
         self._device = device
         self.layer = []
+        self.max_context = max_context
+
         for index, element in enumerate(layers):
+            input_scale = 2.0
+            #if index == 0:
+            #    input_scale = max_context
+
             embed_dim = element[0]
             out_dim = element[1]
             segments = element[2]
@@ -299,6 +325,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
                 normalization=normalization,
                 heads=heads,
                 device=device,
+                input_scale=input_scale,
             )
             self.layer.append(new_layer)
 
@@ -313,17 +340,22 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         )
 
         # Make the positions 0 to max_context-1
-        self.positional_embedding = (
-            torch.arange(max_context, dtype=torch.get_default_dtype()).unsqueeze(1) + 0.5
-        ) / (max_context - 1.0)
+        self.positional_embedding = torch.arange(
+            max_context, dtype=torch.get_default_dtype()
+        ).unsqueeze(1)
 
     def forward(self, x: Tensor) -> Tensor:
-        xp = x+self.positional_embedding[:x.shape[1]]
+        
+        # Scale the input to [-0.5*max_context, 0.5*max_context] where every token is bumped by 1
+        # the 0th token is 0 and the max_context token is 0.5*max_context-1
+        xp = ((0.5 * (x + 1) + self.positional_embedding[: x.shape[1]])*2 - self.max_context)/self.max_context
+        
         query = xp
         key = xp
         value = xp
-        for layer in self.layer:
+        for index, layer in enumerate(self.layer):
             res = layer(query, key, value)
+            print('res', res, 'layer index', index)
             query = res
             key = res
             value = res

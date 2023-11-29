@@ -33,7 +33,7 @@ def test_attention_network():
     assert input_data.shape[2] == 10
 
     network = HighOrderAttentionNetwork(
-        layers=[[10, 5, 64], [5, 5, 2]],
+        layers=[[10, 5, 3], [5, 5, 2]],
         n=3,
         normalization=None,
         layer_type="continuous",
@@ -42,7 +42,7 @@ def test_attention_network():
         max_context=max_features
     )
     result = network(input_data)
-    print('result', result)
+    print('final result', result)
     print("result", result.shape)
     assert result.shape[0] == 32
     assert result.shape[1] == 128
