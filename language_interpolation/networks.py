@@ -333,13 +333,13 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             segments=segments,
             in_features=out_dim,
             out_features=128,
-            device=device,
+            device=self._device,
         )
 
         # Make the positions 0 to max_context-1
         self.positional_embedding = torch.arange(
             max_context, dtype=torch.get_default_dtype()
-        ).unsqueeze(1)
+        ).unsqueeze(1).to(device=self._device)
 
     def forward(self, x: Tensor) -> Tensor:
         
@@ -409,6 +409,7 @@ def select_network(cfg: DictConfig, device: str = None):
             normalization=None,
             device=cfg.accelerator,
             heads=cfg.net.heads,
+            max_context=cfg.data.max_features
         )
 
     elif cfg.net.model_type == "high_order":
