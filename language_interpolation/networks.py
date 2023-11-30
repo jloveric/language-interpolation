@@ -190,7 +190,7 @@ class HighOrderAttention(torch.nn.Module):
         qt = qt.reshape(query.shape[0], query.shape[1], qt.shape[1])
         kt = kt.reshape(key.shape[0], key.shape[1], kt.shape[1])
         vt = vt.reshape(value.shape[0], value.shape[1], vt.shape[1])
-        print('vt', vt)
+        #print('vt', vt)
 
         qkv_list = []
         for head in range(self.heads):
@@ -206,14 +206,11 @@ class HighOrderAttention(torch.nn.Module):
             qkv_list.append(qkh @ vth)
 
         res = torch.cat(qkv_list, dim=2)
-        print('innner res', res)
+        #print('innner res', res)
 
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(v)
         final = output.reshape(res.shape[0], res.shape[1], -1)
-
-        
-
 
         return final
 
@@ -348,14 +345,15 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         
         # Scale the input to [-0.5*max_context, 0.5*max_context] where every token is bumped by 1
         # the 0th token is 0 and the max_context token is 0.5*max_context-1
+        # THIS LOOKS RIGHT!
         xp = ((0.5 * (x + 1) + self.positional_embedding[: x.shape[1]])*2 - self.max_context)/self.max_context
-        
+
         query = xp
         key = xp
         value = xp
         for index, layer in enumerate(self.layer):
             res = layer(query, key, value)
-            print('res', res, 'layer index', index)
+            #print('res', res, 'layer index', index)
             query = res
             key = res
             value = res
