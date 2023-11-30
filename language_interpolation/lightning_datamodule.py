@@ -275,6 +275,7 @@ class TransformerDataModule(pl.LightningDataModule):
         root_dir: str = ".",
         add_channel_dimension: bool = False,
         transforms: Callable[[Tensor], Tensor] = None,
+        repeats: int = 1,
     ):
         """
         Data module for this type of transformer
@@ -302,6 +303,7 @@ class TransformerDataModule(pl.LightningDataModule):
         self._root_dir = root_dir
         self._add_channel_dimension = add_channel_dimension
         self._transforms = transforms
+        self._repeats=repeats
 
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
@@ -341,6 +343,7 @@ class TransformerDataModule(pl.LightningDataModule):
             num_workers=self._pre_process_workers,
             add_channel_dimension=self._add_channel_dimension,
             transforms=self._transforms,
+            repeats=self._repeats,
         )
         self._val_dataset = TextTransformerDataset(
             filenames=val_files,
@@ -353,6 +356,7 @@ class TransformerDataModule(pl.LightningDataModule):
             num_workers=self._pre_process_workers,
             add_channel_dimension=self._add_channel_dimension,
             transforms=self._transforms,
+            repeats=self._repeats,
         )
         self._test_dataset = TextTransformerDataset(
             filenames=test_files,
@@ -365,6 +369,7 @@ class TransformerDataModule(pl.LightningDataModule):
             num_workers=self._pre_process_workers,
             add_channel_dimension=self._add_channel_dimension,
             transforms=self._transforms,
+            repeats=self._repeats
         )
 
         logger.info(f"Training dataset has {len(self.train_dataset)} samples.")

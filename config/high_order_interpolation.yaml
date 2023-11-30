@@ -12,6 +12,7 @@ data:
   # trained context size is characters_per_feature*max_features
   characters_per_feature: 10
   max_features: 100
+  repeats: 10
 
   train:
     filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]

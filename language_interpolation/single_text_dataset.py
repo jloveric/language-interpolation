@@ -60,7 +60,7 @@ def unify_ids(specific_ids: List[int], id_range: List[int]):
     return ids
 
 
-def encode_input_from_text(text_in: str, features: int=0) -> Tuple[torch.tensor, str]:
+def encode_input_from_text(text_in: str, features: int = 0) -> Tuple[torch.tensor, str]:
     """
     Convert a string to input that the network can take.  Take the last "features" number
     of characters and convert to numbers.  Return those numbers as the network input, also
@@ -75,6 +75,7 @@ def encode_input_from_text(text_in: str, features: int=0) -> Tuple[torch.tensor,
     raw_sample = text[-(features):]
     encoding = [ord(val) for val in raw_sample]
     return torch.tensor(encoding), raw_sample
+
 
 def decode_output_to_text(
     encoding: torch.tensor, topk: int = 1
@@ -166,7 +167,6 @@ def generate_dataset_char(
     feature_list = []
     target_list = []
     for i in range(final):
-
         n_feature = [ord(val) for val in text[i : (i + features)]]
         feature_list.append(n_feature)
         n_target = [ord(val) for val in text[(i + features) : (i + features + targets)]]
@@ -205,11 +205,12 @@ def dataset_centered_char(
 
     return feature_list, target_list
 
+
 def generate_flat_dataset(
     text_in: str, features: int, targets: int
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
-    Generate dataset based on sentences. Just return the 
+    Generate dataset based on sentences. Just return the
     text as ascii character codes (0-n). Features and targets
     are ignored.
     """
@@ -226,7 +227,7 @@ dataset_registry = {
     "centered": dataset_centered,
     "sequence_of_char": generate_dataset_char,
     "centered_char": dataset_centered_char,
-    "flat" : generate_flat_dataset,
+    "flat": generate_flat_dataset,
 }
 
 
@@ -322,7 +323,6 @@ def dataset_sequential(
         list_targets.append(target_list)
 
     if gutenberg_ids is not None:
-
         if num_workers > 0:  # Run in parallel
             print("Downloading in parallel", num_workers)
             pdataset = partial(
@@ -345,7 +345,6 @@ def dataset_sequential(
         else:  # Run in serial
             print("Downloading in serial")
             for index in gutenberg_ids:
-
                 feature_list, target_list = dataset_from_gutenberg(
                     index,
                     features=features,
@@ -356,7 +355,7 @@ def dataset_sequential(
 
                 list_features.append(feature_list)
                 list_targets.append(target_list)
-    print('list_features', list_features, 'list_targets', list_targets)
+    print("list_features", list_features, "list_targets", list_targets)
     return list_features, list_targets
 
 
@@ -498,7 +497,7 @@ class SingleTextDataset(Dataset):
 
     def __call__(self, idx) -> Tensor:
         return self.__getitem__(idx)
-    
+
 
 class TextTransformerDataset(Dataset):
     """
@@ -507,7 +506,7 @@ class TextTransformerDataset(Dataset):
     is the same size for a batch. Samples are randomized within a batch, but
     sample width is only randomized per batch.
     """
-    
+
     def __init__(
         self,
         filenames: List[str] = None,
@@ -524,7 +523,7 @@ class TextTransformerDataset(Dataset):
         add_channel_dimension: bool = False,
         transforms: Callable[[Tensor], Tensor] = None,
         embedding_size: int = None,
-        
+        repeats: int = 1,
     ):
         """
         Args :
@@ -553,11 +552,11 @@ class TextTransformerDataset(Dataset):
         )
 
         list_features = list(itertools.chain(*list_features))
-        #list_targets = list(itertools.chain(*list_targets))
+        # list_targets = list(itertools.chain(*list_targets))
 
         self.inputs = torch.stack(list_features)
-        
-        #self.output = torch.stack(list_targets)
+
+        # self.output = torch.stack(list_targets)
         if add_channel_dimension is True:
             self.inputs = self.inputs.unsqueeze(1)
 
@@ -565,19 +564,20 @@ class TextTransformerDataset(Dataset):
         self.transforms = transforms
         self.valid_ids = list(range(0, len(list_features)))
 
-        #print('valid_ids', self.valid_ids)
-        print('inputs.shape', self.inputs.shape)
+        # print('valid_ids', self.valid_ids)
+        print("inputs.shape", self.inputs.shape)
         self._embedding_size = embedding_size
         self._characters_per_feature = characters_per_feature
         self._max_features = max_features
-        self._max_characters = self._characters_per_feature*max_features
-        
-        self.data_size = len(self.inputs)-self._max_characters
+        self._max_characters = self._characters_per_feature * max_features
+
+        self.data_size = len(self.inputs) - self._max_characters
+        self._repeats = repeats
 
     def __len__(self):
-        return (len(self.inputs)-self._max_characters)*(self._max_characters-1)
+        return (len(self.inputs) - self._max_characters) * self._repeats
 
-    def index_converter() :
+    def index_converter():
         pass
 
     def normalize(self, data):
@@ -598,9 +598,9 @@ class TextTransformerDataset(Dataset):
         if torch.is_tensor(index):
             index = index.tolist()
 
-        max_size = min(torch.numel(self.inputs)-index, self._max_characters)
+        max_size = min(torch.numel(self.inputs) - index, self._max_characters)
 
-        inputs = self.inputs[index:(index+max_size)].clone()
+        inputs = self.inputs[index : (index + max_size)].clone()
         if self.transforms is not None:
             inputs = self.transforms(inputs)
 
@@ -611,6 +611,6 @@ class TextTransformerDataset(Dataset):
 
     def __getitem__(self, idx) -> Tensor:
         return self.group(idx)
-        
+
     def __call__(self, idx) -> Tensor:
         return self.__getitem__(idx)
