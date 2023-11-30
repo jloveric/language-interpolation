@@ -343,8 +343,8 @@ class HighOrderAttentionNetwork(torch.nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         
-        # Scale the input to [-0.5*max_context, 0.5*max_context] where every token is bumped by 1
-        # the 0th token is 0 and the max_context token is 0.5*max_context-1
+        # Scale the input to [-1, 1] where every token is bumped by 1/(2*max_context)
+        # the 0th token is -1 and the nth token is 1
         # THIS LOOKS RIGHT!
         xp = ((0.5 * (x + 1) + self.positional_embedding[: x.shape[1]])*2 - self.max_context)/self.max_context
 
