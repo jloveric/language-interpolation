@@ -346,7 +346,11 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         # Scale the input to [-1, 1] where every token is bumped by 1/(2*max_context)
         # the 0th token is -1 and the nth token is 1
         # THIS LOOKS RIGHT!
-        xp = ((0.5 * (x + 1) + self.positional_embedding[: x.shape[1]])*2 - self.max_context)/self.max_context
+        
+        # characters are small spacinb
+        # xp = ((0.5 * (x + 1) + self.positional_embedding[: x.shape[1]])*2 - self.max_context)/self.max_context
+        # characters are large spacing
+        xp = ((0.5 * (x + 1)*self.max_context + self.positional_embedding[: x.shape[1]]/(self.max_context-1))*2 - self.max_context)/self.max_context
 
         query = xp
         key = xp
