@@ -288,6 +288,13 @@ def high_order_attention_block(
     )
     return layer
 
+def small_character_spacing(x, max_context, positional_embedding) :
+    xp = ((0.5 * (x + 1) + positional_embedding[: x.shape[1]])*2 - max_context)/max_context
+    return xp
+
+def large_character_spacing(x, max_context, positional_embedding) :
+    xp = ((0.5 * (x + 1)*max_context + positional_embedding[: x.shape[1]]/(max_context-1))*2 - max_context)/max_context
+    return xp
 
 class HighOrderAttentionNetwork(torch.nn.Module):
     def __init__(
@@ -348,9 +355,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         # THIS LOOKS RIGHT!
         
         # characters are small spacinb
-        # xp = ((0.5 * (x + 1) + self.positional_embedding[: x.shape[1]])*2 - self.max_context)/self.max_context
+        # xp = small_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
         # characters are large spacing
-        xp = ((0.5 * (x + 1)*self.max_context + self.positional_embedding[: x.shape[1]]/(self.max_context-1))*2 - self.max_context)/self.max_context
+        xp = large_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embebdding)
 
         query = xp
         key = xp
