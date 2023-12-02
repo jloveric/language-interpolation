@@ -4,11 +4,21 @@ from language_interpolation.single_text_dataset import (
     dataset_from_file,
     SingleTextDataset,
     RandomizeCharacters,
-    TextTransformerDataset
+    TextTransformerDataset,
+    ascii_to_float,
+    float_to_ascii
 )
 from torch.utils.data import DataLoader, Dataset
 import torch
 
+def test_ascii_to_float():
+    sample = torch.arange(128)
+    res = ascii_to_float(sample)
+    assert torch.all(torch.max(res)<1)
+    assert torch.all(torch.min(res)>-1)
+    
+    reverse = float_to_ascii(res)
+    assert torch.all(sample==reverse)
 
 def test_dataset_from_gutenberg():
     num_features = 10
