@@ -357,7 +357,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         # characters are small spacinb
         # xp = small_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
         # characters are large spacing
-        xp = large_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embebdding)
+        xp = large_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
 
         query = xp
         key = xp

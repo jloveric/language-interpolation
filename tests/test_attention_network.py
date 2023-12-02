@@ -1,11 +1,11 @@
 import pytest
 
-from language_interpolation.networks import HighOrderAttentionNetwork
+from language_interpolation.networks import HighOrderAttentionNetwork, large_character_spacing, small_character_spacing
 from language_interpolation.lightning_datamodule import TransformerDataModule
 
 from omegaconf import DictConfig
 from language_interpolation.utils import generate_transformer_text
-
+import torch
 
 def test_attention_network():
     characters_per_feature = 10
@@ -38,14 +38,23 @@ def test_attention_network():
         normalization=None,
         layer_type="continuous",
         device="cpu",
-        heads =2,
-        max_context=max_features
+        heads=2,
+        max_context=max_features,
     )
     result = network(input_data)
-    print('final result', result)
+    print("final result", result)
     print("result", result.shape)
     assert result.shape[0] == 32
     assert result.shape[1] == 128
+
+    new_sample = torch.rand(1, max_features, 10)*2-1
+
+    output = large_character_spacing(
+        x=new_sample,
+        max_context=network.max_context,
+        positional_embedding=network.positional_embedding,
+    )
+    print('output', output)
 
     text_list = ["hello sir", "Test this now"]
     ans = generate_transformer_text(
@@ -53,6 +62,6 @@ def test_attention_network():
         text_list=text_list,
         characters_per_feature=characters_per_feature,
         max_characters=1000,
-        output_size=10
+        output_size=10,
     )
     print("ans", ans)
