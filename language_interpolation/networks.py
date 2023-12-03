@@ -289,11 +289,18 @@ def high_order_attention_block(
     return layer
 
 def small_character_spacing(x, max_context, positional_embedding) :
-    xp = ((0.5 * (x + 1) + positional_embedding[: x.shape[1]])*2 - max_context)/max_context
+    xp = ((0.5 * (x + 1) + positional_embedding[:x.shape[1]])*2 - max_context)/max_context
     return xp
 
 def large_character_spacing(x, max_context, positional_embedding) :
-    xp = ((0.5 * (x + 1)*max_context + positional_embedding[: x.shape[1]]/(max_context-1))*2 - max_context)/max_context
+    """
+    The positional embedding moves the xp slighly up or down, however, we don't
+    want it to cause the original xp values to overlap (as they represent characters)
+    so dposition < 1 so max_context>=128 (number of ascii values) assuming we have
+    128 segments.
+    """
+    unit_pos_embedding = (positional_embedding[:x.shape[1]]+0.5)/max_context-0.5
+    xp = (((0.5 * (x + 1)*max_context + unit_pos_embedding))*2-max_context)/max_context
     return xp
 
 class HighOrderAttentionNetwork(torch.nn.Module):
