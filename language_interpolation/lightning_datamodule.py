@@ -74,7 +74,6 @@ class GutenbergDataModule(pl.LightningDataModule):
         self._transforms = transforms
 
     def setup(self, stage: Optional[str] = None):
-
         train_files = create_full_paths(self._root_dir, self._train_filenames)
         test_files = create_full_paths(self._root_dir, self._test_filenames)
         val_files = create_full_paths(self._root_dir, self._val_filenames)
@@ -196,7 +195,6 @@ class DataModuleFromSequentialDatasets(pl.LightningDataModule):
         self._val = [val_features, val_targets]
 
     def setup(self, stage: Optional[str] = None):
-
         self._train_dataset = DatasetFromRepresentation(self._train[0], self._train[1])
         self._test_dataset = DatasetFromRepresentation(self._test[0], self._test[1])
         self._val_dataset = DatasetFromRepresentation(self._val[0], self._val[1])
@@ -257,7 +255,7 @@ class TransformerDataModule(pl.LightningDataModule):
         batch_size: int = 32,
         num_workers: int = 10,
         shuffle: bool = True,
-        pin_memory: bool = True,
+        pin_memory: bool = False,
         gutenberg_ids_train: List[int] = None,
         gutenberg_ids_val: List[int] = None,
         gutenberg_ids_test: List[int] = None,
@@ -303,7 +301,7 @@ class TransformerDataModule(pl.LightningDataModule):
         self._root_dir = root_dir
         self._add_channel_dimension = add_channel_dimension
         self._transforms = transforms
-        self._repeats=repeats
+        self._repeats = repeats
 
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
@@ -311,19 +309,17 @@ class TransformerDataModule(pl.LightningDataModule):
     def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
         # The max size includes the output
         max_size = max(self._max_size, batch[0][0].shape[0])
-        this_size = random.randint(1, max_size-1)
+        this_size = random.randint(1, max_size - 1)
         final_features = torch.stack([sample[0][:this_size] for sample in batch])
-        
+
         # grab the first letter of the next token
         final_targets = torch.stack([sample[0][this_size][0] for sample in batch])
-        
+
         final_indexes = [sample[1] for sample in batch]
 
         return self.normalize(final_features), final_targets, final_indexes
 
-
     def setup(self, stage: Optional[str] = None):
-
         train_files = create_full_paths(self._root_dir, self._train_filenames)
         test_files = create_full_paths(self._root_dir, self._test_filenames)
         val_files = create_full_paths(self._root_dir, self._val_filenames)
@@ -369,7 +365,7 @@ class TransformerDataModule(pl.LightningDataModule):
             num_workers=self._pre_process_workers,
             add_channel_dimension=self._add_channel_dimension,
             transforms=self._transforms,
-            repeats=self._repeats
+            repeats=self._repeats,
         )
 
         logger.info(f"Training dataset has {len(self.train_dataset)} samples.")
@@ -396,7 +392,7 @@ class TransformerDataModule(pl.LightningDataModule):
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
             drop_last=True,  # Needed for batchnorm
-            collate_fn = self.collate_fn
+            collate_fn=self.collate_fn,
         )
 
     def val_dataloader(self) -> DataLoader:
@@ -407,7 +403,7 @@ class TransformerDataModule(pl.LightningDataModule):
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
             drop_last=True,
-            collate_fn = self.collate_fn
+            collate_fn=self.collate_fn,
         )
 
     def test_dataloader(self) -> DataLoader:
@@ -418,5 +414,5 @@ class TransformerDataModule(pl.LightningDataModule):
             pin_memory=self._pin_memory,
             num_workers=self._num_workers,
             drop_last=True,
-            collate_fn = self.collate_fn
+            collate_fn=self.collate_fn,
         )

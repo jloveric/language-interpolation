@@ -178,19 +178,19 @@ class HighOrderAttention(torch.nn.Module):
         # 1d cnn style.  So we just make a vector with a much larger
         # batch out of the data where each batch contains 1 embedding
         # then convert it back at the end.
-        q = query.reshape(query.shape[0] * query.shape[1], -1)
-        k = key.reshape(key.shape[0] * key.shape[1], -1)
-        v = value.reshape(value.shape[0] * value.shape[1], -1)
+        q = query.view(query.shape[0] * query.shape[1], -1)
+        k = key.view(key.shape[0] * key.shape[1], -1)
+        v = value.view(value.shape[0] * value.shape[1], -1)
 
         qt = self.query_layer(q)
         kt = self.key_layer(k)
         vt = self.value_layer(v)
 
         # Turn into [batch,(features/encodings),(encoding size)*heads]
-        qt = qt.reshape(query.shape[0], query.shape[1], qt.shape[1])
-        kt = kt.reshape(key.shape[0], key.shape[1], kt.shape[1])
-        vt = vt.reshape(value.shape[0], value.shape[1], vt.shape[1])
-        #print('vt', vt)
+        qt = qt.view(query.shape[0], query.shape[1], qt.shape[1])
+        kt = kt.view(key.shape[0], key.shape[1], kt.shape[1])
+        vt = vt.view(value.shape[0], value.shape[1], vt.shape[1])
+        # print('vt', vt)
 
         qkv_list = []
         for head in range(self.heads):
@@ -201,17 +201,18 @@ class HighOrderAttention(torch.nn.Module):
             vth = vt[:, :, start:end]
 
             qkh = torch.nn.functional.softmax(qth @ kth.transpose(1, 2))
-
+            # print("torch number of elements per head", torch.numel(qkh))
             # Matrix multiply of last 2 dimensions
             qkv_list.append(qkh @ vth)
 
         res = torch.cat(qkv_list, dim=2)
-        #print('innner res', res)
+        # print("reslist size", torch.numel(res))
+        # print('innner res', res)
 
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(v)
         final = output.reshape(res.shape[0], res.shape[1], -1)
-
+        # print("final size", torch.numel(final))
         return final
 
 
@@ -288,20 +289,27 @@ def high_order_attention_block(
     )
     return layer
 
-def small_character_spacing(x, max_context, positional_embedding) :
-    xp = ((0.5 * (x + 1) + positional_embedding[:x.shape[1]])*2 - max_context)/max_context
+
+def small_character_spacing(x, max_context, positional_embedding):
+    xp = (
+        (0.5 * (x + 1) + positional_embedding[: x.shape[1]]) * 2 - max_context
+    ) / max_context
     return xp
 
-def large_character_spacing(x, max_context, positional_embedding) :
+
+def large_character_spacing(x, max_context, positional_embedding):
     """
     The positional embedding moves the xp slighly up or down, however, we don't
     want it to cause the original xp values to overlap (as they represent characters)
     so dposition < 1 so max_context>=128 (number of ascii values) assuming we have
     128 segments.
     """
-    unit_pos_embedding = (positional_embedding[:x.shape[1]]+0.5)/max_context-0.5
-    xp = (((0.5 * (x + 1)*max_context + unit_pos_embedding))*2-max_context)/max_context
+    unit_pos_embedding = (positional_embedding[: x.shape[1]] + 0.5) / max_context - 0.5
+    xp = (
+        ((0.5 * (x + 1) * max_context + unit_pos_embedding)) * 2 - max_context
+    ) / max_context
     return xp
+
 
 class HighOrderAttentionNetwork(torch.nn.Module):
     def __init__(
@@ -321,7 +329,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
 
         for index, element in enumerate(layers):
             input_scale = 2.0
-            #if index == 0:
+            # if index == 0:
             #    input_scale = max_context
 
             embed_dim = element[0]
@@ -351,34 +359,43 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         )
 
         # Make the positions 0 to max_context-1
-        self.positional_embedding = torch.arange(
-            max_context, dtype=torch.get_default_dtype()
-        ).unsqueeze(1).to(device=self._device)
+        self.positional_embedding = (
+            torch.arange(max_context, dtype=torch.get_default_dtype())
+            .unsqueeze(1)
+            .to(device=self._device)
+        )
 
     def forward(self, x: Tensor) -> Tensor:
-        
         # Scale the input to [-1, 1] where every token is bumped by 1/(2*max_context)
         # the 0th token is -1 and the nth token is 1
         # THIS LOOKS RIGHT!
-        
+
         # characters are small spacinb
         # xp = small_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
         # characters are large spacing
-        xp = large_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
+        xp = large_character_spacing(
+            x=x,
+            max_context=self.max_context,
+            positional_embedding=self.positional_embedding,
+        )
+
+        # print("xp size", torch.numel(xp))
 
         query = xp
         key = xp
         value = xp
         for index, layer in enumerate(self.layer):
             res = layer(query, key, value)
-            #print('res', res, 'layer index', index)
+            # print("network output size", torch.numel(res))
+            # print('res', res, 'layer index', index)
             query = res
             key = res
             value = res
 
         average = torch.sum(res, dim=1) / res.shape[1]
         final = self._output_layer(average)
-
+        # print("final network outputs size", torch.numel(final))
+        torch.cuda.empty_cache()
         return final
         # return self.model(x)
 
@@ -427,7 +444,7 @@ def select_network(cfg: DictConfig, device: str = None):
             normalization=None,
             device=cfg.accelerator,
             heads=cfg.net.heads,
-            max_context=cfg.data.max_features
+            max_context=cfg.data.max_features,
         )
 
     elif cfg.net.model_type == "high_order":
