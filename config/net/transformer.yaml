@@ -13,7 +13,7 @@ input_segments: 64
 segments: 2
 # Layers in the form [input, output, segments]
 #layers: [[10, 10, 64], [10, 5, 2], [5, 5, 2]]
-layers: [[3, 10, 128], [10, 10, 10], [10, 10, 10], [10, 10, 10]]
+layers: [[1, 10, 128], [10, 10, 10], [10, 10, 10], [10, 10, 10]]
 
 # Note! output dimension is c=heads*output so different than normal
 # And then similarity size is c*c*batch_size

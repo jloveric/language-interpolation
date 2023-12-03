@@ -10,7 +10,7 @@ data:
 
   # for transformers
   # trained context size is characters_per_feature*max_features
-  characters_per_feature: 3
+  characters_per_feature: 1
   max_features: 100
 
   # Number of times to repeat the dataset. I have a random width
