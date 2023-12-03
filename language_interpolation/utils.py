@@ -129,6 +129,7 @@ def generate_transformer_text(
 
             # pick the next character weighted by probabilities of each character
             # prevents the same response for every query.
+            values = values.nan_to_num(nan=1.0)
             actual = random.choices(ascii, values.tolist())
             text_in = text_in + actual[0]
             just = (

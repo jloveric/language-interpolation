@@ -575,7 +575,7 @@ class TextTransformerDataset(Dataset):
         self._repeats = repeats
 
     def __len__(self):
-        return (len(self.inputs) - self._max_characters) * self._repeats
+        return int((len(self.inputs) - self._max_characters) * self._repeats)
 
     def index_converter():
         pass
