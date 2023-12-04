@@ -1,7 +1,7 @@
 # Small network that runs pretty fast.  See at
 # most 50% accuracy.
 
-layer_type: "discontinuous"
+layer_type: "continuous"
 normalize: true
 
 # Polynomial interpolation points.  Polynomial order
@@ -15,15 +15,16 @@ segments: 2
 
 # attention blocks
 #layers: [[10, 10, 64], [10, 5, 2], [5, 5, 2]]
-layers: [[1, 10, 128], [10, 10, 10], [10, 10, 10], [10, 10, 10]]
+inner: 10
+#layers: [[1, ${inner}, 128], [${inner}, ${inner}, 10], [${inner}, ${inner}, 10]]
+layers: [[1, 10, 128], [10, 10, 10], [10, 10, 10]]
 
-output_layer :
+output_layer:
   segments: 10
   hidden_layers: 1
-  hidden_width: 10
-
+  hidden_width: 100
 
 # Note! output dimension is c=heads*output so different than normal
 # And then similarity size is c*c*batch_size
 
-heads: 10
+heads: 100
