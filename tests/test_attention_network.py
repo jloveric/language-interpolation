@@ -40,6 +40,9 @@ def test_attention_network():
         device="cpu",
         heads=2,
         max_context=max_features,
+        output_segments=2,
+        output_hidden_layers=1,
+        output_hidden_width=5
     )
     result = network(input_data)
     print("final result", result)

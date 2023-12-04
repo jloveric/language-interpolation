@@ -317,6 +317,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         layer_type: str,
         layers: list,
         n: int,
+        output_hidden_layers: int,
+        output_hidden_width:int,
+        output_segments: int,
         normalization: None,
         heads: int = 1,
         device: str = "cuda",
@@ -349,13 +352,18 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             self.layer.append(new_layer)
 
         out_dim = layers[-1][1]
-        self._output_layer = high_order_fc_layers(
+        self._output_layer = HighOrderMLP(
             layer_type=layer_type,
             n=n,
-            segments=segments,
-            in_features=out_dim,
-            out_features=128,
+            in_width=out_dim,
+            in_segments = output_segments,
+            out_segments=output_segments,
+            hidden_segments=output_segments,
+            hidden_layers=output_hidden_layers,
+            hidden_width=output_hidden_width,
+            out_width=128,
             device=self._device,
+            normalization=normalization
         )
 
         # Make the positions 0 to max_context-1
@@ -445,6 +453,9 @@ def select_network(cfg: DictConfig, device: str = None):
             device=cfg.accelerator,
             heads=cfg.net.heads,
             max_context=cfg.data.max_features,
+            output_hidden_layers=cfg.net.output_layer.hidden_layers,
+            output_hidden_width=cfg.net.output_layer.hidden_width,
+            output_segments=cfg.net.output_layer.segments
         )
 
     elif cfg.net.model_type == "high_order":
