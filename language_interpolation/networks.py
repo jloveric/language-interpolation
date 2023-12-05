@@ -200,7 +200,7 @@ class HighOrderAttention(torch.nn.Module):
             kth = kt[:, :, start:end]
             vth = vt[:, :, start:end]
 
-            qkh = torch.nn.functional.softmax(qth @ kth.transpose(1, 2))
+            qkh = torch.nn.functional.softmax(qth @ kth.transpose(1, 2), dim=2)
             # print("torch number of elements per head", torch.numel(qkh))
             # Matrix multiply of last 2 dimensions
             qkv_list.append(qkh @ vth)
@@ -318,7 +318,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         layers: list,
         n: int,
         output_hidden_layers: int,
-        output_hidden_width:int,
+        output_hidden_width: int,
         output_segments: int,
         normalization: None,
         heads: int = 1,
@@ -356,14 +356,14 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             layer_type=layer_type,
             n=n,
             in_width=out_dim,
-            in_segments = output_segments,
+            in_segments=output_segments,
             out_segments=output_segments,
             hidden_segments=output_segments,
             hidden_layers=output_hidden_layers,
             hidden_width=output_hidden_width,
             out_width=128,
             device=self._device,
-            normalization=normalization
+            normalization=normalization,
         )
 
         # Make the positions 0 to max_context-1
@@ -455,7 +455,7 @@ def select_network(cfg: DictConfig, device: str = None):
             max_context=cfg.data.max_features,
             output_hidden_layers=cfg.net.output_layer.hidden_layers,
             output_hidden_width=cfg.net.output_layer.hidden_width,
-            output_segments=cfg.net.output_layer.segments
+            output_segments=cfg.net.output_layer.segments,
         )
 
     elif cfg.net.model_type == "high_order":
