@@ -187,9 +187,9 @@ class HighOrderAttention(torch.nn.Module):
         vt = self.value_layer(v)
 
         # Turn into [batch,(features/encodings),(encoding size)*heads]
-        qt = qt.view(query.shape[0], query.shape[1], qt.shape[1])
-        kt = kt.view(key.shape[0], key.shape[1], kt.shape[1])
-        vt = vt.view(value.shape[0], value.shape[1], vt.shape[1])
+        qt = self.normalization(qt.view(query.shape[0], query.shape[1], qt.shape[1]))
+        kt = self.normalization(kt.view(key.shape[0], key.shape[1], kt.shape[1]))
+        vt = self.normalization(vt.view(value.shape[0], value.shape[1], vt.shape[1]))
         # print('vt', vt)
 
         qkv_list = []
@@ -212,6 +212,7 @@ class HighOrderAttention(torch.nn.Module):
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(v)
         final = output.reshape(res.shape[0], res.shape[1], -1)
+        self.normalization(final)
         # print("final size", torch.numel(final))
         return final
 
@@ -329,6 +330,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         self._device = device
         self.layer = []
         self.max_context = max_context
+        self.normalization = normalization
 
         for index, element in enumerate(layers):
             input_scale = 2.0
@@ -363,7 +365,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             hidden_width=output_hidden_width,
             out_width=128,
             device=self._device,
-            normalization=normalization,
+            normalization=None, # May need something here!
         )
 
         # Make the positions 0 to max_context-1
@@ -401,8 +403,17 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             value = res
 
         average = torch.sum(res, dim=1) / res.shape[1]
+        
+        """
+        if self.normalization is not None :
+            final = self.normalization(self._output_layer(average))
+        else :
+            final = self._output_layer(average)
+        """
+        
         final = self._output_layer(average)
         # print("final network outputs size", torch.numel(final))
+        
         torch.cuda.empty_cache()
         return final
         # return self.model(x)
