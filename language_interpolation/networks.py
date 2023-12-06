@@ -445,11 +445,17 @@ def select_network(cfg: DictConfig, device: str = None):
 
         model = torch.nn.Sequential(*layer_list)
     elif cfg.net.model_type == "high_order_transformer":
+
+        normalizer = None
+        if normalization==True :
+            normalizer=MaxAbsNormalization(eps=1e-6, dim=2)
+        
+
         model = HighOrderAttentionNetwork(
             cfg.net.layer_type,
             cfg.net.layers,
             cfg.net.n,
-            normalization=None,
+            normalization=normalizer,
             device=cfg.accelerator,
             heads=cfg.net.heads,
             max_context=cfg.data.max_features,
