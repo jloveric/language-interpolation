@@ -9,6 +9,8 @@ from high_order_layers_torch.networks import (
     HighOrderMLP,
     HighOrderFullyConvolutionalNetwork,
     HighOrderTailFocusNetwork,
+    initialize_network_polynomial_layers,
+    initialize_polynomial_layer
 )
 from high_order_layers_torch.layers import MaxAbsNormalization, high_order_fc_layers
 from torchmetrics import Accuracy
@@ -248,6 +250,8 @@ def high_order_attention_block(
         device=device,
         scale=input_scale,
     )
+    
+
     key = high_order_fc_layers(
         layer_type=layer_type,
         n=n,
@@ -276,6 +280,11 @@ def high_order_attention_block(
         segments=segments,
         device=device,
     )
+
+    initialize_polynomial_layer(query, max_slope=0.1, max_offset=0.5)
+    initialize_polynomial_layer(key, max_slope=0.1, max_offset=0.5)
+    initialize_polynomial_layer(value, max_slope=0.1, max_offset=0.5)
+    initialize_polynomial_layer(output, max_slope=0.1, max_offset=0.5)
 
     layer = HighOrderAttention(
         embed_dim=embed_dim,
@@ -368,6 +377,8 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             normalization=None, # May need something here!
         )
 
+        initialize_network_polynomial_layers(self._output_layer, max_slope=0.1, max_offset=0.5)
+
         # Make the positions 0 to max_context-1
         self.positional_embedding = (
             torch.arange(max_context, dtype=torch.get_default_dtype())
@@ -389,15 +400,11 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             positional_embedding=self.positional_embedding,
         )
 
-        # print("xp size", torch.numel(xp))
-
         query = xp
         key = xp
         value = xp
         for index, layer in enumerate(self.layer):
             res = layer(query, key, value)
-            # print("network output size", torch.numel(res))
-            # print('res', res, 'layer index', index)
             query = res
             key = res
             value = res
@@ -410,7 +417,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         else :
             final = self._output_layer(average)
         """
-        
+
         final = self._output_layer(average)
         # print("final network outputs size", torch.numel(final))
         
