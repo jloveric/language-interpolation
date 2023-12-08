@@ -363,6 +363,10 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             self.layer.append(new_layer)
 
         out_dim = layers[-1][1]
+        mlp_normalization = None
+        if normalization is not None :
+            mlp_normalization = MaxAbsNormalization
+
         self._output_layer = HighOrderMLP(
             layer_type=layer_type,
             n=n,
@@ -374,7 +378,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             hidden_width=output_hidden_width,
             out_width=128,
             device=self._device,
-            normalization=None, # May need something here!
+            normalization=mlp_normalization, # May need something here!
         )
 
         initialize_network_polynomial_layers(self._output_layer, max_slope=0.1, max_offset=0.5)
