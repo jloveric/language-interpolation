@@ -2,7 +2,7 @@ import pytest
 
 from language_interpolation.networks import HighOrderAttentionNetwork, large_character_spacing, small_character_spacing
 from language_interpolation.lightning_datamodule import TransformerDataModule
-from high_order_layers_torch.layers import MaxAbsNormalization
+from high_order_layers_torch.layers import MaxAbsNormalizationLast
 from omegaconf import DictConfig
 from language_interpolation.utils import generate_transformer_text
 import torch
@@ -32,7 +32,7 @@ def test_attention_network():
     assert input_data.shape[0] == 32
     assert input_data.shape[2] == 10
 
-    normalization = MaxAbsNormalization(eps=1e-6, dim=2)
+    normalization = MaxAbsNormalizationLast(eps=1e-6)
 
     network = HighOrderAttentionNetwork(
         layers=[[10, 5, 3], [5, 5, 2]],

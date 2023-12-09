@@ -12,7 +12,7 @@ from high_order_layers_torch.networks import (
     initialize_network_polynomial_layers,
     initialize_polynomial_layer
 )
-from high_order_layers_torch.layers import MaxAbsNormalization, high_order_fc_layers
+from high_order_layers_torch.layers import MaxAbsNormalizationLast, high_order_fc_layers
 from torchmetrics import Accuracy
 from torch import Tensor
 
@@ -192,13 +192,15 @@ class HighOrderAttention(torch.nn.Module):
         qt = self.normalization(qt.view(query.shape[0], query.shape[1], qt.shape[1]))
         kt = self.normalization(kt.view(key.shape[0], key.shape[1], kt.shape[1]))
         vt = self.normalization(vt.view(value.shape[0], value.shape[1], vt.shape[1]))
-        
+
         qth = qt.reshape(qt.shape[0], qt.shape[1], self.heads, -1)
         kth = kt.reshape(kt.shape[0], kt.shape[1], self.heads, -1)
         vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
         qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=3)
-        res =torch.einsum('blrh,brhd->blhd',qkh, vth)
+        res = torch.einsum('blrh,brhd->blhd',qkh, vth)
+
+
 
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(v)
@@ -354,7 +356,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         out_dim = layers[-1][1]
         mlp_normalization = None
         if normalization is not None :
-            mlp_normalization = MaxAbsNormalization
+            mlp_normalization = MaxAbsNormalizationLast
 
         self._output_layer = HighOrderMLP(
             layer_type=layer_type,
@@ -404,17 +406,12 @@ class HighOrderAttentionNetwork(torch.nn.Module):
 
         average = torch.sum(res, dim=1) / res.shape[1]
         
-        """
         if self.normalization is not None :
             final = self.normalization(self._output_layer(average))
         else :
             final = self._output_layer(average)
-        """
-
-        final = self._output_layer(average)
-        # print("final network outputs size", torch.numel(final))
         
-        torch.cuda.empty_cache()
+        #torch.cuda.empty_cache()
         return final
         # return self.model(x)
 
@@ -459,7 +456,7 @@ def select_network(cfg: DictConfig, device: str = None):
 
         normalizer = None
         if normalization==True :
-            normalizer=MaxAbsNormalization(eps=1e-6, dim=2)
+            normalizer=MaxAbsNormalizationLast(eps=1e-6)
         
 
         model = HighOrderAttentionNetwork(
