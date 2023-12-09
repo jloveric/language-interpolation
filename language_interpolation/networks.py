@@ -12,6 +12,7 @@ from high_order_layers_torch.networks import (
     initialize_network_polynomial_layers,
     initialize_polynomial_layer
 )
+import torch.einsum
 from high_order_layers_torch.layers import MaxAbsNormalization, high_order_fc_layers
 from torchmetrics import Accuracy
 from torch import Tensor
@@ -194,6 +195,7 @@ class HighOrderAttention(torch.nn.Module):
         vt = self.normalization(vt.view(value.shape[0], value.shape[1], vt.shape[1]))
         # print('vt', vt)
 
+        """
         qkv_list = []
         for head in range(self.heads):
             start = head * self.out_dim
@@ -208,6 +210,16 @@ class HighOrderAttention(torch.nn.Module):
             qkv_list.append(qkh @ vth)
 
         res = torch.cat(qkv_list, dim=2)
+        """
+        
+
+        qth = qt.resize(qt.size[0], qt.size[1], self.heads, -1)
+        kth = kt.resize(kt.size[0], kt.size[1], self.heads, -1)
+        vth = vt.resize(vt.size[0], vt.size[1], self.heads, -1)
+
+        qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=2)
+        res =torch.einsum('')
+
         # print("reslist size", torch.numel(res))
         # print('innner res', res)
 
@@ -378,7 +390,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             hidden_width=output_hidden_width,
             out_width=128,
             device=self._device,
-            normalization=mlp_normalization, # May need something here!
+            normalization=mlp_normalization,
         )
 
         initialize_network_polynomial_layers(self._output_layer, max_slope=0.1, max_offset=0.5)
