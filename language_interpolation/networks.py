@@ -12,7 +12,6 @@ from high_order_layers_torch.networks import (
     initialize_network_polynomial_layers,
     initialize_polynomial_layer
 )
-import torch.einsum
 from high_order_layers_torch.layers import MaxAbsNormalization, high_order_fc_layers
 from torchmetrics import Accuracy
 from torch import Tensor
@@ -193,41 +192,19 @@ class HighOrderAttention(torch.nn.Module):
         qt = self.normalization(qt.view(query.shape[0], query.shape[1], qt.shape[1]))
         kt = self.normalization(kt.view(key.shape[0], key.shape[1], kt.shape[1]))
         vt = self.normalization(vt.view(value.shape[0], value.shape[1], vt.shape[1]))
-        # print('vt', vt)
-
-        """
-        qkv_list = []
-        for head in range(self.heads):
-            start = head * self.out_dim
-            end = (head + 1) * self.out_dim
-            qth = qt[:, :, start:end]
-            kth = kt[:, :, start:end]
-            vth = vt[:, :, start:end]
-
-            qkh = torch.nn.functional.softmax(qth @ kth.transpose(1, 2), dim=2)
-            # print("torch number of elements per head", torch.numel(qkh))
-            # Matrix multiply of last 2 dimensions
-            qkv_list.append(qkh @ vth)
-
-        res = torch.cat(qkv_list, dim=2)
-        """
         
+        qth = qt.reshape(qt.shape[0], qt.shape[1], self.heads, -1)
+        kth = kt.reshape(kt.shape[0], kt.shape[1], self.heads, -1)
+        vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
-        qth = qt.resize(qt.size[0], qt.size[1], self.heads, -1)
-        kth = kt.resize(kt.size[0], kt.size[1], self.heads, -1)
-        vth = vt.resize(vt.size[0], vt.size[1], self.heads, -1)
-
-        qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=2)
-        res =torch.einsum('')
-
-        # print("reslist size", torch.numel(res))
-        # print('innner res', res)
+        qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=3)
+        res =torch.einsum('blrh,brhd->blhd',qkh, vth)
 
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(v)
         final = output.reshape(res.shape[0], res.shape[1], -1)
         self.normalization(final)
-        # print("final size", torch.numel(final))
+
         return final
 
 
