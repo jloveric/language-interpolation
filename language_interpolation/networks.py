@@ -17,6 +17,7 @@ from torchmetrics import Accuracy
 from torch import Tensor
 import torch.nn.functional as F
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -334,6 +335,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         max_context: int = 10,
     ):
         super().__init__()
+        start_time = time.time()
         self._device = device
         self.layer = []
         self.max_context = max_context
@@ -389,6 +391,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             .unsqueeze(1)
             .to(device=self._device)
         )
+
+        elapsed_time = time.time() - start_time
+        logging.info(f'HighOrderAttentionNetwork setup time {elapsed_time}')
 
     def forward(self, x: Tensor) -> Tensor:
         # Scale the input to [-1, 1] where every token is bumped by 1/(2*max_context)
