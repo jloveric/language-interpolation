@@ -10,7 +10,7 @@ from high_order_layers_torch.networks import (
     HighOrderFullyConvolutionalNetwork,
     HighOrderTailFocusNetwork,
     initialize_network_polynomial_layers,
-    initialize_polynomial_layer
+    initialize_polynomial_layer,
 )
 from high_order_layers_torch.layers import MaxAbsNormalizationLast, high_order_fc_layers
 from torchmetrics import Accuracy
@@ -197,13 +197,12 @@ class HighOrderAttention(torch.nn.Module):
         kth = kt.reshape(kt.shape[0], kt.shape[1], self.heads, -1)
         vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
-        
-        res = F.scaled_dot_product_attention(query=qth,key=kth,value=vth,attn_mask=None)
+        res = F.scaled_dot_product_attention(
+            query=qth, key=kth, value=vth, attn_mask=None
+        )
         # Used built in attention so I can get optimization
-        #qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=3)
-        #res = torch.einsum('blrh,brhd->blhd',qkh, vth)
-
-
+        # qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=3)
+        # res = torch.einsum('blrh,brhd->blhd',qkh, vth)
 
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(v)
@@ -244,7 +243,6 @@ def high_order_attention_block(
         device=device,
         scale=input_scale,
     )
-    
 
     key = high_order_fc_layers(
         layer_type=layer_type,
@@ -275,10 +273,10 @@ def high_order_attention_block(
         device=device,
     )
 
-    initialize_polynomial_layer(query, max_slope=0.1, max_offset=0.5)
-    initialize_polynomial_layer(key, max_slope=0.1, max_offset=0.5)
-    initialize_polynomial_layer(value, max_slope=0.1, max_offset=0.5)
-    initialize_polynomial_layer(output, max_slope=0.1, max_offset=0.5)
+    initialize_polynomial_layer(query, max_slope=1.0, max_offset=0.0)
+    initialize_polynomial_layer(key, max_slope=1.0, max_offset=0.0)
+    initialize_polynomial_layer(value, max_slope=1.0, max_offset=0.0)
+    initialize_polynomial_layer(output, max_slope=1.0, max_offset=0.0)
 
     layer = HighOrderAttention(
         embed_dim=embed_dim,
@@ -357,9 +355,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             self.layer.append(new_layer)
 
         out_dim = layers[-1][1]
-        mlp_normalization = None
-        if normalization is not None :
-            mlp_normalization = MaxAbsNormalizationLast
+        # mlp_normalization = None
+        # if normalization is not None :
+        mlp_normalization = MaxAbsNormalizationLast
 
         self._output_layer = HighOrderMLP(
             layer_type=layer_type,
@@ -375,7 +373,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             normalization=mlp_normalization,
         )
 
-        initialize_network_polynomial_layers(self._output_layer, max_slope=0.1, max_offset=0.5)
+        initialize_network_polynomial_layers(
+            self._output_layer, max_slope=1.0, max_offset=0.0
+        )
 
         # Make the positions 0 to max_context-1
         self.positional_embedding = (
@@ -408,13 +408,13 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             value = res
 
         average = torch.sum(res, dim=1) / res.shape[1]
-        
-        if self.normalization is not None :
-            final = self.normalization(self._output_layer(average))
-        else :
-            final = self._output_layer(average)
-        
-        #torch.cuda.empty_cache()
+
+        # if self.normalization is not None :
+        final = self.normalization(self._output_layer(average))
+        # else :
+        #    final = self._output_layer(average)
+
+        # torch.cuda.empty_cache()
         return final
         # return self.model(x)
 
@@ -456,11 +456,9 @@ def select_network(cfg: DictConfig, device: str = None):
 
         model = torch.nn.Sequential(*layer_list)
     elif cfg.net.model_type == "high_order_transformer":
-
-        normalizer = None
-        if normalization==True :
-            normalizer=MaxAbsNormalizationLast(eps=1e-6)
-        
+        # normalizer = None
+        # if normalization==True :
+        normalizer = MaxAbsNormalizationLast(eps=1e-6)
 
         model = HighOrderAttentionNetwork(
             cfg.net.layer_type,
