@@ -15,7 +15,7 @@ from high_order_layers_torch.networks import (
 from high_order_layers_torch.layers import MaxAbsNormalizationLast, high_order_fc_layers
 from torchmetrics import Accuracy
 from torch import Tensor
-
+import torch.nn.functional as F
 import logging
 
 logger = logging.getLogger(__name__)
@@ -197,8 +197,11 @@ class HighOrderAttention(torch.nn.Module):
         kth = kt.reshape(kt.shape[0], kt.shape[1], self.heads, -1)
         vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
-        qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=3)
-        res = torch.einsum('blrh,brhd->blhd',qkh, vth)
+        
+        res = F.scaled_dot_product_attention(query=qth,key=kth,value=vth,attn_mask=None)
+        # Used built in attention so I can get optimization
+        #qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=3)
+        #res = torch.einsum('blrh,brhd->blhd',qkh, vth)
 
 
 
