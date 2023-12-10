@@ -197,9 +197,15 @@ class HighOrderAttention(torch.nn.Module):
         kth = kt.reshape(kt.shape[0], kt.shape[1], self.heads, -1)
         vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
-        res = F.scaled_dot_product_attention(
-            query=qth, key=kth, value=vth, attn_mask=None
-        )
+        with torch.backends.cuda.sdp_kernel(
+            enable_flash=True, 
+            enable_math=False, 
+            enable_mem_efficient=True
+        ):
+            res = F.scaled_dot_product_attention(
+                query=qth, key=kth, value=vth, attn_mask=None
+            )
+
         # Used built in attention so I can get optimization
         # qkh = torch.nn.functional.softmax(torch.einsum('blhd,brhd->blrh',qth,kth), dim=3)
         # res = torch.einsum('blrh,brhd->blhd',qkh, vth)
