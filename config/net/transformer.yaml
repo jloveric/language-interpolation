@@ -17,14 +17,14 @@ segments: 2
 #layers: [[10, 10, 64], [10, 5, 2], [5, 5, 2]]
 inner: 10
 #layers: [[1, ${inner}, 128], [${inner}, ${inner}, 10], [${inner}, ${inner}, 10]]
-layers: [[1, 100, 128], [100, 100, 3], [100, 100, 3]]
+layers: [[1, 8, 128], [8, 8, 3], [8, 8, 3], [8, 8, 3], [8, 8, 3]]
 
 output_layer:
   segments: 10
-  hidden_layers: 4
+  hidden_layers: 1
   hidden_width: 100
 
 # Note! output dimension is c=heads*output so different than normal
 # And then similarity size is c*c*batch_size
 
-heads: 20
+heads: 100
