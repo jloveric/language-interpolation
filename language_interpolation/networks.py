@@ -20,6 +20,9 @@ import logging
 import time
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG
+)
 
 
 class ClassificationMixin:
@@ -412,8 +415,10 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         query = xp
         key = xp
         value = xp
+        temp = 0
         for index, layer in enumerate(self.layer):
-            res = layer(query, key, value)
+            res = layer(query, key, value)+temp
+            temp = res
             query = res
             key = res
             value = res
