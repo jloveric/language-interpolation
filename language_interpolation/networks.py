@@ -366,9 +366,10 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             self.layer.append(new_layer)
 
         out_dim = layers[-1][1]
-        # mlp_normalization = None
-        # if normalization is not None :
-        mlp_normalization = MaxAbsNormalizationLast
+        
+        mlp_normalization = None
+        if normalization :
+            mlp_normalization = MaxAbsNormalizationLast
 
         self._output_layer = HighOrderMLP(
             layer_type=layer_type,
@@ -425,10 +426,10 @@ class HighOrderAttentionNetwork(torch.nn.Module):
 
         average = torch.sum(res, dim=1) / res.shape[1]
 
-        # if self.normalization is not None :
-        final = self.normalization(self._output_layer(average))
-        # else :
-        #    final = self._output_layer(average)
+        if self.normalization :
+            final = self.normalization(self._output_layer(average))
+        else :
+            final = self._output_layer(average)
 
         # torch.cuda.empty_cache()
         return final
