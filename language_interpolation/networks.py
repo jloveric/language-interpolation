@@ -12,6 +12,7 @@ from high_order_layers_torch.networks import (
     initialize_network_polynomial_layers,
     initialize_polynomial_layer,
 )
+from high_order_layers_torch.positional_embeddings import ClassicSinusoidalEmbedding
 from high_order_layers_torch.layers import MaxAbsNormalizationLast, high_order_fc_layers
 from torchmetrics import Accuracy
 from torch import Tensor
@@ -20,7 +21,9 @@ import logging
 import time
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG
+)
 
 
 class ClassificationMixin:
@@ -200,7 +203,9 @@ class HighOrderAttention(torch.nn.Module):
         vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
         with torch.backends.cuda.sdp_kernel(
-            enable_flash=True, enable_math=False, enable_mem_efficient=True
+            enable_flash=True, 
+            enable_math=False, 
+            enable_mem_efficient=True
         ):
             res = F.scaled_dot_product_attention(
                 query=qth, key=kth, value=vth, attn_mask=None
@@ -340,14 +345,38 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         self.max_context = max_context
         self.normalization = normalization
 
-        for index, element in enumerate(layers):
+        input_width = layers[0]['input']
+        embedding_width = layers[0]['output']
+        hidden_width = layers[0]['hidden']
+        embedding_layers = layers[0]['layers']
+        segments = layers[0]['segments']
+
+        mlp_normalization = None
+        if normalization:
+            mlp_normalization = MaxAbsNormalizationLast
+
+        self._embedding_layer = HighOrderMLP(
+            layer_type=layer_type,
+            n=n,
+            in_width=input_width,
+            in_segments=segments,
+            out_segments=segments,
+            hidden_segments=segments,
+            hidden_layers=embedding_layers,
+            hidden_width=hidden_width,
+            out_width=embedding_width,
+            device=self._device,
+            normalization=mlp_normalization,
+        )
+
+        for index, element in enumerate(layers[1:]):
             input_scale = 2.0
             # if index == 0:
             #    input_scale = max_context
 
-            embed_dim = element[0]
-            out_dim = element[1]
-            segments = element[2]
+            embed_dim = element['input']
+            out_dim = element['output']
+            segments = element['segments']
             new_layer = high_order_attention_block(
                 embed_dim=embed_dim,
                 out_dim=out_dim,
@@ -361,12 +390,8 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             )
             self.layer.append(new_layer)
 
-        out_dim = layers[-1][1]
-
-        mlp_normalization = None
-        if normalization:
-            mlp_normalization = MaxAbsNormalizationLast
-
+        out_dim = layers[-1]['output']
+        
         self._output_layer = HighOrderMLP(
             layer_type=layer_type,
             n=n,
@@ -392,6 +417,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             .to(device=self._device)
         )
 
+        #self.positional_embedding = ClassicSinusoidalEmbedding(dim = layers[0]['output'])
+
+
         elapsed_time = time.time() - start_time
         logging.info(f"HighOrderAttentionNetwork setup time {elapsed_time}")
 
@@ -403,11 +431,17 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         # characters are small spacinb
         # xp = small_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
         # characters are large spacing
+
+        print('x.shape', x.shape)
+        xe = self._embedding_layer(x.reshape(x.shape[0]*x.shape[1],-1))
+        print('xe.shape', xe.shape)
+
         xp = large_character_spacing(
-            x=x,
+            x=xe.reshape(x.shape[0], x.shape[1], -1),
             max_context=self.max_context,
             positional_embedding=self.positional_embedding,
         )
+        print('xp.shape', xp.shape)
 
         query = xp
         key = xp

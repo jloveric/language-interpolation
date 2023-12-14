@@ -1,11 +1,16 @@
 import pytest
 
-from language_interpolation.networks import HighOrderAttentionNetwork, large_character_spacing, small_character_spacing
+from language_interpolation.networks import (
+    HighOrderAttentionNetwork,
+    large_character_spacing,
+    small_character_spacing,
+)
 from language_interpolation.lightning_datamodule import TransformerDataModule
 from high_order_layers_torch.layers import MaxAbsNormalizationLast
 from omegaconf import DictConfig
 from language_interpolation.utils import generate_transformer_text
 import torch
+
 
 def test_attention_network():
     characters_per_feature = 10
@@ -35,7 +40,11 @@ def test_attention_network():
     normalization = MaxAbsNormalizationLast(eps=1e-6)
 
     network = HighOrderAttentionNetwork(
-        layers=[[10, 5, 3], [5, 5, 2]],
+        layers=[
+            {"input": 10, "output": 10, "hidden": 10, "layers": 1, "segments": 3},
+            {"input": 10, "output": 5, "segments": 3},
+            {"input": 5, "output": 5, "segments": 2},
+        ],
         n=3,
         normalization=normalization,
         layer_type="continuous",
@@ -44,7 +53,7 @@ def test_attention_network():
         max_context=max_features,
         output_segments=2,
         output_hidden_layers=1,
-        output_hidden_width=5
+        output_hidden_width=5,
     )
     result = network(input_data)
     print("final result", result)
@@ -52,14 +61,14 @@ def test_attention_network():
     assert result.shape[0] == 32
     assert result.shape[1] == 128
 
-    new_sample = torch.rand(1, max_features, 10)*2-1
+    new_sample = torch.rand(1, max_features, 10) * 2 - 1
 
     output = large_character_spacing(
         x=new_sample,
         max_context=network.max_context,
         positional_embedding=network.positional_embedding,
     )
-    print('output', output)
+    print("output", output)
 
     text_list = ["hello sir", "Test this now"]
     ans = generate_transformer_text(
