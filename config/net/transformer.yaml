@@ -19,7 +19,14 @@ inner: 10
 #layers: [[1, ${inner}, 128], [${inner}, ${inner}, 10], [${inner}, ${inner}, 10]]
 layers:
   [
-    { "input": 1, "hidden": 8, "output": 8, "layers": 1, "segments": 128 },
+    {
+      "input": 1,
+      "hidden": 8,
+      "output": 8,
+      "layers": 1,
+      "segments": 4,
+      "input_segments": 128,
+    },
     { "input": 8, "output": 8, "segments": 4 },
     { "input": 8, "output": 8, "segments": 4 },
     { "input": 8, "output": 8, "segments": 4 },

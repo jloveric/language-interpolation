@@ -346,6 +346,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         hidden_width = layers[0]["hidden"]
         embedding_layers = layers[0]["layers"]
         segments = layers[0]["segments"]
+        input_segments = layers[0]["input_segments"]
 
         mlp_normalization = None
         if normalization:
@@ -355,7 +356,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             layer_type=layer_type,
             n=n,
             in_width=input_width,
-            in_segments=segments,
+            in_segments=input_segments,
             out_segments=segments,
             hidden_segments=segments,
             hidden_layers=embedding_layers,
