@@ -20,9 +20,7 @@ import logging
 import time
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG
-)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class ClassificationMixin:
@@ -202,9 +200,7 @@ class HighOrderAttention(torch.nn.Module):
         vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
         with torch.backends.cuda.sdp_kernel(
-            enable_flash=True, 
-            enable_math=False, 
-            enable_mem_efficient=True
+            enable_flash=True, enable_math=False, enable_mem_efficient=True
         ):
             res = F.scaled_dot_product_attention(
                 query=qth, key=kth, value=vth, attn_mask=None
@@ -366,9 +362,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             self.layer.append(new_layer)
 
         out_dim = layers[-1][1]
-        
+
         mlp_normalization = None
-        if normalization :
+        if normalization:
             mlp_normalization = MaxAbsNormalizationLast
 
         self._output_layer = HighOrderMLP(
@@ -397,7 +393,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         )
 
         elapsed_time = time.time() - start_time
-        logging.info(f'HighOrderAttentionNetwork setup time {elapsed_time}')
+        logging.info(f"HighOrderAttentionNetwork setup time {elapsed_time}")
 
     def forward(self, x: Tensor) -> Tensor:
         # Scale the input to [-1, 1] where every token is bumped by 1/(2*max_context)
@@ -418,7 +414,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         value = xp
         temp = 0
         for index, layer in enumerate(self.layer):
-            res = layer(query, key, value)+temp
+            res = layer(query, key, value) + temp
             temp = res
             query = res
             key = res
@@ -426,9 +422,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
 
         average = torch.sum(res, dim=1) / res.shape[1]
 
-        if self.normalization :
+        if self.normalization:
             final = self.normalization(self._output_layer(average))
-        else :
+        else:
             final = self._output_layer(average)
 
         # torch.cuda.empty_cache()
@@ -473,9 +469,9 @@ def select_network(cfg: DictConfig, device: str = None):
 
         model = torch.nn.Sequential(*layer_list)
     elif cfg.net.model_type == "high_order_transformer":
-        # normalizer = None
-        # if normalization==True :
-        normalizer = MaxAbsNormalizationLast(eps=1e-6)
+        normalizer = None
+        if normalization == True:
+            normalizer = MaxAbsNormalizationLast(eps=1e-6)
 
         model = HighOrderAttentionNetwork(
             cfg.net.layer_type,
