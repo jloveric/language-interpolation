@@ -366,6 +366,10 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             normalization=mlp_normalization,
         )
 
+        # initialize_network_polynomial_layers(
+        #    self._embedding_layer, max_slope=1.0, max_offset=0.0
+        # )
+
         for index, element in enumerate(layers[1:]):
             input_scale = 2.0
             # if index == 0:
