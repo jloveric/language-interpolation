@@ -21,9 +21,7 @@ import logging
 import time
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG
-)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class ClassificationMixin:
@@ -203,9 +201,7 @@ class HighOrderAttention(torch.nn.Module):
         vth = vt.reshape(vt.shape[0], vt.shape[1], self.heads, -1)
 
         with torch.backends.cuda.sdp_kernel(
-            enable_flash=True, 
-            enable_math=False, 
-            enable_mem_efficient=True
+            enable_flash=True, enable_math=False, enable_mem_efficient=True
         ):
             res = F.scaled_dot_product_attention(
                 query=qth, key=kth, value=vth, attn_mask=None
@@ -345,11 +341,11 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         self.max_context = max_context
         self.normalization = normalization
 
-        input_width = layers[0]['input']
-        embedding_width = layers[0]['output']
-        hidden_width = layers[0]['hidden']
-        embedding_layers = layers[0]['layers']
-        segments = layers[0]['segments']
+        input_width = layers[0]["input"]
+        embedding_width = layers[0]["output"]
+        hidden_width = layers[0]["hidden"]
+        embedding_layers = layers[0]["layers"]
+        segments = layers[0]["segments"]
 
         mlp_normalization = None
         if normalization:
@@ -374,9 +370,9 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             # if index == 0:
             #    input_scale = max_context
 
-            embed_dim = element['input']
-            out_dim = element['output']
-            segments = element['segments']
+            embed_dim = element["input"]
+            out_dim = element["output"]
+            segments = element["segments"]
             new_layer = high_order_attention_block(
                 embed_dim=embed_dim,
                 out_dim=out_dim,
@@ -390,8 +386,8 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             )
             self.layer.append(new_layer)
 
-        out_dim = layers[-1]['output']
-        
+        out_dim = layers[-1]["output"]
+
         self._output_layer = HighOrderMLP(
             layer_type=layer_type,
             n=n,
@@ -417,8 +413,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             .to(device=self._device)
         )
 
-        #self.positional_embedding = ClassicSinusoidalEmbedding(dim = layers[0]['output'])
-
+        # self.positional_embedding = ClassicSinusoidalEmbedding(dim = layers[0]['output'])
 
         elapsed_time = time.time() - start_time
         logging.info(f"HighOrderAttentionNetwork setup time {elapsed_time}")
@@ -432,16 +427,16 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         # xp = small_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
         # characters are large spacing
 
-        print('x.shape', x.shape)
-        xe = self._embedding_layer(x.reshape(x.shape[0]*x.shape[1],-1))
-        print('xe.shape', xe.shape)
+        # print('x.shape', x.shape)
+        xe = self._embedding_layer(x.reshape(x.shape[0] * x.shape[1], -1))
+        # print('xe.shape', xe.shape)
 
         xp = large_character_spacing(
             x=xe.reshape(x.shape[0], x.shape[1], -1),
             max_context=self.max_context,
             positional_embedding=self.positional_embedding,
         )
-        print('xp.shape', xp.shape)
+        # print('xp.shape', xp.shape)
 
         query = xp
         key = xp

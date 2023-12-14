@@ -17,13 +17,14 @@ segments: 2
 #layers: [[10, 10, 64], [10, 5, 2], [5, 5, 2]]
 inner: 10
 #layers: [[1, ${inner}, 128], [${inner}, ${inner}, 10], [${inner}, ${inner}, 10]]
-layers: [
-  {'input': 1, 'hidden': 8, 'output' : 8, 'layers': 1, 'segments': 128}, 
-  {'input': 8, 'output' : 8, 'segments': 4}, 
-  {'input': 8, 'output': 8, 'segments': 4}, 
-  {'input' : 8, 'output': 8, 'segment': 4}, 
-  {'input': 8, 'output': 8, 'segments' : 4}
-]
+layers:
+  [
+    { "input": 1, "hidden": 8, "output": 8, "layers": 1, "segments": 128 },
+    { "input": 8, "output": 8, "segments": 4 },
+    { "input": 8, "output": 8, "segments": 4 },
+    { "input": 8, "output": 8, "segments": 4 },
+    { "input": 8, "output": 8, "segments": 4 },
+  ]
 
 output_layer:
   segments: 10
