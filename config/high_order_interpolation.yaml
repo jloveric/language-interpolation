@@ -39,6 +39,11 @@ data:
   # each book is processed by a single process!
   pre_process_workers: 0
 
+initialize :
+  type: kaiming #linear
+  max_offset: 0.1
+  max_slope: 0.5
+
 max_epochs: 100
 accelerator: cuda
 batch_size: 256

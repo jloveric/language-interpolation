@@ -7,6 +7,7 @@ from language_interpolation.networks import (
 )
 from language_interpolation.lightning_datamodule import TransformerDataModule
 from high_order_layers_torch.layers import MaxAbsNormalizationLast
+from high_order_layers_torch.networks import initialize_network_polynomial_layers
 from omegaconf import DictConfig
 from language_interpolation.utils import generate_transformer_text
 import torch
@@ -41,7 +42,7 @@ def test_attention_network():
 
     network = HighOrderAttentionNetwork(
         layers=[
-            {"input": 10, "output": 10, "hidden": 10, "layers": 1, "segments": 3},
+            {"input": 10, "output": 10, "hidden": 10, "layers": 1, "segments": 3, "input_segments": 3},
             {"input": 10, "output": 5, "segments": 3},
             {"input": 5, "output": 5, "segments": 2},
         ],
@@ -55,6 +56,12 @@ def test_attention_network():
         output_hidden_layers=1,
         output_hidden_width=5,
     )
+
+    initialize_network_polynomial_layers(
+        network, max_slope=1.0, max_offset=0.0
+    )
+
+
     result = network(input_data)
     print("final result", result)
     print("result", result.shape)

@@ -9,11 +9,10 @@ from high_order_layers_torch.networks import (
     HighOrderMLP,
     HighOrderFullyConvolutionalNetwork,
     HighOrderTailFocusNetwork,
-    initialize_network_polynomial_layers,
-    initialize_polynomial_layer,
 )
 from high_order_layers_torch.positional_embeddings import ClassicSinusoidalEmbedding
 from high_order_layers_torch.layers import MaxAbsNormalizationLast, high_order_fc_layers
+from high_order_layers_torch.networks import initialize_network_polynomial_layers
 from torchmetrics import Accuracy
 from torch import Tensor
 import torch.nn.functional as F
@@ -280,11 +279,6 @@ def high_order_attention_block(
         device=device,
     )
 
-    initialize_polynomial_layer(query, max_slope=1.0, max_offset=0.0)
-    initialize_polynomial_layer(key, max_slope=1.0, max_offset=0.0)
-    initialize_polynomial_layer(value, max_slope=1.0, max_offset=0.0)
-    initialize_polynomial_layer(output, max_slope=1.0, max_offset=0.0)
-
     layer = HighOrderAttention(
         embed_dim=embed_dim,
         out_dim=out_dim,
@@ -366,10 +360,6 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             normalization=mlp_normalization,
         )
 
-        # initialize_network_polynomial_layers(
-        #    self._embedding_layer, max_slope=1.0, max_offset=0.0
-        # )
-
         for index, element in enumerate(layers[1:]):
             input_scale = 2.0
             # if index == 0:
@@ -407,9 +397,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             normalization=mlp_normalization,
         )
 
-        initialize_network_polynomial_layers(
-            self._output_layer, max_slope=1.0, max_offset=0.0
-        )
+        
 
         # Make the positions 0 to max_context-1
         self.positional_embedding = (
@@ -579,6 +567,12 @@ def select_network(cfg: DictConfig, device: str = None):
     else:
         raise ValueError(
             f"Unrecognized model_type {cfg.model_type} should be high_order, high_order_input or high_order_conv!"
+        )
+
+    if cfg.initialize.type == 'linear':
+        logger.info('Performing linear initialization')
+        initialize_network_polynomial_layers(
+            model, max_slope=cfg.initialize.max_slope, max_offset=cfg.initialize.max_offset
         )
 
     return model
