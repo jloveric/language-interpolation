@@ -62,6 +62,11 @@ def test_overflow_network():
                     "width": 10,
                 },
             },
+            "initialize":{
+                "type":"linear",
+                "max_slope":1,
+                "max_offset":0.1,
+            }
         }
     )
 
@@ -104,6 +109,11 @@ def test_overflow_network():
                     "width": 10,
                 },
             },
+            "initialize":{
+                "type":"linear",
+                "max_slope":1,
+                "max_offset":0.1,
+            }
         }
     )
 

@@ -42,6 +42,11 @@ def test_dataset_from_model():
                     "width": 10,
                 },
             },
+            "initialize":{
+                "type":"linear",
+                "max_slope":1,
+                "max_offset":0.1,
+            }
         }
     )
 
