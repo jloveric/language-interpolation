@@ -48,6 +48,7 @@ max_epochs: 100
 accelerator: cuda
 batch_size: 256
 gradient_clip: null # 5.0
+accumulate_grad_batches: 1
 
 # Are you training? Otherwise plot the result
 train: True

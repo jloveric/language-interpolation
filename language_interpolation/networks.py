@@ -561,11 +561,14 @@ def select_network(cfg: DictConfig, device: str = None):
 
     if cfg.initialize.type == "linear":
         logger.info("Performing linear initialization")
+        start_init = time.perf_counter()
         initialize_network_polynomial_layers(
             model,
             max_slope=cfg.initialize.max_slope,
             max_offset=cfg.initialize.max_offset,
         )
+        finish_time = time.perf_counter() - start_init
+        logger.info(f"Finished linear initialization {finish_time}")
 
     return model
 

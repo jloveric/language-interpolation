@@ -27,7 +27,9 @@ logger = logging.getLogger(__name__)
 logging.getLogger().setLevel(logging.DEBUG)
 
 
-@hydra.main(config_path="../config", config_name="high_order_interpolation", version_base="1.3")
+@hydra.main(
+    config_path="../config", config_name="high_order_interpolation", version_base="1.3"
+)
 def run_language_interpolation(cfg: DictConfig):
     logger.info(OmegaConf.to_yaml(cfg))
     logger.info("Working directory : {}".format(os.getcwd()))
@@ -36,7 +38,6 @@ def run_language_interpolation(cfg: DictConfig):
     create_gutenberg_cache(parent_directory=hydra.utils.get_original_cwd())
 
     if cfg.train is True:
-
         try:  # Try is needed for multirun case
             if cfg.data.type in dataset_registry:
                 dataset_generator = dataset_registry[cfg.data.type]
@@ -46,7 +47,6 @@ def run_language_interpolation(cfg: DictConfig):
                 )
 
             if cfg.net.model_type == "high_order_transformer":
-
                 # dataset_generator is only one type so using the default
                 datamodule = TransformerDataModule(
                     characters_per_feature=cfg.data.characters_per_feature,
@@ -101,6 +101,7 @@ def run_language_interpolation(cfg: DictConfig):
                 max_epochs=cfg.max_epochs,
                 accelerator=cfg.accelerator,
                 gradient_clip_val=cfg.gradient_clip,
+                accumulate_grad_batches=cfg.accumulate_grad_batches,
             )
 
             model = ASCIIPredictionNet(cfg)

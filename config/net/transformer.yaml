@@ -9,30 +9,41 @@ normalize: true
 # number of Fourier components.
 model_type: high_order_transformer
 n: 3
-input_segments: 64
+
 segments: 2
-# Layers in the form [input, output, segments]
+base_width: 64
 
 # attention blocks
-#layers: [[10, 10, 64], [10, 5, 2], [5, 5, 2]]
 inner: 10
-#layers: [[1, ${inner}, 128], [${inner}, ${inner}, 10], [${inner}, ${inner}, 10]]
+
 layers:
-  [
-    {
-      "input": 1,
-      "hidden": 16,
-      "output": 16,
-      "layers": 1,
-      "segments": 16,
-      "input_segments": 128,
-    },
-    { "input": 16, "output": 16, "segments": 16 },
-    { "input": 16, "output": 16, "segments": 16 },
-    { "input": 16, "output": 16, "segments": 16 },
-    { "input": 16, "output": 16, "segments": 16 },
-    { "input": 16, "hidden": 100, "layers": 1, "segments": 10 },
-  ]
+  - input: 1
+    hidden: 16
+    output: 16
+    layers: 1
+    segments: 16
+    input_segments: 128
+
+  - input: 16
+    output: ${net.base_width}
+    segments: ${net.segments}
+
+  - input: ${net.base_width}
+    output: ${net.base_width}
+    segments: ${net.segments}
+
+  - input: ${net.base_width}
+    output: ${net.base_width}
+    segments: ${net.segments}
+
+  - input: ${net.base_width}
+    output: ${net.base_width}
+    segments: ${net.segments}
+
+  - input: ${net.base_width}
+    hidden: 100
+    layers: 1
+    segments: 10
 
 # Note! output dimension is c=heads*output so different than normal
 # And then similarity size is c*c*batch_size
