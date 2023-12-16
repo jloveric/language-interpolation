@@ -26,6 +26,10 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logging.getLogger().setLevel(logging.DEBUG)
 
+import os
+
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+
 
 @hydra.main(
     config_path="../config", config_name="high_order_interpolation", version_base="1.3"
