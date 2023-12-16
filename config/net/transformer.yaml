@@ -11,7 +11,7 @@ model_type: high_order_transformer
 n: 3
 
 segments: 2
-base_width: 64
+base_width: 100
 
 # attention blocks
 inner: 10
