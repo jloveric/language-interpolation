@@ -13,6 +13,7 @@ import random
 from gutenbergpy.gutenbergcache import GutenbergCache, GutenbergCacheSettings
 import logging
 from pathlib import Path
+import copy
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,7 @@ def generate_transformer_text(
     model.eval()
 
     for index, text in enumerate(text_list):
+        text = copy.deepcopy(text)
         just = ((len(text) // characters_per_feature) + 1) * characters_per_feature
         text_list[index] = text.rjust(just)
 
