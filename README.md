@@ -58,7 +58,7 @@ python examples/high_order_interpolation.py data.type=sequence net=large_single_
 ### High order transformers (the beginning)
 Using high order transformer blocks
 ```
-python examples/high_order_interpolation.py data.type=sequence net=transformer max_epochs=10 optimizer.lr=1e-4 batch_size=32 net.layer_type=discontinuous
+python examples/high_order_interpolation.py data.type=sequence net=transformer max_epochs=100 optimizer.lr=1e-3 batch_size=512 net.layer_type=continuous data.repeats=5 net.n=2 data.max_features=10 optimizer.patience=20 initialize.type=linear
 ```
 
 ### sparse convolutional network
