@@ -13,12 +13,12 @@ from language_interpolation.utils import generate_transformer_text
 import torch
 
 
-def test_attention_network():
-    characters_per_feature = 10
+@pytest.mark.parametrize("characters_per_feature", [1, 2, 10])
+def test_attention_network(characters_per_feature):
     max_features = 100
 
     data_module = TransformerDataModule(
-        characters_per_feature=10,
+        characters_per_feature=characters_per_feature,
         max_features=max_features,
         batch_size=32,
         gutenberg_ids_test=[1],
@@ -36,13 +36,20 @@ def test_attention_network():
 
     assert len(indexes) == 32
     assert input_data.shape[0] == 32
-    assert input_data.shape[2] == 10
+    assert input_data.shape[2] == characters_per_feature
 
     normalization = MaxAbsNormalizationLast(eps=1e-6)
 
     network = HighOrderAttentionNetwork(
         layers=[
-            {"input": 10, "output": 10, "hidden": 10, "layers": 1, "segments": 3, "input_segments": 3},
+            {
+                "input": characters_per_feature,
+                "output": 10,
+                "hidden": 10,
+                "layers": 1,
+                "segments": 3,
+                "input_segments": 3,
+            },
             {"input": 10, "output": 5, "segments": 3},
             {"input": 5, "output": 5, "segments": 2},
         ],
@@ -57,18 +64,14 @@ def test_attention_network():
         output_hidden_width=5,
     )
 
-    initialize_network_polynomial_layers(
-        network, max_slope=1.0, max_offset=0.0
-    )
-
+    initialize_network_polynomial_layers(network, max_slope=1.0, max_offset=0.0)
 
     result = network(input_data)
-    print("final result", result)
-    print("result", result.shape)
+
     assert result.shape[0] == 32
     assert result.shape[1] == 128
 
-    new_sample = torch.rand(1, max_features, 10) * 2 - 1
+    new_sample = torch.rand(1, max_features, characters_per_feature) * 2 - 1
 
     output = large_character_spacing(
         x=new_sample,
@@ -78,11 +81,15 @@ def test_attention_network():
     print("output", output)
 
     text_list = ["hello sir", "Test this now"]
+
+    output_size = 10
     ans = generate_transformer_text(
         model=network,
         text_list=text_list,
         characters_per_feature=characters_per_feature,
         max_characters=1000,
-        output_size=10,
+        output_size=output_size,
     )
-    print("ans", ans)
+
+    for index, text in enumerate(text_list):
+        assert len(text) + output_size == len(ans[index])

@@ -107,16 +107,21 @@ def generate_transformer_text(
 ):
     model.eval()
 
-    for index, text in enumerate(text_list):
-        text = copy.deepcopy(text)
-        just = ((len(text) // characters_per_feature) + 1) * characters_per_feature
-        text_list[index] = text.rjust(just)
+    # We want to pad the left with spaces if the text does not
+    # fit exactly into feature size blocks.
+    def justify_sample(sample):
+        just = (
+            ((len(sample) - 1) // characters_per_feature) + 1
+        ) * characters_per_feature
+        return sample.rjust(just)
 
     results = []
-    for text_in in text_list:
+    for text_raw in text_list:
+        plain_copy = text_raw
         for i in range(output_size):
+            text_in = justify_sample(plain_copy)
             encoding, text_used = encode_input_from_text(
-                text_in=text_in, features=max_characters
+                text_in=text_in, features=len(text_in)
             )
             encoding = (
                 ascii_to_float(encoding)
@@ -133,13 +138,9 @@ def generate_transformer_text(
             # prevents the same response for every query.
             values = values.nan_to_num(nan=1.0)
             actual = random.choices(ascii, values.tolist())
-            text_in = text_in + actual[0]
-            just = (
-                (len(text_in) // characters_per_feature) + 1
-            ) * characters_per_feature
-            text_in = text_in.rjust(just)
+            plain_copy = plain_copy + actual[0]
 
-        results.append(text_in.replace("\n", " "))
+        results.append(plain_copy.replace("\n", " "))
 
     return results
 

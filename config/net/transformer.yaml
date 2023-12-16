@@ -24,13 +24,14 @@ layers:
       "hidden": 16,
       "output": 16,
       "layers": 1,
-      "segments": 32,
+      "segments": 16,
       "input_segments": 128,
     },
-    { "input": 16, "output": 16, "segments": 32 },
-    { "input": 16, "output": 16, "segments": 32 },
-    { "input": 16, "output": 16, "segments": 32 },
-    { "input": 16, "output": 16, "segments": 32 },
+    { "input": 16, "output": 16, "segments": 16 },
+    { "input": 16, "output": 16, "segments": 16 },
+    { "input": 16, "output": 16, "segments": 16 },
+    { "input": 16, "output": 16, "segments": 16 },
+    { "input": 16, "hidden": 100, "layers": 1, "segments": 10 },
   ]
 
 output_layer:
