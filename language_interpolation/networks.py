@@ -308,6 +308,7 @@ def large_character_spacing(x, max_context, positional_embedding):
     128 segments.
     """
     unit_pos_embedding = (positional_embedding[: x.shape[1]] + 0.5) / max_context - 0.5
+
     xp = (
         ((0.5 * (x + 1) * max_context + unit_pos_embedding)) * 2 - max_context
     ) / max_context
@@ -415,16 +416,13 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         # xp = small_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
         # characters are large spacing
 
-        # print('x.shape', x.shape)
         xe = self._embedding_layer(x.reshape(x.shape[0] * x.shape[1], -1))
-        # print('xe.shape', xe.shape)
 
         xp = large_character_spacing(
             x=xe.reshape(x.shape[0], x.shape[1], -1),
             max_context=self.max_context,
             positional_embedding=self.positional_embedding,
         )
-        # print('xp.shape', xp.shape)
 
         query = xp
         key = xp

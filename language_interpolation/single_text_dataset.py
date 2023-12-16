@@ -600,6 +600,7 @@ class TextTransformerDataset(Dataset):
 
         max_size = min(torch.numel(self.inputs) - index, self._max_characters)
 
+        # TODO: May not need this clone
         inputs = self.inputs[index : (index + max_size)].clone()
         if self.transforms is not None:
             inputs = self.transforms(inputs)

@@ -105,14 +105,25 @@ def generate_transformer_text(
     output_size: int,
     topk: int = 1,
 ):
+    """
+    :param characters_per_feature: typically 1, the number of characters that make up
+    a feature.
+    :param max_characters: The maximum number of characters to use, acts like a moving
+    window. Set to 0 if all characters should be used.
+    :param text_list: List of prompts
+    :param output_size: The number of characters to generate
+    :param topk: weighted random selection of the topk next characters
+    :returns: the continuation of the prompts, the original text + the next output_size
+    characters
+    """
     model.eval()
 
     # We want to pad the left with spaces if the text does not
     # fit exactly into feature size blocks.
     def justify_sample(sample):
-        just = (
+        just = max(characters_per_feature, (
             ((len(sample) - 1) // characters_per_feature) + 1
-        ) * characters_per_feature
+        ) * characters_per_feature)
         return sample.rjust(just)
 
     results = []
@@ -121,7 +132,7 @@ def generate_transformer_text(
         for i in range(output_size):
             text_in = justify_sample(plain_copy)
             encoding, text_used = encode_input_from_text(
-                text_in=text_in, features=len(text_in)
+                text_in=text_in, features=max_characters
             )
             encoding = (
                 ascii_to_float(encoding)
@@ -129,6 +140,7 @@ def generate_transformer_text(
                 .reshape(1, -1, characters_per_feature)
             )
             model.eval()
+
             output = model(encoding)
             values, indices, ascii = decode_output_to_text(
                 encoding=output[0], topk=topk

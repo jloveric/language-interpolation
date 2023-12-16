@@ -60,7 +60,7 @@ prompts:
     "This is a strange planet",
     "Who are you?",
     "Golden goose",
-    " ",
+    "   ",
   ]
 
 topk: 3
