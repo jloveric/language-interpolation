@@ -52,6 +52,7 @@ def test_attention_network(characters_per_feature):
             },
             {"input": 10, "output": 5, "segments": 3},
             {"input": 5, "output": 5, "segments": 2},
+            {"input": 5, "hidden": 5, "segments": 2, "layers": 1},
         ],
         n=3,
         normalization=normalization,
@@ -59,9 +60,6 @@ def test_attention_network(characters_per_feature):
         device="cpu",
         heads=2,
         max_context=max_features,
-        output_segments=2,
-        output_hidden_layers=1,
-        output_hidden_width=5,
     )
 
     initialize_network_polynomial_layers(network, max_slope=1.0, max_offset=0.0)

@@ -320,9 +320,6 @@ class HighOrderAttentionNetwork(torch.nn.Module):
         layer_type: str,
         layers: list,
         n: int,
-        output_hidden_layers: int,
-        output_hidden_width: int,
-        output_segments: int,
         normalization: None,
         heads: int = 1,
         device: str = "cuda",
@@ -360,7 +357,7 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             normalization=mlp_normalization,
         )
 
-        for index, element in enumerate(layers[1:]):
+        for index, element in enumerate(layers[1:-1]):
             input_scale = 2.0
             # if index == 0:
             #    input_scale = max_context
@@ -381,23 +378,21 @@ class HighOrderAttentionNetwork(torch.nn.Module):
             )
             self.layer.append(new_layer)
 
-        out_dim = layers[-1]["output"]
+        output_layer = layers[-1]
 
         self._output_layer = HighOrderMLP(
             layer_type=layer_type,
             n=n,
-            in_width=out_dim,
-            in_segments=output_segments,
-            out_segments=output_segments,
-            hidden_segments=output_segments,
-            hidden_layers=output_hidden_layers,
-            hidden_width=output_hidden_width,
+            in_width=output_layer["input"],
+            in_segments=output_layer["segments"],
+            out_segments=output_layer["segments"],
+            hidden_segments=output_layer["segments"],
+            hidden_layers=output_layer["layers"],
+            hidden_width=output_layer["hidden"],
             out_width=128,
             device=self._device,
             normalization=mlp_normalization,
         )
-
-        
 
         # Make the positions 0 to max_context-1
         self.positional_embedding = (
@@ -503,9 +498,6 @@ def select_network(cfg: DictConfig, device: str = None):
             device=cfg.accelerator,
             heads=cfg.net.heads,
             max_context=cfg.data.max_features,
-            output_hidden_layers=cfg.net.output_layer.hidden_layers,
-            output_hidden_width=cfg.net.output_layer.hidden_width,
-            output_segments=cfg.net.output_layer.segments,
         )
 
     elif cfg.net.model_type == "high_order":
@@ -569,10 +561,12 @@ def select_network(cfg: DictConfig, device: str = None):
             f"Unrecognized model_type {cfg.model_type} should be high_order, high_order_input or high_order_conv!"
         )
 
-    if cfg.initialize.type == 'linear':
-        logger.info('Performing linear initialization')
+    if cfg.initialize.type == "linear":
+        logger.info("Performing linear initialization")
         initialize_network_polynomial_layers(
-            model, max_slope=cfg.initialize.max_slope, max_offset=cfg.initialize.max_offset
+            model,
+            max_slope=cfg.initialize.max_slope,
+            max_offset=cfg.initialize.max_offset,
         )
 
     return model

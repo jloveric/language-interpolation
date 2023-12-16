@@ -34,11 +34,6 @@ layers:
     { "input": 16, "hidden": 100, "layers": 1, "segments": 10 },
   ]
 
-output_layer:
-  segments: 10
-  hidden_layers: 1
-  hidden_width: 100
-
 # Note! output dimension is c=heads*output so different than normal
 # And then similarity size is c*c*batch_size
 
