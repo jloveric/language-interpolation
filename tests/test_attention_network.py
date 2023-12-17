@@ -2,6 +2,7 @@ import pytest
 
 from language_interpolation.networks import (
     HighOrderAttentionNetwork,
+    HighOrderInputAttentionNetwork,
     large_character_spacing,
     small_character_spacing,
 )
@@ -92,3 +93,59 @@ def test_attention_network(max_features, characters_per_feature):
     for index, text in enumerate(text_list):
         assert len(text) + output_size == len(ans[index])
     
+@pytest.mark.parametrize("max_features", [3,4,100])
+@pytest.mark.parametrize("characters_per_feature", [1, 2, 10])
+def test_high_order_input_attention_network(max_features, characters_per_feature):
+
+    data_module = TransformerDataModule(
+        characters_per_feature=characters_per_feature,
+        max_features=max_features,
+        batch_size=32,
+        gutenberg_ids_test=[1],
+        gutenberg_ids_train=[2],
+        gutenberg_ids_val=[3],
+        pre_process_workers=0,
+    )
+
+    data_module.setup()
+
+    train_dataloader = data_module.train_dataloader()
+    input_data, output, indexes = next(iter(train_dataloader))
+    print("indexes", indexes)
+    print("input shape", input_data.shape, "output.shape", output.shape)
+
+    assert len(indexes) == 32
+    assert input_data.shape[0] == 32
+    assert input_data.shape[2] == characters_per_feature
+
+    normalization = MaxAbsNormalizationLast(eps=1e-6)
+
+    network = HighOrderInputAttentionNetwork(
+        layers=[
+            {
+                "input": characters_per_feature,
+                "output": 10,
+                "hidden": 10,
+                "layers": 1,
+                "segments": 3,
+                "input_segments": 3,
+            },
+            {"input": 10, "output": 5},
+            {"input": 5, "output": 5},
+            {"input": 5, "hidden": 5, "layers": 1},
+        ],
+        n=3,
+        normalization=normalization,
+        layer_type="continuous",
+        device="cpu",
+        heads=2,
+        max_context=max_features,
+        non_linearity=torch.nn.ReLU()
+    )
+
+    initialize_network_polynomial_layers(network, max_slope=1.0, max_offset=0.0)
+
+    result = network(input_data)
+    
+    assert result.shape[0] == 32
+    assert result.shape[1] == 128
