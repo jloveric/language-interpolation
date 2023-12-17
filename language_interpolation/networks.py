@@ -18,6 +18,7 @@ from torch import Tensor
 import torch.nn.functional as F
 import logging
 import time
+from lion_pytorch import Lion
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -70,12 +71,21 @@ class PredictionNetMixin:
                 weight_decay=self.cfg.optimizer.weight_decay,
                 hessian_power=self.cfg.optimizer.hessian_power,
             )
+        elif self.cfg.optimizer.name == "lion" :
+            optimizer = Lion(
+                self.parameters(), 
+                lr=self.cfg.optimizer.lr, 
+                weight_decay=0.0
+            )
         elif self.cfg.optimizer.name == "adam":
             optimizer = optim.Adam(
                 params=self.parameters(),
                 lr=self.cfg.optimizer.lr,
             )
+        else:
+            raise ValueError(f"Optimizer {self.cfg.optimizer.name} not recognized")
 
+        if self.cfg.optimizer:
             reduce_on_plateau = False
             if self.cfg.optimizer.scheduler == "plateau":
                 logger.info("Reducing lr on plateau")
@@ -100,9 +110,7 @@ class PredictionNetMixin:
                 "monitor": "train_loss",
             }
             return [optimizer], [scheduler]
-        else:
-            raise ValueError(f"Optimizer {self.cfg.optimizer.name} not recognized")
-
+        
 
 class HighOrderAttention(torch.nn.Module):
     """
