@@ -50,7 +50,10 @@ def run_language_interpolation(cfg: DictConfig):
                     f"data.type must be centered or sequence. recieved {cfg.data.type}"
                 )
 
-            if cfg.net.model_type == "high_order_transformer":
+            if cfg.net.model_type in [
+                "high_order_transformer",
+                "high_order_input_transformer",
+            ]:
                 # dataset_generator is only one type so using the default
                 datamodule = TransformerDataModule(
                     characters_per_feature=cfg.data.characters_per_feature,
@@ -133,10 +136,7 @@ def run_language_interpolation(cfg: DictConfig):
         model = ASCIIPredictionNet.load_from_checkpoint(checkpoint_path)
 
         add_channel_dimension = True
-        if (
-            cfg.net.model_type == "high_order"
-            or cfg.net.model_type == "high_order_input"
-        ):
+        if cfg.net.model_type in ["high_order", "high_order_input"]:
             add_channel_dimension = False
 
         text_in = cfg.prompts

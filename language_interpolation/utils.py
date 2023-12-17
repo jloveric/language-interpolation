@@ -121,9 +121,11 @@ def generate_transformer_text(
     # We want to pad the left with spaces if the text does not
     # fit exactly into feature size blocks.
     def justify_sample(sample):
-        just = max(characters_per_feature, (
-            ((len(sample) - 1) // characters_per_feature) + 1
-        ) * characters_per_feature)
+        just = max(
+            characters_per_feature,
+            (((len(sample) - 1) // characters_per_feature) + 1)
+            * characters_per_feature,
+        )
         return sample.rjust(just)
 
     results = []
@@ -165,7 +167,10 @@ class TextGenerationSampler(Callback):
     def on_train_epoch_end(self, trainer, pl_module, outputs=None):
         with torch.no_grad():
             for topk in range(1, self._cfg.topk + 1):
-                if self._cfg.net.model_type == "high_order_transformer":
+                if self._cfg.net.model_type in [
+                    "high_order_transformer",
+                    "high_order_input_transformer",
+                ]:
                     predictions = generate_transformer_text(
                         pl_module,
                         characters_per_feature=self._cfg.data.characters_per_feature,

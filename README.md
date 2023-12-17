@@ -55,12 +55,15 @@ discrete and not continuous - in this case we should have a piecewise constant o
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.layers=0 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 net.layer_type=discontinuous
 ```
-### High order transformers (the beginning)
-Using high order transformer blocks
+### High order transformers
+Using high order transformer blocks. These are in development and not as good as the MLPs above.
 ```
 python examples/high_order_interpolation.py data.type=sequence net=transformer max_epochs=100 optimizer.lr=1e-3 batch_size=512 net.layer_type=continuous data.repeats=5 net.n=2 data.max_features=10 optimizer.patience=20 initialize.type=linear
 ```
-
+Using only high order input, the rest being standard ReLU
+```
+python examples/high_order_interpolation.py data.type=sequence net=transformer max_epochs=100 optimizer.lr=1e-3 batch_size=256 net.layer_type=continuous data.repeats=1 net.n=3 data.max_features=10 optimizer.patience=20 initialize.type=linear accumulate_grad_batches=16 net.segments=2 net.model_type=high_order_input_transformer
+```
 ### sparse convolutional network
 Using conv layers (not done too much here, see below for a possibly better network)
 ```
