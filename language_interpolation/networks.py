@@ -122,11 +122,11 @@ class HighOrderAttention(torch.nn.Module):
         self,
         embed_dim: int,
         out_dim: int,
-        normalization:nn.Module= None,
-        query_layer: nn.Module=None,
-        key_layer: nn.Module=None,
-        value_layer: nn.Module=None,
-        output_layer: nn.Module=None,
+        normalization: nn.Module = None,
+        query_layer: nn.Module = None,
+        key_layer: nn.Module = None,
+        value_layer: nn.Module = None,
+        output_layer: nn.Module = None,
         heads: int = 1,
         device="cpu",
     ):
@@ -225,6 +225,7 @@ class HighOrderAttention(torch.nn.Module):
 
         return final
 
+
 def low_order_attention_block(
     embed_dim: int,
     out_dim: int,
@@ -243,7 +244,7 @@ def low_order_attention_block(
     :param input_scale: 2 means input values are between [-1, 1], 20
     means they are between [-10, 10]
     """
-    
+
     layer = HighOrderAttention(
         embed_dim=embed_dim,
         out_dim=out_dim,
@@ -351,8 +352,7 @@ def large_character_spacing(x, max_context, positional_embedding):
     return xp
 
 
-class AttentionNetworkMixin :
-
+class AttentionNetworkMixin:
     def forward(self, x: Tensor) -> Tensor:
         # Scale the input to [-1, 1] where every token is bumped by 1/(2*max_context)
         # the 0th token is -1 and the nth token is 1
@@ -391,6 +391,7 @@ class AttentionNetworkMixin :
         # torch.cuda.empty_cache()
         return final
         # return self.model(x)
+
 
 # TODO: The 2 below could be combined, but the whole idea is to hide
 # setup from the user, not to provide infinite functionality through
@@ -493,6 +494,7 @@ class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
     Network where only the input layer is a high order MLP, everything
     else is just low order.
     """
+
     def __init__(
         self,
         layer_type: str,
@@ -502,7 +504,7 @@ class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
         heads: int = 1,
         device: str = "cuda",
         max_context: int = 10,
-        non_linearity= None
+        non_linearity=None,
     ):
         super().__init__()
         start_time = time.time()
@@ -537,7 +539,6 @@ class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
         )
 
         for index, element in enumerate(layers[1:-1]):
-
             embed_dim = element["input"]
             out_dim = element["output"]
             new_layer = low_order_attention_block(
@@ -556,7 +557,7 @@ class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
             hidden_layers=output_layer["layers"],
             hidden_width=output_layer["hidden"],
             out_width=128,
-            #device=self._device,
+            # device=self._device,
             non_linearity=non_linearity,
             normalization=mlp_normalization,
         )
@@ -625,7 +626,7 @@ def select_network(cfg: DictConfig, device: str = None):
             heads=cfg.net.heads,
             max_context=cfg.data.max_features,
         )
-    elif cfg.net.model_type == "high_order_input_transformer" :
+    elif cfg.net.model_type == "high_order_input_transformer":
         """
         Only the input is high order, everything else isn't
         """
@@ -634,14 +635,14 @@ def select_network(cfg: DictConfig, device: str = None):
             normalizer = MaxAbsNormalizationLast(eps=1e-6)
 
         model = HighOrderInputAttentionNetwork(
-            cfg.net.layer_type,
-            cfg.net.layers,
+            layer_type=cfg.net.layer_type,
+            layers=cfg.net.layers,
+            n=cfg.net.n,
             normalization=normalizer,
             device=cfg.accelerator,
             heads=cfg.net.heads,
             max_context=cfg.data.max_features,
-            non_linearity=torch.nn.ReLU()
-            
+            non_linearity=torch.nn.ReLU(),
         )
     elif cfg.net.model_type == "high_order":
         """
