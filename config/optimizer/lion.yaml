@@ -1,0 +1,7 @@
+name: lion
+# lr supposed to be 3 to 5 times smaller than adam
+lr: 1e-5
+patience: 5
+factor: 0.1
+gamma: 0.9
+scheduler: plateau # exponential
