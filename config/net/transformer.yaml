@@ -41,6 +41,18 @@ layers:
     segments: ${net.segments}
 
   - input: ${net.base_width}
+    output: ${net.base_width}
+    segments: ${net.segments}
+
+  - input: ${net.base_width}
+    output: ${net.base_width}
+    segments: ${net.segments}
+
+  - input: ${net.base_width}
+    output: ${net.base_width}
+    segments: ${net.segments}
+
+  - input: ${net.base_width}
     hidden: 100
     layers: 1
     segments: 10
