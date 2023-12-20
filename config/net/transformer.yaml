@@ -19,28 +19,12 @@ inner: 10
 layers:
   - input: 1
     hidden: 16
-    output: 16
+    output: 8
     layers: 1
-    segments: 16
+    segments: ${net.segments}
     input_segments: 128
 
-  - input: 16
-    output: ${net.base_width}
-    segments: ${net.segments}
-
-  - input: ${net.base_width}
-    output: ${net.base_width}
-    segments: ${net.segments}
-
-  - input: ${net.base_width}
-    output: ${net.base_width}
-    segments: ${net.segments}
-
-  - input: ${net.base_width}
-    output: ${net.base_width}
-    segments: ${net.segments}
-
-  - input: ${net.base_width}
+  - input: 8
     output: ${net.base_width}
     segments: ${net.segments}
 
@@ -55,9 +39,9 @@ layers:
   - input: ${net.base_width}
     hidden: 100
     layers: 1
-    segments: 10
+    segments: ${net.segments}
 
 # Note! output dimension is c=heads*output so different than normal
 # And then similarity size is c*c*batch_size
 
-heads: 100
+heads: 4

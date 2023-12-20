@@ -24,6 +24,20 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
+# Reported model parameters seems wrong so trying this
+def parameters_in_module(model: nn.Module):
+    pp = 0
+    for p in list(model.parameters()):
+        pp += p.numel()
+    return pp
+
+
+def get_number_of_parameters(model: nn.Module):
+    layers = [module for module in model.modules()]
+    total_parameters = sum([parameters_in_module(module) for module in layers])
+    return total_parameters
+
+
 def select_normalization(normalizer: str):
     normalization = None
     if normalizer == "maxabs":
@@ -222,11 +236,18 @@ class HighOrderAttention(torch.nn.Module):
 
         self.output_layer = output_layer
         if output_layer is None:
-            self.output_layer = torch.nn.Linear(
-                in_features=self.out_dim * heads,
-                out_features=self.out_dim,
-                device=device,
-            )
+            self.output_layer = LowOrderMLP(
+                in_width=self.out_dim * heads,
+                hidden_layers=1,
+                hidden_width=self.out_dim * heads * 4,
+                out_width=self.out_dim,
+                non_linearity=nn.GELU(),  # following karpathy
+            ).to(device=device)
+
+        gp = get_number_of_parameters
+        logger.info(
+            f"query_layer {gp(self.query_layer)} key_layer {gp(self.key_layer)} value_layer {gp(self.value_layer)} output_layer parameters {gp(self.output_layer)}"
+        )
 
         # It seems pytorch doesn't like lambdas so
         # explicitly define it.
@@ -234,6 +255,17 @@ class HighOrderAttention(torch.nn.Module):
             return x
 
         self.normalization = normalization() or noop
+
+        # Add modules to the list so they are properly counted and initialized etc...
+        nn.ModuleList(
+            [
+                self.query_layer,
+                self.value_layer,
+                self.key_layer,
+                self.output_layer,
+                self.normalization,
+            ]
+        )
 
     def forward(
         self,
@@ -257,11 +289,6 @@ class HighOrderAttention(torch.nn.Module):
         kt = self.key_layer(k)
         vt = self.value_layer(v)
 
-        # Turn into [batch,(features/encodings),(encoding size)*heads]
-        # qt = self.normalization(qt.view(query.shape[0], query.shape[1], qt.shape[1]))
-        # kt = self.normalization(kt.view(key.shape[0], key.shape[1], kt.shape[1]))
-        # vt = self.normalization(vt.view(value.shape[0], value.shape[1], vt.shape[1]))
-
         qth = qt.reshape(query.shape[0], query.shape[1], self.heads, -1)
         kth = kt.reshape(key.shape[0], key.shape[1], self.heads, -1)
         vth = vt.reshape(value.shape[0], value.shape[1], self.heads, -1)
@@ -276,7 +303,6 @@ class HighOrderAttention(torch.nn.Module):
         v = res.reshape(res.shape[0] * res.shape[1], -1)
         output = self.output_layer(self.normalization(v))
         final = output.reshape(res.shape[0], res.shape[1], -1)
-        # self.normalization(final)
 
         return final
 
@@ -362,12 +388,16 @@ def high_order_attention_block(
     )
 
     # Applied to multi head attention to recombine (output)
-    output = high_order_fc_layers(
+    output = HighOrderMLP(
         layer_type=layer_type,
         n=n,
-        in_features=out_dim * heads,
-        out_features=out_dim,
-        segments=segments,
+        in_width=out_dim * heads,
+        hidden_width=out_dim * heads * 4,
+        hidden_layers=1,
+        in_segments=segments,
+        out_segments=segments,
+        hidden_segments=segments,
+        out_width=out_dim,
         device=device,
     )
 
@@ -498,6 +528,9 @@ class HighOrderAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
             device=self._device,
             normalization=normalization,
         )
+        logger.info(
+            f"embedding layer size {get_number_of_parameters(self._embedding_layer)}"
+        )
 
         self.layer_normalization = []
         for index, element in enumerate(layers[1:-1]):
@@ -538,6 +571,10 @@ class HighOrderAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
             normalization=normalization,
         )
 
+        logger.info(
+            f"Final output layer size {get_number_of_parameters(self._output_layer)}"
+        )
+
         self.output_normalization = normalization()
 
         # Make the positions 0 to max_context-1
@@ -555,6 +592,17 @@ class HighOrderAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
 
         elapsed_time = time.time() - start_time
         logging.info(f"HighOrderAttentionNetwork setup time {elapsed_time}")
+
+        nn.ModuleList(
+            [
+                self.embedding_normalization,
+                self._embedding_layer,
+                self._output_layer,
+                self.output_normalization,
+            ]
+            + self.layer
+            + self.layer_normalization
+        )
 
 
 class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
@@ -781,6 +829,9 @@ def select_network(cfg: DictConfig, device: str = None):
         )
         finish_time = time.perf_counter() - start_init
         logger.info(f"Finished linear initialization {finish_time}")
+
+    non_lazy_model_parameters = get_number_of_parameters(model)
+    logger.info(f"Number of non-lazy model parameters {non_lazy_model_parameters}")
 
     return model
 
