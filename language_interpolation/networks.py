@@ -24,6 +24,29 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
+class PositionalEncoding(nn.Module):
+    """
+    Positional embedding stolen from pytorch (maybe this defined in it?)
+    """
+    def __init__(self, d_model: int, dropout: float = 0.0, max_len: int = 5000):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        pe = torch.zeros(max_len, 1, d_model)
+        pe[:, 0, 0::2] = torch.sin(position * div_term)
+        pe[:, 0, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
+        """
+        x = x + self.pe[:x.size(0)]
+        return self.dropout(x)
+
 class ClassificationMixin:
     def eval_step(self, batch: Tensor, name: str):
         x, y, idx = batch
@@ -362,6 +385,8 @@ class AttentionNetworkMixin:
         # xp = small_character_spacing(x=x, max_context=self.max_context, positional_embedding=self.positional_embedding)
         # characters are large spacing
 
+        
+        """
         xe = self._embedding_layer(x.reshape(x.shape[0] * x.shape[1], -1))
 
         xp = large_character_spacing(
@@ -369,6 +394,10 @@ class AttentionNetworkMixin:
             max_context=self.max_context,
             positional_embedding=self.positional_embedding,
         )
+        """
+        xe = self._embedding_layer(x.reshape(x.shape[0] * x.shape[1], -1)).reshape(x.shape[0], x.shape[1], -1)
+        pos = self.positional_embedding(xe)
+        xp = xe+pos
 
         query = xp
         key = xp
@@ -477,11 +506,13 @@ class HighOrderAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
         )
 
         # Make the positions 0 to max_context-1
-        self.positional_embedding = (
-            torch.arange(max_context, dtype=torch.get_default_dtype())
-            .unsqueeze(1)
-            .to(device=self._device)
-        )
+        #self.positional_embedding = (
+        #    torch.arange(max_context, dtype=torch.get_default_dtype())
+        #    .unsqueeze(1)
+        #    .to(device=self._device)
+        #)
+
+        self.positional_embedding = PositionalEncoding(d_model=layers[0]['output'],dropout=0, max_len=5000)
 
         # self.positional_embedding = ClassicSinusoidalEmbedding(dim = layers[0]['output'])
 
@@ -563,11 +594,14 @@ class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
         )
 
         # Make the positions 0 to max_context-1
+        """
         self.positional_embedding = (
             torch.arange(max_context, dtype=torch.get_default_dtype())
             .unsqueeze(1)
             .to(device=self._device)
         )
+        """
+        self.positional_embedding = PositionalEncoding(d_model=layers[0]['output'],dropout=0, max_len=5000)
 
         # self.positional_embedding = ClassicSinusoidalEmbedding(dim = layers[0]['output'])
 

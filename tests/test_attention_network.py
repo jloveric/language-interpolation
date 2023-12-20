@@ -71,13 +71,13 @@ def test_attention_network(max_features, characters_per_feature):
 
     new_sample = torch.rand(1, max_features, characters_per_feature) * 2 - 1
 
-    print('new_sample.shape', new_sample.shape, 'positional_embedding', network.positional_embedding.shape )
-    output = large_character_spacing(
-        x=new_sample,
-        max_context=network.max_context,
-        positional_embedding=network.positional_embedding,
-    )
-    print("output", output)
+    #print('new_sample.shape', new_sample.shape, 'positional_embedding', network.positional_embedding.shape )
+    #output = large_character_spacing(
+    #    x=new_sample,
+    #    max_context=network.max_context,
+    #    positional_embedding=network.positional_embedding,
+    #)
+    #print("output", output)
     
     text_list = ["hello sir", "Test this now"]
 
@@ -92,7 +92,7 @@ def test_attention_network(max_features, characters_per_feature):
 
     for index, text in enumerate(text_list):
         assert len(text) + output_size == len(ans[index])
-    
+
 @pytest.mark.parametrize("max_features", [3,4,100])
 @pytest.mark.parametrize("characters_per_feature", [1, 2, 10])
 def test_high_order_input_attention_network(max_features, characters_per_feature):
