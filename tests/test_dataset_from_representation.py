@@ -9,18 +9,17 @@ import torch
 
 
 def test_dataset_from_model():
-
     cfg = DictConfig(
         content={
             "max_epochs": 1,
-            "accelerator": 'cpu',
+            "accelerator": "cpu",
             "lr": 1e-4,
             "batch_size": 256,
             "segments": 2,
             "net": {
                 "model_type": "high_order",
                 "layer_type": "discontinuous",
-                "normalize": True,
+                "normalize": "layer",
                 "features": 16,
                 "n": 2,
                 "n_in": 2,
@@ -42,11 +41,11 @@ def test_dataset_from_model():
                     "width": 10,
                 },
             },
-            "initialize":{
-                "type":"linear",
-                "max_slope":1,
-                "max_offset":0.1,
-            }
+            "initialize": {
+                "type": "linear",
+                "max_slope": 1,
+                "max_offset": 0.1,
+            },
         }
     )
 

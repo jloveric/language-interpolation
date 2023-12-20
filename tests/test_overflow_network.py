@@ -40,7 +40,7 @@ def test_overflow_network():
             "net": {
                 "model_type": "high_order",
                 "layer_type": "discontinuous",
-                "normalize": True,
+                "normalize": "layer",
                 "features": start_features,
                 "n": 2,
                 "n_in": 2,
@@ -62,11 +62,11 @@ def test_overflow_network():
                     "width": 10,
                 },
             },
-            "initialize":{
-                "type":"linear",
-                "max_slope":1,
-                "max_offset":0.1,
-            }
+            "initialize": {
+                "type": "linear",
+                "max_slope": 1,
+                "max_offset": 0.1,
+            },
         }
     )
 
@@ -87,7 +87,7 @@ def test_overflow_network():
             "net": {
                 "model_type": "high_order",
                 "layer_type": "discontinuous",
-                "normalize": True,
+                "normalize": "layer",
                 "features": 100,  # 10x10
                 "n": 2,
                 "n_in": 2,
@@ -109,11 +109,11 @@ def test_overflow_network():
                     "width": 10,
                 },
             },
-            "initialize":{
-                "type":"linear",
-                "max_slope":1,
-                "max_offset":0.1,
-            }
+            "initialize": {
+                "type": "linear",
+                "max_slope": 1,
+                "max_offset": 0.1,
+            },
         }
     )
 

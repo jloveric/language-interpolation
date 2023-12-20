@@ -1,8 +1,8 @@
 # Small network that runs pretty fast.  See at
 # most 50% accuracy.
 
-layer_type: "continuous"
-normalize: true
+layer_type: continuous
+normalize: layer #maxabs
 
 # Polynomial interpolation points.  Polynomial order
 # is (n-1).  In the case of Fourier series, n is the

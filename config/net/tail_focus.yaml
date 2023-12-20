@@ -1,5 +1,5 @@
 layer_type: "continuous1d"
-normalize: true
+normalize: "layer" #maxabs
 rescale_output: False
 
 # Number of characters as input. Convnet can
