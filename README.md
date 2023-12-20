@@ -62,7 +62,7 @@ python examples/high_order_interpolation.py data.type=sequence net=transformer m
 ```
 Using only high order input, the rest being standard ReLU
 ```
-python examples/high_order_interpolation.py data.type=sequence net=transformer max_epochs=100 optimizer.lr=1e-3 batch_size=256 net.layer_type=continuous data.repeats=1 net.n=3 data.max_features=10 optimizer.patience=20 initialize.type=linear accumulate_grad_batches=16 net.segments=2 net.model_type=high_order_input_transformer
+python examples/high_order_interpolation.py data.type=sequence net=transformer max_epochs=100 optimizer.lr=1e-4 batch_size=16 net.layer_type=continuous data.repeats=1 net.n=3 data.max_features=20 optimizer.patience=20 initialize.type=linear accumulate_grad_batches=16 net.segments=2 net.model_type=high_order_input_transformer optimizer=lion
 ```
 ### sparse convolutional network
 Using conv layers (not done too much here, see below for a possibly better network)
