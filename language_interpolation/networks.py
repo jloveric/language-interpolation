@@ -40,10 +40,20 @@ def get_number_of_parameters(model: nn.Module):
 
 def select_normalization(normalizer: str):
     normalization = None
+
+    class NoOpNormalizer(nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x):
+            return x
+
     if normalizer == "maxabs":
         normalization = MaxAbsNormalizationLast
     elif normalizer == "layer":
         normalization = LazyLayerNormLastDim
+    elif normalizer == "none":
+        normalization = NoOpNormalizer
     else:
         raise ValueError(f"Normalization {normalizer} not recognized")
 

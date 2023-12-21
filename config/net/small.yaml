@@ -2,7 +2,7 @@
 # most 50% accuracy.
 
 layer_type: "discontinuous"
-normalize: true
+normalize: layer
 
 # Number of characters as input
 features: 16

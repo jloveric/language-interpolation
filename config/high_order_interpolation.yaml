@@ -67,7 +67,7 @@ prompts:
 topk: 3
 num_predict: 100
 defaults:
-  - optimizer: adam
+  - optimizer: lion
   - net: small
   #- override hydra/sweeper: nevergrad
 # hydra:

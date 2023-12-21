@@ -2,7 +2,7 @@
 # layer.
 model_type: high_order_input
 layer_type: discontinuous
-normalize: true
+normalize: layer
 
 # Number of characters as input
 features: 16

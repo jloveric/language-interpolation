@@ -1,6 +1,6 @@
 # Network sufficient to memorize data
 layer_type: "continuous"
-normalize: true
+normalize: layer
 
 # Number of characters as input
 features: 16

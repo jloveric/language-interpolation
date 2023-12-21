@@ -25,6 +25,11 @@ with nevergrad (data appears in multirun)
 python examples/high_order_interpolation.py -m data.type=sequence
 ```
 # Decent parameters
+A few notes. For normalization, layer norm is the best, followed by maxabs and then no normalization . The only advantage
+to maxabs is that there are no trainable parameters. The best optimizer is Lion, it seems by a long shot. I think for
+these type of networks that have potentially steep gradients due to the polynomials, this is especially the case (since it uses the sign of the gradient). So far,
+kaiming initialization seems to be performing better than linear initialization, but I need to investigate this further.
+
 ### sparse mlp
 A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Adam + learning rate scheduler.
 
