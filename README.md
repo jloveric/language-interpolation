@@ -45,15 +45,27 @@ python examples/high_order_interpolation.py data.type=sequence net=large_double_
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.width=250 max_epochs=100 net.n=3 optimizer.lr=1e-4
 ```
-3 layers quadratic 2 segments per link
+#### Higher order version
+
+3 hidden layers quadratic (n=3) 2 segments per link
 ```
 python examples/high_order_interpolation.py data.type=sequence net=small net.hidden.width=250 max_epochs=100 net.n=3 net.hidden.layers=3 optimizer.lr=1e-5
 ```
+3 hidden layers cubic (n=4) elements 2 segments per link
+```
+python examples/high_order_interpolation.py data.type=sequence net=small net.hidden.width=250 max_epochs=100 net.n=4 net.hidden.layers=3 optimizer.lr=1e-5
+```
+1 hidden layer with quartic (n=5) elements 2 segments per link
+```
+python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.width=200 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 net.n=5
+```
+#### Only using high order for the input
 Standard ReLU network, however, the input layer is piecewise linear so that it can bin the characters into each segment.  The rest of the network
 look like a standard net.
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_standard net.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4
 ```
+#### Without any hidden layers
 can you memorize with just input and output layers with no hidden layers?  In this example we get to about 95% accuracy.  Discontinuous works
 better than continuous as it has double the parameters for piecewise linear.  Increase the order of accuracy does nothing since the inputs are
 discrete and not continuous - in this case we should have a piecewise constant option, but then the gradients would be 0.
