@@ -855,7 +855,7 @@ class ASCIIPredictionNet(ClassificationMixin, PredictionNetMixin, LightningModul
         self.model = select_network(cfg)
 
         self.loss = torch.nn.CrossEntropyLoss()
-        self.accuracy = Accuracy(top_k=1)
+        self.accuracy = Accuracy(top_k=1, task="multiclass", num_classes=128)
 
 
 class RegressionNet(RegressionMixin, PredictionNetMixin, LightningModule):

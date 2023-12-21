@@ -12,13 +12,14 @@ n_out: null
 n_hidden: null
 periodicity: 2.0
 rescale_output: False
+segments: 2
 input:
   segments: 128
   width: ${net.features}
 output:
-  segments: 2
+  segments: ${net.segments}
   width: 128
 hidden:
-  segments: 2
+  segments: ${net.segments}
   layers: 1
   width: 250
