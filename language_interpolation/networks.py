@@ -787,6 +787,7 @@ def select_network(cfg: DictConfig, device: str = None):
             hidden_segments=cfg.net.hidden.segments,
             normalization=normalization,
             device=cfg.accelerator,
+            layer_type_in=cfg.net.input.layer_type,
         )
     elif cfg.net.model_type == "high_order_conv":
         conv = HighOrderFullyConvolutionalNetwork(

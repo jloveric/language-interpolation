@@ -15,6 +15,7 @@ n_in: 2
 periodicity: 2.0
 rescale_output: False
 input:
+  layer_type: continuous
   segments: 128
   width: ${net.features}
 output:

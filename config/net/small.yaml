@@ -19,6 +19,7 @@ periodicity: 2.0
 rescale_output: False
 # scale: 2.0
 input:
+  layer_type: continuous
   segments: 128
   width: ${net.features}
 output:
