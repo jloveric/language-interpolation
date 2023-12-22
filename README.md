@@ -34,9 +34,7 @@ kaiming initialization seems to be performing better than linear initialization,
 A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Adam + learning rate scheduler.
 
 #### Piecewise constant
-Piecewise constant (requires discontinuous). This one requires an enormous
-network, but converges very fast and has poor generalization. 150 segments and 3 hidden layers. I need to try and optimize the architecture for this one to
-get better results.
+Piecewise constant (requires discontinuous). Only the first layer can actually be optimized since derivatives beyond that are zero
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.width=200 max_epochs=100 optimizer.lr=1e-3 batch_size=1000 net.layer_type=discontinuous net.n=1 net.segments=150 net.hidden.layers=3
 ```

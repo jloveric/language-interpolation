@@ -267,7 +267,7 @@ class HighOrderAttention(torch.nn.Module):
         self.normalization = normalization() or noop
 
         # Add modules to the list so they are properly counted and initialized etc...
-        nn.ModuleList(
+        self.all_layers = nn.ModuleList(
             [
                 self.query_layer,
                 self.value_layer,
@@ -603,7 +603,7 @@ class HighOrderAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
         elapsed_time = time.time() - start_time
         logging.info(f"HighOrderAttentionNetwork setup time {elapsed_time}")
 
-        nn.ModuleList(
+        self.all_layers = nn.ModuleList(
             [
                 self.embedding_normalization,
                 self._embedding_layer,
@@ -702,6 +702,17 @@ class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
             d_model=layers[0]["output"], dropout=0, max_len=5000
         )
 
+        self.all_layers = nn.ModuleList(
+            [
+                self._embedding_layer,
+                self.embedding_normalization,
+                self._output_layer,
+                self.output_normalization,
+            ]
+            + self.layer
+            + self.layer_normalization
+        )
+
         # self.positional_embedding = ClassicSinusoidalEmbedding(dim = layers[0]['output'])
 
         elapsed_time = time.time() - start_time
@@ -787,7 +798,7 @@ def select_network(cfg: DictConfig, device: str = None):
             hidden_segments=cfg.net.hidden.segments,
             normalization=normalization,
             device=cfg.accelerator,
-            layer_type_in=cfg.net.input.layer_type,
+            layer_type_in=cfg.net.input.get('layer_type', None),
         )
     elif cfg.net.model_type == "high_order_conv":
         conv = HighOrderFullyConvolutionalNetwork(
