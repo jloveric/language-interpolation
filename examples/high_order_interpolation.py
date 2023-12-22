@@ -1,3 +1,4 @@
+import torch
 from language_interpolation.networks import ASCIIPredictionNet
 import os
 from omegaconf import DictConfig, OmegaConf
@@ -25,6 +26,8 @@ import traceback
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logging.getLogger().setLevel(logging.DEBUG)
+
+torch.set_float32_matmul_precision("medium")
 
 
 @hydra.main(
