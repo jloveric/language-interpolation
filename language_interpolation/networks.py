@@ -19,6 +19,7 @@ import torch.nn.functional as F
 import logging
 import time
 from lion_pytorch import Lion
+from high_order_layers_torch.sparse_optimizers import SparseLion
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -158,6 +159,10 @@ class PredictionNetMixin:
             )
         elif self.cfg.optimizer.name == "lion":
             optimizer = Lion(
+                self.parameters(), lr=self.cfg.optimizer.lr, weight_decay=0.0
+            )
+        elif self.cfg.optimizer.name == "sparse_lion":
+            optimizer = SparseLion(
                 self.parameters(), lr=self.cfg.optimizer.lr, weight_decay=0.0
             )
         elif self.cfg.optimizer.name == "adam":
@@ -798,7 +803,7 @@ def select_network(cfg: DictConfig, device: str = None):
             hidden_segments=cfg.net.hidden.segments,
             normalization=normalization,
             device=cfg.accelerator,
-            layer_type_in=cfg.net.input.get('layer_type', None),
+            layer_type_in=cfg.net.input.get("layer_type", None),
         )
     elif cfg.net.model_type == "high_order_conv":
         conv = HighOrderFullyConvolutionalNetwork(
