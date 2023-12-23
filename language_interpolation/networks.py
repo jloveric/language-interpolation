@@ -11,7 +11,11 @@ from high_order_layers_torch.networks import (
     HighOrderTailFocusNetwork,
 )
 from high_order_layers_torch.positional_embeddings import ClassicSinusoidalEmbedding
-from high_order_layers_torch.layers import MaxAbsNormalizationLast, high_order_fc_layers
+from high_order_layers_torch.layers import (
+    MaxAbsNormalizationLast,
+    high_order_fc_layers,
+    MaxCenterNormalizationLast,
+)
 from high_order_layers_torch.networks import initialize_network_polynomial_layers
 from torchmetrics import Accuracy
 from torch import Tensor
@@ -51,6 +55,8 @@ def select_normalization(normalizer: str):
 
     if normalizer == "maxabs":
         normalization = MaxAbsNormalizationLast
+    elif normalizer == "maxcenter":
+        normalization = MaxCenterNormalizationLast
     elif normalizer == "layer":
         normalization = LazyLayerNormLastDim
     elif normalizer == "none":
