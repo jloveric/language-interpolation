@@ -33,6 +33,7 @@ from einops import rearrange, repeat, einsum
 from typing import Union
 
 
+# TODO: I don't like this approach to setting data inputs
 @dataclass
 class ModelArgs:
     d_model: int
