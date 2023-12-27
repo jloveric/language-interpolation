@@ -152,6 +152,7 @@ class MambaBlock(nn.Module):
         # dt_proj projects Δ from dt_rank to d_in
         self.dt_proj = nn.Linear(args.dt_rank, args.d_inner, bias=True)
 
+        # First value is 0 of self.A_log
         A = repeat(torch.arange(1, args.d_state + 1), 'n -> d n', d=args.d_inner)
         self.A_log = nn.Parameter(torch.log(A))
         self.D = nn.Parameter(torch.ones(args.d_inner))
