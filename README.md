@@ -93,6 +93,12 @@ Using conv layers (not done too much here, see below for a possibly better netwo
 ```
 python examples/high_order_interpolation.py data.type=sequence net=conv max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
 ```
+### mamba
+Work in progress
+```
+python examples/high_order_interpolation.py data.type=sequence net=mamba
+```
+
 ### tail focus network
 Using tail focus network you can handle much much longer sequences, however the accuracy needs to be much higher to not get garbage (random ascii characters that don't look like any language) for a given input
 ```

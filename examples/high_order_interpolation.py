@@ -52,6 +52,7 @@ def run_language_interpolation(cfg: DictConfig):
             if cfg.net.model_type in [
                 "high_order_transformer",
                 "high_order_input_transformer",
+                "mamba"
             ]:
                 # dataset_generator is only one type so using the default
                 datamodule = TransformerDataModule(

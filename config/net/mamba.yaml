@@ -1,3 +1,5 @@
+normalize: layer
+
 d_model: 10
 n_layer: 5
 vocab_size: 128
@@ -8,3 +10,5 @@ d_conv: 4
 pad_vocab_size_multiple: 8
 conv_bias: True
 bias: False
+
+model_type: mamba
