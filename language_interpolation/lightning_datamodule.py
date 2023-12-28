@@ -274,6 +274,7 @@ class TransformerDataModule(pl.LightningDataModule):
         add_channel_dimension: bool = False,
         transforms: Callable[[Tensor], Tensor] = None,
         repeats: int = 1,
+        as_index: bool = False,
     ):
         """
         Data module for this type of transformer
@@ -302,6 +303,7 @@ class TransformerDataModule(pl.LightningDataModule):
         self._add_channel_dimension = add_channel_dimension
         self._transforms = transforms
         self._repeats = repeats
+        self._as_index = as_index
 
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
@@ -316,6 +318,12 @@ class TransformerDataModule(pl.LightningDataModule):
         final_targets = torch.stack([sample[0][this_size][0] for sample in batch])
 
         final_indexes = [sample[1] for sample in batch]
+        if self._as_index is True:
+            return (
+                final_features,
+                final_targets,
+                final_indexes,
+            )
 
         return self.normalize(final_features), final_targets, final_indexes
 

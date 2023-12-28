@@ -86,9 +86,9 @@ class Mamba(nn.Module):
 
         """
         print('input_ids', input_ids)
-
-        x = self.embedding(input_ids)
-        
+        reshaped = input_ids.reshape(input_ids.shape[0], input_ids.shape[1]*input_ids.shape[2])
+        x = self.embedding(reshaped)
+        print('x.shape after', x.shape)
         for layer in self.layers:
             x = layer(x)
             
@@ -127,6 +127,7 @@ class ResidualBlock(nn.Module):
                 [Norm -> Mamba -> Add] -> [Norm -> Mamba -> Add] -> [Norm -> Mamba -> Add] -> ....
             
         """
+        print('residual block', x.shape)
         output = self.mixer(self.norm(x)) + x
 
         return output
@@ -176,6 +177,7 @@ class MambaBlock(nn.Module):
             mamba_inner_ref(), https://github.com/state-spaces/mamba/blob/main/mamba_ssm/ops/selective_scan_interface.py#L311
             
         """
+        
         (b, l, d) = x.shape
         
         x_and_res = self.in_proj(x)  # shape (b, l, 2 * d_in)

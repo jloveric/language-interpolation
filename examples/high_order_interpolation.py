@@ -73,6 +73,7 @@ def run_language_interpolation(cfg: DictConfig):
                     test_filenames=cfg.data.test.filenames,
                     max_size=cfg.data.max_size,
                     repeats=cfg.data.repeats,
+                    as_index = True if cfg.net.model_type=="mamba" else False
                 )
             else:
                 datamodule = GutenbergDataModule(

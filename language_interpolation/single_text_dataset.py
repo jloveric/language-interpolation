@@ -407,6 +407,7 @@ class SingleTextDataset(Dataset):
         transforms: Callable[[Tensor], Tensor] = None,
         transformer: bool = False,
         embedding_size: int = None,
+        as_index: bool=False
     ):
         """
         Args :
@@ -421,6 +422,7 @@ class SingleTextDataset(Dataset):
             add_channel_dimension: For convnets we need to add a channel dimension to the data
             transformer: Whether it should be formatted for a (high order) transformer or not
             embedding_size: Size of the embedding if a transformer is being used.
+            as_index: Inputs should be indexes instead of floats
         """
 
         list_features, list_targets = dataset_sequential(
@@ -447,6 +449,7 @@ class SingleTextDataset(Dataset):
         self.valid_ids = list(range(0, len(list_features)))
         self._transformer = transformer
         self._embedding_size = embedding_size
+        self._as_index = as_index
 
     def __len__(self):
         return len(self.valid_ids)
@@ -483,11 +486,18 @@ class SingleTextDataset(Dataset):
         if self.transforms is not None:
             inputs = self.transforms(inputs)
 
-        return (
-            self.normalize(inputs).reshape(inputs.shape[0], -1, self._embedding_size),
-            self.output[index].reshape(self.output.shape[0], -1, self._embedding_size),
-            idx,
-        )
+        if self._as_index is False:
+            return (
+                self.normalize(inputs).reshape(inputs.shape[0], -1, self._embedding_size),
+                self.output[index].reshape(self.output.shape[0], -1, self._embedding_size),
+                idx,
+            )
+        else :
+            return (
+                inputs.reshape(inputs.shape[0], -1, self._embedding_size),
+                self.output[index].reshape(self.output.shape[0], -1, self._embedding_size),
+                idx,
+            )
 
     def __getitem__(self, idx) -> Tensor:
         if self._transformer is True:
@@ -524,6 +534,7 @@ class TextTransformerDataset(Dataset):
         transforms: Callable[[Tensor], Tensor] = None,
         embedding_size: int = None,
         repeats: int = 1,
+        as_index: bool=True,
     ):
         """
         Args :
@@ -538,6 +549,7 @@ class TextTransformerDataset(Dataset):
             processed.
             add_channel_dimension: For convnets we need to add a channel dimension to the data
             embedding_size: Size of the embedding if a transformer is being used.
+            as_index: inputs should be indexes not floats
         """
 
         list_features, list_targets = dataset_sequential(
@@ -573,6 +585,7 @@ class TextTransformerDataset(Dataset):
 
         self.data_size = len(self.inputs) - self._max_characters
         self._repeats = repeats
+        self._as_index = as_index
 
     def __len__(self):
         return int((len(self.inputs) - self._max_characters) * self._repeats)
