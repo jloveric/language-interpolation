@@ -85,10 +85,10 @@ class Mamba(nn.Module):
             class MambaLMHeadModel, https://github.com/state-spaces/mamba/blob/main/mamba_ssm/models/mixer_seq_simple.py#L173
 
         """
-        print('input_ids.shape', input_ids.shape)
+        #print('input_ids.shape', input_ids.shape)
         reshaped = input_ids.reshape(input_ids.shape[0], input_ids.shape[1]*input_ids.shape[2])
         x = self.embedding(reshaped)
-        print('x.shape after', x.shape)
+        #print('x.shape after', x.shape)
         for layer in self.layers:
             x = layer(x)
             
@@ -128,7 +128,7 @@ class ResidualBlock(nn.Module):
                 [Norm -> Mamba -> Add] -> [Norm -> Mamba -> Add] -> [Norm -> Mamba -> Add] -> ....
             
         """
-        print('residual block', x.shape)
+        #print('residual block', x.shape)
         output = self.mixer(self.norm(x)) + x
 
         return output
