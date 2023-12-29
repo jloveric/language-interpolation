@@ -246,7 +246,52 @@ class DataModuleFromSequentialDatasets(pl.LightningDataModule):
         )
 
 
-class TransformerDataModule(pl.LightningDataModule):
+class TransformerMixin :
+    
+    def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
+        # TODO: this does not make sense to me
+        # The max size includes the output
+        max_size = max(self._max_size, batch[0][0].shape[0])
+        this_size = random.randint(1, max_size - 1)
+        final_features = torch.stack([sample[0][:this_size] for sample in batch])
+
+        # grab the first letter of the next token
+        final_targets = torch.stack([sample[0][this_size][0] for sample in batch])
+
+        final_indexes = [sample[1] for sample in batch]
+        if self._as_index is True:
+            return (
+                final_features,
+                final_targets,
+                final_indexes,
+            )
+
+        return self.normalize(final_features), final_targets, final_indexes
+
+
+class MambaMixin :
+    def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
+        # The max size includes the output
+        max_size = max(self._max_size, batch[0][0].shape[0])
+        this_size = random.randint(1, max_size - 1)
+        final_features = torch.stack([sample[0][:this_size] for sample in batch])
+
+        # grab the first letter of the next token
+        final_targets = torch.stack([sample[0][this_size][0] for sample in batch])
+
+        final_indexes = [sample[1] for sample in batch]
+        if self._as_index is True:
+            return (
+                final_features,
+                final_targets,
+                final_indexes,
+            )
+
+        return self.normalize(final_features), final_targets, final_indexes
+
+
+
+class SequenceDataModule(pl.LightningDataModule):
     def __init__(
         self,
         characters_per_feature: int,
@@ -278,6 +323,8 @@ class TransformerDataModule(pl.LightningDataModule):
     ):
         """
         Data module for this type of transformer
+        :param max_size: Truncate the loaded data to "max_size", when -1 is
+        used the entire text is used.
         """
         super().__init__()
         self._characters_per_feature = characters_per_feature
@@ -307,25 +354,6 @@ class TransformerDataModule(pl.LightningDataModule):
 
     def normalize(self, data):
         return (data - 64 + 0.5) / 64.0
-
-    def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
-        # The max size includes the output
-        max_size = max(self._max_size, batch[0][0].shape[0])
-        this_size = random.randint(1, max_size - 1)
-        final_features = torch.stack([sample[0][:this_size] for sample in batch])
-
-        # grab the first letter of the next token
-        final_targets = torch.stack([sample[0][this_size][0] for sample in batch])
-
-        final_indexes = [sample[1] for sample in batch]
-        if self._as_index is True:
-            return (
-                final_features,
-                final_targets,
-                final_indexes,
-            )
-
-        return self.normalize(final_features), final_targets, final_indexes
 
     def setup(self, stage: Optional[str] = None):
         train_files = create_full_paths(self._root_dir, self._train_filenames)
@@ -424,3 +452,9 @@ class TransformerDataModule(pl.LightningDataModule):
             drop_last=True,
             collate_fn=self.collate_fn,
         )
+
+class TransformerDataModule(TransformerMixin, SequenceDataModule) :
+    pass
+
+class MambaDataModule(MambaMixin, SequenceDataModule):
+    pass
