@@ -121,6 +121,7 @@ class ClassificationMixin:
     def eval_step(self, batch: Tensor, name: str):
         x, y, idx = batch
         y_hat = self(x)
+        print('y_hat.shape',y_hat.shape, 'y shape', y.shape)
         loss = self.loss(y_hat, y.flatten())
 
         diff = torch.argmax(y_hat, dim=1) - y.flatten()
