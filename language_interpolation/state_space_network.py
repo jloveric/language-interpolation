@@ -31,7 +31,7 @@ import torch.nn.functional as F
 from dataclasses import dataclass
 from einops import rearrange, repeat, einsum
 from typing import Union
-
+from language_interpolation.utils import reshape_apply
 
 # TODO: I don't like this approach to setting data inputs
 @dataclass
@@ -194,8 +194,8 @@ class MambaBlock(nn.Module):
         
         y = y * F.silu(res)
         
-        output = self.out_proj(y)
-
+        #output = self.out_proj(y)
+        output = reshape_apply(y, self.out_proj)
         return output
 
     

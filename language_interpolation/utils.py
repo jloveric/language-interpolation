@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 from high_order_layers_torch.layers import *
 from pytorch_lightning import Callback
@@ -17,6 +17,23 @@ import copy
 
 logger = logging.getLogger(__name__)
 
+def reshape_apply(x : Tensor, layer: Any) :
+    """
+    TODO: Move this to high order layers torch
+    Linear layer works on arbitrary shaped tensors, but the
+    High Order Layers do not, so this just solves it for the second
+    case, but also works for the first
+    Args:
+        x : The tensor that needs to be reshaped
+        layer: The layer to apply to
+    Returns:
+        output
+    """
+    shape = x.shape
+    last = shape[-1]
+    first = torch.prod(torch.tensor(shape[:-1]))
+    flatout : Tensor = layer(x.view(first, last))
+    return flatout.view(*shape[:-1],-1)
 
 def create_gutenberg_cache(parent_directory: str):
     """
