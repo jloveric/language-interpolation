@@ -9,7 +9,7 @@ a link is active for each input so the network sparsity is determined by the num
 
 I'm interested in creating larger language models from an ensemble of smaller models.  This would give better flexibility in adding or removing specific sources.
 
-Currently working on sparse high-order transformers
+Working models for High Order MLPs, Mamba (SSM).
 
 # Dataset
 
@@ -94,7 +94,7 @@ Using conv layers (not done too much here, see below for a possibly better netwo
 python examples/high_order_interpolation.py data.type=sequence net=conv max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
 ```
 ### mamba
-Work in progress
+
 ```
  python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=1024
  ```
