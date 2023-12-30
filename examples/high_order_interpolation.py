@@ -1,5 +1,5 @@
 import torch
-from language_interpolation.networks import ASCIIPredictionNet
+from language_interpolation.networks import ASCIIPredictionNet, MambaASCIIPredictionNet
 import os
 from omegaconf import DictConfig, OmegaConf
 import hydra
@@ -18,7 +18,7 @@ from language_interpolation.utils import (
     TextGenerationSampler,
     create_gutenberg_cache,
 )
-from language_interpolation.lightning_datamodule import TransformerDataModule
+from language_interpolation.lightning_datamodule import TransformerDataModule, MambaDataModule
 
 import logging
 import traceback
@@ -52,7 +52,6 @@ def run_language_interpolation(cfg: DictConfig):
             if cfg.net.model_type in [
                 "high_order_transformer",
                 "high_order_input_transformer",
-                "mamba"
             ]:
                 # dataset_generator is only one type so using the default
                 datamodule = TransformerDataModule(
@@ -73,7 +72,28 @@ def run_language_interpolation(cfg: DictConfig):
                     test_filenames=cfg.data.test.filenames,
                     max_size=cfg.data.max_size,
                     repeats=cfg.data.repeats,
-                    as_index = True if cfg.net.model_type=="mamba" else False
+                    as_index = False
+                )
+            elif cfg.net.model_type in ["mamba"] :
+                datamodule = MambaDataModule(
+                    characters_per_feature=cfg.data.characters_per_feature,
+                    max_features=cfg.data.max_features,
+                    batch_size=cfg.batch_size,
+                    targets=1,
+                    num_workers=cfg.data.num_workers,
+                    pre_process_workers=cfg.data.pre_process_workers,
+                    gutenberg_ids_train=cfg.data.train.gutenberg_ids,
+                    gutenberg_ids_val=cfg.data.val.gutenberg_ids,
+                    gutenberg_ids_test=cfg.data.test.gutenberg_ids,
+                    gutenberg_range_train=cfg.data.train.gutenberg_range,
+                    gutenberg_range_val=cfg.data.val.gutenberg_range,
+                    gutenberg_range_test=cfg.data.test.gutenberg_range,
+                    train_filenames=cfg.data.train.filenames,
+                    val_filenames=cfg.data.val.filenames,
+                    test_filenames=cfg.data.test.filenames,
+                    max_size=cfg.data.max_size,
+                    repeats=cfg.data.repeats,
+                    as_index = True
                 )
             else:
                 datamodule = GutenbergDataModule(
@@ -112,7 +132,10 @@ def run_language_interpolation(cfg: DictConfig):
                 accumulate_grad_batches=cfg.accumulate_grad_batches,
             )
 
-            model = ASCIIPredictionNet(cfg)
+            if cfg.net.model_type == "mamba" :
+                model = MambaASCIIPredictionNet(cfg)
+            else :
+                model = ASCIIPredictionNet(cfg)
             trainer.fit(model, datamodule=datamodule)
             logger.info("testing")
 

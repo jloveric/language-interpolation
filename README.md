@@ -96,8 +96,8 @@ python examples/high_order_interpolation.py data.type=sequence net=conv max_epoc
 ### mamba
 Work in progress
 ```
-python examples/high_order_interpolation.py data.type=sequence net=mamba
-```
+ python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=1024
+ ```
 
 ### tail focus network
 Using tail focus network you can handle much much longer sequences, however the accuracy needs to be much higher to not get garbage (random ascii characters that don't look like any language) for a given input

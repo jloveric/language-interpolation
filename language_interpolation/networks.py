@@ -121,7 +121,7 @@ class ClassificationMixin:
     def eval_step(self, batch: Tensor, name: str):
         x, y, idx = batch
         y_hat = self(x)
-        #print('y_hat.shape',y_hat.shape, 'y shape', y.shape)
+
         loss = self.loss(y_hat, y.flatten())
 
         diff = torch.argmax(y_hat, dim=1) - y.flatten()
@@ -131,6 +131,18 @@ class ClassificationMixin:
         self.log(f"{name}_acc", accuracy, prog_bar=True)
         return loss
 
+class MambaClassificationMixin:
+    def eval_step(self, batch: Tensor, name: str):
+        x, y, idx = batch
+        y_hat = self(x)
+        loss = self.loss(y_hat.reshape(y.shape[0]*y.shape[1],-1), y.flatten())
+
+        diff = torch.argmax(y_hat, dim=2,  keepdim=True) - y
+        accuracy = torch.where(diff == 0, 1, 0).sum() / torch.numel(diff)
+
+        self.log(f"{name}_loss", loss, prog_bar=True)
+        self.log(f"{name}_acc", accuracy, prog_bar=True)
+        return loss
 
 class RegressionMixin:
     def eval_step(self, batch: Tensor, name: str):
@@ -885,6 +897,17 @@ def select_network(cfg: DictConfig, device: str = None):
 
 
 class ASCIIPredictionNet(ClassificationMixin, PredictionNetMixin, LightningModule):
+    def __init__(self, cfg: DictConfig):
+        super().__init__()
+        self.save_hyperparameters(cfg)
+        self.cfg = cfg
+
+        self.model = select_network(cfg)
+
+        self.loss = torch.nn.CrossEntropyLoss()
+        self.accuracy = Accuracy(top_k=1, task="multiclass", num_classes=128)
+
+class MambaASCIIPredictionNet(MambaClassificationMixin, PredictionNetMixin, LightningModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.save_hyperparameters(cfg)

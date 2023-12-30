@@ -94,9 +94,9 @@ class Mamba(nn.Module):
             
         x = self.norm_f(x)
         logits = self.lm_head(x)
-        reduced = logits[:,-1,:].reshape(logits.shape[0], logits.shape[2])
+        #reduced = logits[:,-1,:].reshape(logits.shape[0], logits.shape[2])
 
-        return reduced #logits
+        return logits #reduced #logits
 
 
 class ResidualBlock(nn.Module):
