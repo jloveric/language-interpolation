@@ -181,7 +181,7 @@ class MambaBlock(nn.Module):
         
         (b, l, d) = x.shape
         
-        x_and_res = self.in_proj(x)  # shape (b, l, 2 * d_in)
+        x_and_res = reshape_apply(x, self.in_proj)  # shape (b, l, 2 * d_in)
         (x, res) = x_and_res.split(split_size=[self.args.d_inner, self.args.d_inner], dim=-1)
 
         x = rearrange(x, 'b l d_in -> b d_in l')
