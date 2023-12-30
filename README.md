@@ -94,7 +94,7 @@ Using conv layers (not done too much here, see below for a possibly better netwo
 python examples/high_order_interpolation.py data.type=sequence net=conv max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
 ```
 ### mamba
-
+Currently only low order (standard), but will be adding high order
 ```
  python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=1024
  ```
