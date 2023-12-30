@@ -16,7 +16,7 @@ data:
   # Number of times to repeat the dataset. I have a random width
   # sampler, that should be done deterministically, but it isn't
   # ideally this number would be max_features.
-  repeats: 10
+  repeats: 1
 
   train:
     filenames: null # ["books/the_raven.txt", "books/frankenstein.txt"]
