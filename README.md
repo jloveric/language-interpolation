@@ -31,7 +31,7 @@ these type of networks that have potentially steep gradients due to the polynomi
 kaiming initialization seems to be performing better than linear initialization, but I need to investigate this further.
 
 ### sparse mlp
-A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Adam + learning rate scheduler.
+A few networks which are large enough to memorize "The Dunwich Horror" which is fairly short (120KB). Using Lion optimizer + learning rate scheduler.
 
 #### Piecewise constant
 Piecewise constant (requires discontinuous). Only the first layer can actually be optimized since derivatives beyond that are zero
