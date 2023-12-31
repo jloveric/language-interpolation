@@ -142,6 +142,8 @@ class MambaBlock(nn.Module):
 
         self.in_proj = nn.Linear(args.d_model, args.d_inner * 2, bias=args.bias)
 
+        # Kernel is ~4 and this does a depthwise 
+        # convolution because groups=k*in_channels (k=1)
         self.conv1d = nn.Conv1d(
             in_channels=args.d_inner,
             out_channels=args.d_inner,
@@ -185,7 +187,12 @@ class MambaBlock(nn.Module):
         (x, res) = x_and_res.split(split_size=[self.args.d_inner, self.args.d_inner], dim=-1)
 
         x = rearrange(x, 'b l d_in -> b d_in l')
-        x = self.conv1d(x)[:, :, :l]
+        # Depthwise convolution
+        # Why do we use a convolution and not just an MLP that operates on the
+        # channels? Probably because it requires fewer parameters. At any rate,
+        # This appears to be causal as information isn't shared with the next
+        # time step (only within a timestep)
+        x = self.conv1d(x)[:, :, :l] # am I missing something, should always be size l.
         x = rearrange(x, 'b d_in l -> b l d_in')
         
         x = F.silu(x)
