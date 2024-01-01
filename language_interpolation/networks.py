@@ -24,7 +24,7 @@ import logging
 import time
 from lion_pytorch import Lion
 from high_order_layers_torch.sparse_optimizers import SparseLion
-from language_interpolation.state_space_network import Mamba, ModelArgs
+from language_interpolation.state_space_network import Mamba
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -863,18 +863,6 @@ def select_network(cfg: DictConfig, device: str = None):
         widths, output_sizes = tail_focus.compute_sizes(cfg.net.features)
         logger.info(f"TailFocusNetwork widths {widths} output_sizes {output_sizes}")
     elif cfg.net.model_type == "mamba":
-        model_args = ModelArgs(
-            d_model=cfg.net.d_model,
-            n_layer=cfg.net.n_layer,
-            vocab_size=cfg.net.vocab_size,
-            d_state=cfg.net.d_state,
-            expand=cfg.net.expand,
-            dt_rank=cfg.net.dt_rank,
-            d_conv=cfg.net.d_conv,
-            pad_vocab_size_multiple=cfg.net.pad_vocab_size_multiple,
-            conv_bias=cfg.net.conv_bias,
-            bias=cfg.net.bias,
-        )
         model = Mamba(
             d_model=cfg.net.d_model,
             n_layer=cfg.net.n_layer,

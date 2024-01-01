@@ -246,12 +246,11 @@ class DataModuleFromSequentialDatasets(pl.LightningDataModule):
         )
 
 
-class TransformerMixin :
-    
+class TransformerMixin:
     def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
         # TODO: this does not make sense to me
         # The max size includes the output
-        print('something seems wrong here. Fix')
+
         max_size = max(self._max_size, batch[0][0].shape[0])
         this_size = random.randint(1, max_size - 1)
         final_features = torch.stack([sample[0][:this_size] for sample in batch])
@@ -270,7 +269,7 @@ class TransformerMixin :
         return self.normalize(final_features), final_targets, final_indexes
 
 
-class MambaMixin :
+class MambaMixin:
     def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
         # The targets are just the features shifted by 1
         # The max size includes the output
@@ -288,7 +287,6 @@ class MambaMixin :
             )
 
         return final_features, final_targets, final_indexes
-
 
 
 class SequenceDataModule(pl.LightningDataModule):
@@ -328,9 +326,9 @@ class SequenceDataModule(pl.LightningDataModule):
         """
         super().__init__()
         self._characters_per_feature = characters_per_feature
-        
+
         self._max_features = max_features
-        
+
         self._targets = targets
         self._batch_size = batch_size
         self._num_workers = num_workers
@@ -455,8 +453,10 @@ class SequenceDataModule(pl.LightningDataModule):
             collate_fn=self.collate_fn,
         )
 
-class TransformerDataModule(TransformerMixin, SequenceDataModule) :
+
+class TransformerDataModule(TransformerMixin, SequenceDataModule):
     pass
+
 
 class MambaDataModule(MambaMixin, SequenceDataModule):
     pass
