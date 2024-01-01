@@ -1,12 +1,12 @@
 normalize: layer
 
-d_model: 16
+d_model: 64
 n_layer: 5
 vocab_size: 128
 d_state: 32
 expand: 2
 dt_rank: auto
-d_conv: 4 
+d_conv: 4
 pad_vocab_size_multiple: 128
 conv_bias: True
 bias: False
