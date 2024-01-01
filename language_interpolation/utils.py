@@ -17,7 +17,8 @@ import copy
 
 logger = logging.getLogger(__name__)
 
-def reshape_apply(x : Tensor, layer: Any) :
+
+def reshape_apply(x: Tensor, layer: Any):
     """
     TODO: Move this to high order layers torch
     Linear layer works on arbitrary shaped tensors, but the
@@ -32,8 +33,9 @@ def reshape_apply(x : Tensor, layer: Any) :
     shape = x.shape
     last = shape[-1]
     first = torch.prod(torch.tensor(shape[:-1]))
-    flatout : Tensor = layer(x.view(first, last))
-    return flatout.view(*shape[:-1],-1)
+    flatout: Tensor = layer(x.reshape(first, last))
+    return flatout.view(*shape[:-1], -1)
+
 
 def create_gutenberg_cache(parent_directory: str):
     """
@@ -175,6 +177,7 @@ def generate_transformer_text(
 
     return results
 
+
 def generate_mamba_text(
     model: nn.Module,
     characters_per_feature: int,
@@ -201,7 +204,6 @@ def generate_mamba_text(
     """
     model.eval()
 
-
     results = []
     for text_raw in text_list:
         text_in = text_raw
@@ -209,16 +211,12 @@ def generate_mamba_text(
             encoding, text_used = encode_input_from_text(
                 text_in=text_in, features=max_characters
             )
-            encoding = (
-                encoding
-                .to(model._device)
-                .reshape(1, -1, characters_per_feature)
-            )
+            encoding = encoding.to(model._device).reshape(1, -1, characters_per_feature)
             model.eval()
 
             output = model(encoding)
             values, indices, ascii = decode_output_to_text(
-                encoding=output[0,-1,:], topk=topk
+                encoding=output[0, -1, :], topk=topk
             )
 
             # pick the next character weighted by probabilities of each character
@@ -230,7 +228,6 @@ def generate_mamba_text(
         results.append(text_in.replace("\n", " "))
 
     return results
-
 
 
 class TextGenerationSampler(Callback):

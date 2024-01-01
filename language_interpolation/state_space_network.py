@@ -32,6 +32,7 @@ from dataclasses import dataclass
 from einops import rearrange, repeat, einsum
 from typing import Union
 from language_interpolation.utils import reshape_apply
+from high_order_layers_torch.networks import HighOrderMLP
 
 
 class Mamba(nn.Module):
@@ -161,6 +162,25 @@ class ResidualBlock(nn.Module):
         return output
 
 
+def layer_generator(layer_type, in_width, out_width, segments, n, bias, hidden_layers):
+    if layer_type == "linear":
+        in_proj = nn.Linear(in_width, out_width, bias=bias)
+    else:
+        in_proj = HighOrderMLP(
+            layer_type=layer_type,
+            in_width=in_width,
+            out_width=out_width,
+            hidden_width=out_width,
+            hidden_layers=hidden_layers,
+            n=n,
+            in_segments=segments,
+            out_segments=segments,
+            hidden_segments=segments,
+        )
+
+    return in_proj
+
+
 class MambaBlock(nn.Module):
     def __init__(
         self,
@@ -171,6 +191,10 @@ class MambaBlock(nn.Module):
         dt_rank: int,
         conv_bias: bool,
         bias: bool,
+        layer_type: str = "linear",  # Regular Linear layer
+        n: int = 2,
+        segments: int = 2,
+        hidden_layers: int = 0,
     ):
         """A single Mamba block, as described in Figure 3 in Section 3.4 in the Mamba paper [1]."""
         super().__init__()
@@ -183,7 +207,15 @@ class MambaBlock(nn.Module):
         self.conv_bias = conv_bias
         self.bias = bias
 
-        self.in_proj = nn.Linear(self.d_model, self.d_inner * 2, bias=self.bias)
+        self.in_proj = layer_generator(
+            layer_type=layer_type,
+            in_width=self.d_model,
+            out_width=self.d_inner * 2,
+            n=n,
+            segments=segments,
+            hidden_layers=hidden_layers,
+            bias=bias,
+        )
 
         # Kernel is ~4 and this does a depthwise
         # convolution because groups=k*in_channels (k=1)
@@ -197,18 +229,51 @@ class MambaBlock(nn.Module):
         )
 
         # x_proj takes in `x` and outputs the input-specific Δ, B, C
-        self.x_proj = nn.Linear(
-            self.d_inner, self.dt_rank + self.d_state * 2, bias=False
+        # self.x_proj = x_proj
+
+        self.x_proj = layer_generator(
+            layer_type=layer_type,
+            in_width=self.d_inner,
+            out_width=self.dt_rank + self.d_state * 2,
+            n=n,
+            segments=segments,
+            hidden_layers=hidden_layers,
+            bias=False,
         )
 
+        # if x_proj is None:
+        #    self.x_proj = nn.Linear(
+        #        self.d_inner, self.dt_rank + self.d_state * 2, bias=False
+        #    )
+
         # dt_proj projects Δ from dt_rank to d_in
-        self.dt_proj = nn.Linear(self.dt_rank, self.d_inner, bias=True)
+        self.dt_proj = layer_generator(
+            layer_type=layer_type,
+            in_width=self.dt_rank,
+            out_width=self.d_inner,
+            n=n,
+            segments=segments,
+            hidden_layers=hidden_layers,
+            bias=True,
+        )
+
+        # if dt_proj is None:
+        #    self.dt_proj = nn.Linear(self.dt_rank, self.d_inner, bias=True)
 
         # First value is 0 of self.A_log
         A = repeat(torch.arange(1, self.d_state + 1), "n -> d n", d=self.d_inner)
         self.A_log = nn.Parameter(torch.log(A))
         self.D = nn.Parameter(torch.ones(self.d_inner))
-        self.out_proj = nn.Linear(self.d_inner, self.d_model, bias=self.bias)
+        # self.out_proj = nn.Linear(self.d_inner, self.d_model, bias=self.bias)
+        self.out_proj = layer_generator(
+            layer_type=layer_type,
+            in_width=self.d_inner,
+            out_width=self.d_model,
+            n=n,
+            segments=segments,
+            hidden_layers=hidden_layers,
+            bias=self.bias,
+        )
 
     def forward(self, x):
         """Mamba block forward. This looks the same as Figure 3 in Section 3.4 in the Mamba paper [1].
@@ -274,7 +339,7 @@ class MambaBlock(nn.Module):
         A = -torch.exp(self.A_log.float())  # shape (d_in, n)
         D = self.D.float()
 
-        x_dbl = self.x_proj(x)  # (b, l, dt_rank + 2*n)
+        x_dbl = reshape_apply(x, self.x_proj)  # (b, l, dt_rank + 2*n)
 
         (delta, B, C) = x_dbl.split(
             split_size=[self.dt_rank, n, n], dim=-1
