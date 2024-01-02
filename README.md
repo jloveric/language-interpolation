@@ -9,7 +9,7 @@ a link is active for each input so the network sparsity is determined by the num
 
 I'm interested in creating larger language models from an ensemble of smaller models.  This would give better flexibility in adding or removing specific sources.
 
-Working models for High Order MLPs, and Highr Order Mamba (SSM) as well
+Working models for High Order MLPs, and High Order Mamba (SSM) as well
 as a few others.
 
 # Dataset
