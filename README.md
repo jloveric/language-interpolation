@@ -1,6 +1,6 @@
 [![CI](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml/badge.svg)](https://github.com/jloveric/language-interpolation/actions/workflows/python-app.yml)
 
-# Natural Language Generation with Sparse High Order Layers
+# Natural Language Generation with Sparse High Order Layers (MLP, Mamba)
 High order and piecewise networks for natural language generation (see [here](https://github.com/jloveric/high-order-layers-torch) for a description of High order layers being used).  The typical high order network design with piecewise polynomial
 layers here is a fully connected network where each link has multiple segments.  Only one segment in
 a link is active for each input so the network sparsity is determined by the number of segments. Although it looks like a standard MLP, the structure is more complicated and is a form of routing network with piecewise polynomials.
@@ -9,7 +9,8 @@ a link is active for each input so the network sparsity is determined by the num
 
 I'm interested in creating larger language models from an ensemble of smaller models.  This would give better flexibility in adding or removing specific sources.
 
-Working models for High Order MLPs, Mamba (SSM).
+Working models for High Order MLPs, and Highr Order Mamba (SSM) as well
+as a few others.
 
 # Dataset
 
@@ -93,12 +94,17 @@ Using conv layers (not done too much here, see below for a possibly better netwo
 ```
 python examples/high_order_interpolation.py data.type=sequence net=conv max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
 ```
-### mamba
-Currently only low order (standard), but will be adding high order
+### High order Mamba (and low order)
+The following haven't yet been optimized, but they run.
+For low order (standard), specify layer_type=linear as below
 ```
- python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=1024
+ python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=1024 net.layer_type=linear
  ```
-
+ for high order specify layer_type as 'continuous' or 'discontinuous' which converts the linear layers into piecewise polynomial layers. If hidden layers > 0 it becomes
+ a high order network instead of a linear layer.
+ ```
+ python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=16 net.n_layer=2 net.n=3 net.segments=2 net.hidden_layers=0
+ ```
 ### tail focus network
 Using tail focus network you can handle much much longer sequences, however the accuracy needs to be much higher to not get garbage (random ascii characters that don't look like any language) for a given input
 ```
