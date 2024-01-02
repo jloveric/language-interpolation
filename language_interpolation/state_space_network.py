@@ -1,5 +1,6 @@
 # Originally copied from
 # https://github.com/johnma2006/mamba-minimal
+# and then modified to work with high order layers
 
 """Simple, minimal implementation of Mamba in one file of PyTorch.
 
