@@ -191,7 +191,7 @@ class MambaBlock(nn.Module):
         dt_rank: int,
         conv_bias: bool,
         bias: bool,
-        layer_type: str = "linear",  # Regular Linear layer
+        layer_type: str = "continuous",  # Regular Linear layer
         n: int = 2,
         segments: int = 2,
         hidden_layers: int = 0,
@@ -344,7 +344,7 @@ class MambaBlock(nn.Module):
         (delta, B, C) = x_dbl.split(
             split_size=[self.dt_rank, n, n], dim=-1
         )  # delta: (b, l, dt_rank). B, C: (b, l, n)
-        delta = F.softplus(self.dt_proj(delta))  # (b, l, d_in)
+        delta = F.softplus(reshape_apply(delta, self.dt_proj))  # (b, l, d_in)
 
         y = self.selective_scan(
             x, delta, A, B, C, D
