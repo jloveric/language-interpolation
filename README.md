@@ -80,6 +80,18 @@ discrete and not continuous - in this case we should have a piecewise constant o
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_single_layer net.hidden.layers=0 max_epochs=100 optimizer.lr=1e-4 batch_size=1000 net.layer_type=discontinuous
 ```
+### High order Mamba (and low order)
+The following haven't yet been optimized, but they run.
+For low order (standard), specify layer_type=linear as below
+```
+ python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=1024 net.layer_type=linear
+ ```
+ for high order specify layer_type as 'continuous' or 'discontinuous' which converts the linear layers into piecewise polynomial layers. If hidden layers > 0 it becomes
+ a high order network instead of a linear layer.
+ ```
+ python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=16 net.n_layer=2 net.n=3 net.segments=2 net.hidden_layers=0
+ ```
+
 ### High order transformers
 Using high order transformer blocks. These are in development and not as good as the MLPs above.
 ```
@@ -94,17 +106,6 @@ Using conv layers (not done too much here, see below for a possibly better netwo
 ```
 python examples/high_order_interpolation.py data.type=sequence net=conv max_epochs=100 optimizer.lr=1e-4 batch_size=1000 data.add_channel_dimension=true
 ```
-### High order Mamba (and low order)
-The following haven't yet been optimized, but they run.
-For low order (standard), specify layer_type=linear as below
-```
- python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=1024 net.layer_type=linear
- ```
- for high order specify layer_type as 'continuous' or 'discontinuous' which converts the linear layers into piecewise polynomial layers. If hidden layers > 0 it becomes
- a high order network instead of a linear layer.
- ```
- python examples/high_order_interpolation.py data.type=sequence net=mamba optimizer.lr=1e-4 data.max_features=16 batch_size=16 net.n_layer=2 net.n=3 net.segments=2 net.hidden_layers=0
- ```
 ### tail focus network
 Using tail focus network you can handle much much longer sequences, however the accuracy needs to be much higher to not get garbage (random ascii characters that don't look like any language) for a given input
 ```
