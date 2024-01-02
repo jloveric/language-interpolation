@@ -5,9 +5,7 @@ from high_order_layers_torch.networks import HighOrderMLP
 import torch
 
 
-@pytest.mark.parametrize("max_features", [3, 4, 100])
-@pytest.mark.parametrize("characters_per_feature", [1, 2, 10])
-def test_attention_network(max_features, characters_per_feature):
+def test_attention_network():
     net = HighOrderMLP(
         layer_type="continuous",
         n=5,
