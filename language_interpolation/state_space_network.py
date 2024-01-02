@@ -48,6 +48,10 @@ class Mamba(nn.Module):
         expand: int = 2,
         dt_rank: Union[str, int] = "auto",
         pad_vocab_size_multiple: int = 8,
+        layer_type: str = "linear",  # Regular Linear layer
+        n: int = 2,
+        segments: int = 2,
+        hidden_layers: int = 0,
     ):
         """Full Mamba model."""
         super().__init__()
@@ -71,6 +75,10 @@ class Mamba(nn.Module):
                     dt_rank=dt_rank,
                     conv_bias=conv_bias,
                     bias=bias,
+                    layer_type=layer_type,
+                    segments=segments,
+                    n=n,
+                    hidden_layers=hidden_layers 
                 )
                 for _ in range(n_layer)
             ]
@@ -122,6 +130,10 @@ class ResidualBlock(nn.Module):
         dt_rank: int,
         conv_bias: bool,
         bias: bool,
+        layer_type: str = "continuous",  # Regular Linear layer
+        n: int = 2,
+        segments: int = 2,
+        hidden_layers: int = 0,
     ):
         """Simple block wrapping Mamba block with normalization and residual connection."""
         super().__init__()
@@ -133,6 +145,10 @@ class ResidualBlock(nn.Module):
             dt_rank=dt_rank,
             conv_bias=conv_bias,
             bias=bias,
+            layer_type=layer_type,
+            segments=segments,
+            n=n,
+            hidden_layers=hidden_layers   
         )
         self.norm = RMSNorm(d_model)
 

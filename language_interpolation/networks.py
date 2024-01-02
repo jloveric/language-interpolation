@@ -874,6 +874,10 @@ def select_network(cfg: DictConfig, device: str = None):
             pad_vocab_size_multiple=cfg.net.pad_vocab_size_multiple,
             conv_bias=cfg.net.conv_bias,
             bias=cfg.net.bias,
+            layer_type=cfg.layer_type,
+            n=cfg.net.n,
+            segments=cfg.net.segments,
+            hidden_layers=cfg.net.hidden_layers,
         )
     else:
         raise ValueError(

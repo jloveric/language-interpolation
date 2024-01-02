@@ -12,3 +12,9 @@ conv_bias: True
 bias: False
 
 model_type: mamba
+
+# High order networks
+layer_type : continuous
+n : 3
+segments: 2
+hidden_layers: 0
