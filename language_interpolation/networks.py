@@ -120,10 +120,10 @@ class PositionalEncoding(nn.Module):
 class ClassificationMixin:
     def eval_step(self, batch: Tensor, name: str):
         x, y, idx = batch
-        print('x eval.shape', x.shape)
+        print("x eval.shape", x.shape)
         y_hat = self(x)
-        print('y_hat.shape', y_hat.shape)
-        print('y.shape',y.shape)
+        print("y_hat.shape", y_hat.shape)
+        print("y.shape", y.shape)
         loss = self.loss(y_hat, y.flatten())
 
         diff = torch.argmax(y_hat, dim=1) - y.flatten()
@@ -160,9 +160,7 @@ class RegressionMixin:
 
 class PredictionNetMixin:
     def forward(self, x):
-        print('x.shape',x.shape)
         ans = self.model(x)
-        print('prediction ans', ans.shape)
         return ans
 
     def training_step(self, batch, batch_idx):
@@ -759,7 +757,7 @@ def select_network(cfg: DictConfig, device: str = None):
         Only the input layer is high order, the rest
         of the layers are standard linear+relu and normalization.
         """
-        print('using low order mlp')
+        print("using low order mlp")
         layer_list = []
         input_layer = torch.nn.Embedding(
             num_embeddings=128,
@@ -779,7 +777,7 @@ def select_network(cfg: DictConfig, device: str = None):
             hidden_layers=cfg.net.hidden.layers - 1,
             non_linearity=torch.nn.ReLU(),
             normalization=normalization,
-            #device=cfg.accelerator,
+            # device=cfg.accelerator,
         )
         layer_list.append(lower_layers)
 
@@ -810,7 +808,7 @@ def select_network(cfg: DictConfig, device: str = None):
             hidden_layers=cfg.net.hidden.layers - 1,
             non_linearity=torch.nn.ReLU(),
             normalization=normalization,
-            #device=cfg.accelerator,
+            # device=cfg.accelerator,
         )
         layer_list.append(lower_layers)
 
