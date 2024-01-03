@@ -749,7 +749,37 @@ class HighOrderInputAttentionNetwork(AttentionNetworkMixin, torch.nn.Module):
 def select_network(cfg: DictConfig, device: str = None):
     normalization = select_normalization(cfg.net.normalize)
 
-    if cfg.net.model_type == "high_order_input":
+    if cfg.net.model_type == "low_order_mlp":
+        """
+        Only the input layer is high order, the rest
+        of the layers are standard linear+relu and normalization.
+        """
+
+        layer_list = []
+        input_layer = torch.nn.Embedding(
+            num_embeddings=128,
+            embedding_dim=cfg.net.hidden.width,
+            device=cfg.accelerator,
+        )
+
+        layer_list.append(input_layer)
+
+        if normalization is not None:
+            layer_list.append(normalization())
+
+        lower_layers = LowOrderMLP(
+            in_width=cfg.net.hidden.width,
+            out_width=cfg.net.output.width,
+            hidden_width=cfg.net.hidden.width,
+            hidden_layers=cfg.net.hidden.layers - 1,
+            non_linearity=torch.nn.ReLU(),
+            normalization=normalization,
+            #device=cfg.accelerator,
+        )
+        layer_list.append(lower_layers)
+
+        model = torch.nn.Sequential(*layer_list)
+    elif cfg.net.model_type == "high_order_input":
         """
         Only the input layer is high order, the rest
         of the layers are standard linear+relu and normalization.
@@ -769,14 +799,13 @@ def select_network(cfg: DictConfig, device: str = None):
             layer_list.append(normalization())
 
         lower_layers = LowOrderMLP(
-            layer_type=cfg.net.layer_type,
             in_width=cfg.net.hidden.width,
-            out_width=cfg.output.width,
+            out_width=cfg.net.output.width,
             hidden_width=cfg.net.hidden.width,
             hidden_layers=cfg.net.hidden.layers - 1,
             non_linearity=torch.nn.ReLU(),
             normalization=normalization,
-            device=cfg.accelerator,
+            #device=cfg.accelerator,
         )
         layer_list.append(lower_layers)
 

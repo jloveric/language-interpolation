@@ -74,7 +74,7 @@ def run_language_interpolation(cfg: DictConfig):
                     repeats=cfg.data.repeats,
                     as_index = False
                 )
-            elif cfg.net.model_type in ["mamba"] :
+            elif cfg.net.model_type in ["mamba","low_order_mlp"] :
                 datamodule = MambaDataModule(
                     characters_per_feature=cfg.data.characters_per_feature,
                     max_features=cfg.data.max_features,
