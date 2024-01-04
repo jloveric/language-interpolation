@@ -120,10 +120,7 @@ class PositionalEncoding(nn.Module):
 class ClassificationMixin:
     def eval_step(self, batch: Tensor, name: str):
         x, y, idx = batch
-        print("x eval.shape", x.shape)
         y_hat = self(x)
-        print("y_hat.shape", y_hat.shape)
-        print("y.shape", y.shape)
         loss = self.loss(y_hat, y.flatten())
 
         diff = torch.argmax(y_hat, dim=1) - y.flatten()
@@ -757,7 +754,7 @@ def select_network(cfg: DictConfig, device: str = None):
         Only the input layer is high order, the rest
         of the layers are standard linear+relu and normalization.
         """
-        print("using low order mlp")
+        
         layer_list = []
         input_layer = torch.nn.Embedding(
             num_embeddings=128,
@@ -766,6 +763,16 @@ def select_network(cfg: DictConfig, device: str = None):
         )
 
         layer_list.append(input_layer)
+
+        class Mean(nn.Module) :
+            def __init__(self) :
+                super().__init__()
+                pass
+
+            def forward(self, x) :
+                return torch.mean(x,dim=1)
+
+        layer_list.append(Mean())
 
         if normalization is not None:
             layer_list.append(normalization())

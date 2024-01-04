@@ -289,7 +289,6 @@ class MambaMixin:
 
 class MLPMixin:
     def collate_fn(self, batch) -> tuple[Tensor, Tensor, list[int]]:
-        print('calling mlpmixin')
         # The targets are just the features shifted by 1
         # The max size includes the output
         final_features = torch.stack([sample[0][:-1] for sample in batch]).squeeze(2)
@@ -298,7 +297,7 @@ class MLPMixin:
         final_targets = torch.stack([sample[0][-1] for sample in batch])
 
         final_indexes = [sample[1] for sample in batch]
-        print('final_features.shape', final_features.shape)
+
         if self._as_index is True:
             return (
                 final_features,

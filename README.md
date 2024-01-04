@@ -119,7 +119,13 @@ and the result is jibberish sentences with a context of 256 characters and a sin
 ```
 Who are you?hhhIhr II hham hahe _I wa hhhar hit wohe _ower_ him hI whosow, hhough I wan og .hI. ht. __aday. Out hi sg them Cacler --a stabke wist his _Treag art unt.. The worn in the boumd di no ce. The hracises. Onte canheremhis counded teghing the hacling che conders. so collel, and as thing the eot to sheed an the wan or the lliused to the grom- of corning in. He who pout timetime, cu\' to e onled. The opar nor ly the notike.. The that ,uen\' forss will, liff us of that dert, the st bouthis spon the rills abec sire gors.  Then\'t alite alline the scomery dowped distured the _ anda stipy rouse pre. The comch bor, the tale hotives to frows in the cagane of cearsite to giss it a mameverise on the ping, as if withh doed crown onligriat ffmled afisht to crothin sing it aningstib catedep with tilled, and tather it nowms a sraned the eNid that hef on  follitines reas of in the lights he at the listent frog the and arenguy the consus dis, and it that himm--thoold y\'t heous. Ilikepad to was it ans on the tole of the shey. They mongite folker    sorece\'s abon the loud sote mathers verite to Corgass. Thele. Octereried to enttones of the vision inse frabity.
 ```
-
+## Low order mlp
+This one uses an embedding as the first layer and averages to pass to the
+standard MLP. The averaging means this is like "bag of letters" so don't expect
+super high accuracy. Still need to create a text generator for evaluation with this one
+```
+python examples/high_order_interpolation.py data.type=sequence net=large_standard net.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4 net.model_type=low_order_mlp
+```
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
 
