@@ -25,6 +25,7 @@ import time
 from lion_pytorch import Lion
 from high_order_layers_torch.sparse_optimizers import SparseLion
 from language_interpolation.state_space_network import Mamba
+from language_interpolation.dual_convolutional_network import DualConvolutionNetwork
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -844,6 +845,18 @@ def select_network(cfg: DictConfig, device: str = None):
             heads=cfg.net.heads,
             max_context=cfg.data.max_features,
             non_linearity=torch.nn.ReLU(),
+        )
+    elif cfg.net.model_type == "dual_convolutional_network":
+        model = DualConvolutionNetwork(
+            n=cfg.net.n,
+            in_width=cfg.net.in_width,
+            out_width=cfg.net.out_width,
+            embedding_dimension=cfg.net.embedding_dimension,
+            hidden_width=cfg.net.hidden_width,
+            hidden_layers=cfg.net.hidden_layers,
+            in_segments=cfg.net.in_segments,
+            segments=cfg.net.segments,
+            device=cfg.accelerator
         )
     elif cfg.net.model_type == "high_order":
         """

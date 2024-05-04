@@ -21,7 +21,7 @@ class DualConvolutionalLayer(torch.nn.Module):
         device: str = "cpu",
     ):
         super().__init__()
-        
+
         self._out_width = out_width
 
         self.input_layer = HighOrderMLP(
@@ -39,7 +39,7 @@ class DualConvolutionalLayer(torch.nn.Module):
         self.equal_layers = HighOrderMLP(
             layer_type="continuous",
             n=n,
-            in_width=2*out_width,
+            in_width=2 * out_width,
             out_width=out_width,
             hidden_layers=hidden_layers,
             hidden_width=hidden_width,
@@ -55,23 +55,61 @@ class DualConvolutionalLayer(torch.nn.Module):
         """
 
         xshape = x.shape
-        nx = x.reshape(xshape[0]*xshape[1],xshape[2])
+        nx = x.reshape(xshape[0] * xshape[1], xshape[2])
 
         val = self.input_layer(nx)
-        val = val.reshape(x.shape[0],x.shape[1],-1)
+        val = val.reshape(x.shape[0], x.shape[1], -1)
 
         # Gradients apparently automatically accumulate, though probably want
         # some normalization here
         depth = 0
         while val.shape[1] > 1:
-            depth+=1
+            depth += 1
             if val.shape[1] % 2 == 1:
                 # Add padding to the end, hope this doesn't bust anything
-                val = torch.cat([val, torch.zeros(val.shape[0], 1, val.shape[2])], dim=1)
+                val = torch.cat(
+                    [val, torch.zeros(val.shape[0], 1, val.shape[2])], dim=1
+                )
 
             valshape = val.shape
-            val = val.reshape(-1,2*self._out_width)
+            val = val.reshape(-1, 2 * self._out_width)
             val = self.equal_layers(val)
-            val = val.reshape(valshape[0],-1,self._out_width)
+            val = val.reshape(valshape[0], -1, self._out_width)
         return val
 
+
+class DualConvolutionNetwork(torch.nn.Module):
+    def __init__(
+        self,
+        n: str,
+        in_width: int,
+        out_width: int,
+        embedding_dimension: int,
+        hidden_layers: int,
+        hidden_width: int,
+        in_segments: int = None,
+        segments: int = None,
+        device: str = "cpu",
+    ):
+
+        self.dual_layer = DualConvolutionalLayer(
+            n=n,
+            in_width=in_width,
+            out_width=embedding_dimension,
+            hidden_layer=hidden_layers,
+            hidden_width=hidden_width,
+            in_segments=in_segments,
+            segments=segments,
+            device=device,
+        )
+
+        self.output_mlp = torch.nn.Linear(
+            in_features=embedding_dimension,
+            out_features=out_width,
+            device=device,
+        )
+
+    def forward(self, x):
+        x = self.dual_layer(x)
+        x = self.output_mlp(x)
+        return x
