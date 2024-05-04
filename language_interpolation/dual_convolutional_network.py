@@ -12,6 +12,7 @@ class DualConvolutionalNetwork(torch.nn.Module):
     def __init__(
         self,
         n: str,
+        in_width: int,
         out_width: int,
         hidden_layers: int,
         hidden_width: int,
@@ -20,11 +21,13 @@ class DualConvolutionalNetwork(torch.nn.Module):
         device: str = "cpu",
     ):
         super().__init__()
+        
+        self._out_width = out_width
 
         self.input_layer = HighOrderMLP(
             layer_type="continuous",
             n=n,
-            in_width=2,
+            in_width=in_width,
             in_segments=in_segments,
             out_width=out_width,
             hidden_layers=0,
@@ -36,7 +39,7 @@ class DualConvolutionalNetwork(torch.nn.Module):
         self.equal_layers = HighOrderMLP(
             layer_type="continuous",
             n=n,
-            in_width=out_width,
+            in_width=2*out_width,
             out_width=out_width,
             hidden_layers=hidden_layers,
             hidden_width=hidden_width,
@@ -48,16 +51,23 @@ class DualConvolutionalNetwork(torch.nn.Module):
 
     def forward(self, x: Tensor):
         """
-        x has shape [B, L (sequence length), dimension]
+        x has shape [B, L, D]
         """
+        
+        xshape = x.shape
+        nx = x.reshape(xshape[0]*xshape[1],xshape[2])
 
-        val = self.input_layer(x)
+        val = self.input_layer(nx)
+        val = val.reshape(x.shape[0],x.shape[1],-1)
+
         while val.shape[1] > 1:
-            
             if val.shape[1] % 2 == 1:
                 # Add padding to the end, hope this doesn't bust anything
-                val = torch.cat([val, torch.zeros(1, val.shape[1], val.shape[2])])
-            
+                val = torch.cat([val, torch.zeros(val.shape[0], 1, val.shape[2])], dim=1)
+
+            valshape = val.shape
+            val = val.reshape(-1,2*self._out_width)
             val = self.equal_layers(val)
+            val = val.reshape(valshape[0],-1,self._out_width)
         return val
 
