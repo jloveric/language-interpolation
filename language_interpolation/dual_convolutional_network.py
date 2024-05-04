@@ -8,7 +8,7 @@ from high_order_layers_torch.networks import HighOrderMLP
 from torch import Tensor
 
 
-class DualConvolutionalNetwork(torch.nn.Module):
+class DualConvolutionalLayer(torch.nn.Module):
     def __init__(
         self,
         n: str,
@@ -53,14 +53,18 @@ class DualConvolutionalNetwork(torch.nn.Module):
         """
         x has shape [B, L, D]
         """
-        
+
         xshape = x.shape
         nx = x.reshape(xshape[0]*xshape[1],xshape[2])
 
         val = self.input_layer(nx)
         val = val.reshape(x.shape[0],x.shape[1],-1)
 
+        # Gradients apparently automatically accumulate, though probably want
+        # some normalization here
+        depth = 0
         while val.shape[1] > 1:
+            depth+=1
             if val.shape[1] % 2 == 1:
                 # Add padding to the end, hope this doesn't bust anything
                 val = torch.cat([val, torch.zeros(val.shape[0], 1, val.shape[2])], dim=1)
