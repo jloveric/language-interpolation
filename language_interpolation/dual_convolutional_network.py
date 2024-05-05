@@ -69,7 +69,7 @@ class DualConvolutionalLayer(torch.nn.Module):
             if val.shape[1] % 2 == 1:
                 # Add padding to the end, hope this doesn't bust anything
                 val = torch.cat(
-                    [val, torch.zeros(val.shape[0], 1, val.shape[2])], dim=1, device=self.device
+                    [val, torch.zeros(val.shape[0], 1, val.shape[2], device=self.device)], dim=1
                 )
 
             valshape = val.shape
