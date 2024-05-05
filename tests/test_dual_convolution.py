@@ -34,3 +34,4 @@ def test_dual_convolution():
     )
     res = net(x)
     print('res', res)
+    print('res.shape',res.shape)

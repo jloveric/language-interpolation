@@ -76,7 +76,7 @@ class DualConvolutionalLayer(torch.nn.Module):
             val = val.reshape(-1, 2 * self._out_width)
             val = self.equal_layers(val)
             val = val.reshape(valshape[0], -1, self._out_width)
-        return val
+        return val.squeeze(1) # There should be an extra dimension at 1
 
 
 class DualConvolutionNetwork(torch.nn.Module):
