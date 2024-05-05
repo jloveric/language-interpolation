@@ -131,6 +131,7 @@ The idea is to repeately apply the same high order 1d convolution to reduce the 
 ```
 python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-4 batch_size=32 net.layer_type=continuous data.repeats=5 net.n=2 data.max_features=10 optimizer.patience=20 initialize.type=linear
 ```
+Not surprising, this technique does not seem to work particularly well. So far it's been unable to get beyond generating more than a few letters.
 
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
