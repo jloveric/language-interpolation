@@ -19,12 +19,13 @@ class DualConvolutionalLayer(torch.nn.Module):
         in_segments: int = None,
         segments: int = None,
         device: str = "cpu",
+        normalization=None
     ):
         super().__init__()
 
         self._out_width = out_width
         self.device = device
-
+        self.interior_normalization = normalization()
         self.input_layer = HighOrderMLP(
             layer_type="continuous",
             n=n,
@@ -36,6 +37,7 @@ class DualConvolutionalLayer(torch.nn.Module):
             device=device,
             out_segments=segments,
             hidden_segments=segments,
+            normalization=normalization
         )
         self.equal_layers = HighOrderMLP(
             layer_type="continuous",
@@ -48,6 +50,7 @@ class DualConvolutionalLayer(torch.nn.Module):
             in_segments=segments,
             out_segments=segments,
             hidden_segments=segments,
+            normalization=normalization
         )
 
     def forward(self, x: Tensor):
@@ -60,6 +63,7 @@ class DualConvolutionalLayer(torch.nn.Module):
 
         val = self.input_layer(nx)
         val = val.reshape(x.shape[0], x.shape[1], -1)
+        val = self.interior_normalization(val)
 
         # Gradients apparently automatically accumulate, though probably want
         # some normalization here
@@ -91,6 +95,7 @@ class DualConvolutionNetwork(torch.nn.Module):
         in_segments: int = None,
         segments: int = None,
         device: str = "cpu",
+        normalization=None
     ):
         super().__init__()
         self.dual_layer = DualConvolutionalLayer(
@@ -102,6 +107,7 @@ class DualConvolutionNetwork(torch.nn.Module):
             in_segments=in_segments,
             segments=segments,
             device=device,
+            normalization=normalization
         )
 
         self.output_mlp = torch.nn.Linear(

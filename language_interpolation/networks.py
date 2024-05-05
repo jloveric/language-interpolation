@@ -852,6 +852,7 @@ def select_network(cfg: DictConfig, device: str = None):
             in_width=cfg.net.in_width,
             out_width=cfg.net.out_width,
             embedding_dimension=cfg.net.embedding_dimension,
+            normalization=normalization,
             hidden_width=cfg.net.hidden_width,
             hidden_layers=cfg.net.hidden_layers,
             in_segments=cfg.net.in_segments,
