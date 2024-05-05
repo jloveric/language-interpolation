@@ -241,6 +241,7 @@ class TextGenerationSampler(Callback):
                 if self._cfg.net.model_type in [
                     "high_order_transformer",
                     "high_order_input_transformer",
+                    "dual_convolution"
                 ]:
                     predictions = generate_transformer_text(
                         pl_module,
