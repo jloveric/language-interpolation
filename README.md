@@ -126,6 +126,12 @@ super high accuracy. Still need to create a text generator for evaluation with t
 ```
 python examples/high_order_interpolation.py data.type=sequence net=large_standard net.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4 net.model_type=low_order_mlp
 ```
+## Dual Convolution
+This one doesn't work yet, but runs! Basically the idea is to repeately apply the same high order 1d convolution to reduce the input sequence to a single remaining vector. The update is dynamic and the number of times the convolution is applied depends on the length of the sequence. The command to run is
+```
+python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-3 batch_size=32 net.layer_type=continuous data.repeats=5 net.n=2 data.max_features=10 optimizer.patience=20 initialize.type=linear
+```
+
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
 
