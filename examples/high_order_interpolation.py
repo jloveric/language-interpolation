@@ -56,7 +56,9 @@ def run_language_interpolation(cfg: DictConfig):
             if cfg.net.model_type in [
                 "high_order_transformer",
                 "high_order_input_transformer",
+                "dual_convolution"
             ]:
+                print('Using transformer dataloader')
                 # dataset_generator is only one type so using the default
                 datamodule = TransformerDataModule(
                     characters_per_feature=cfg.data.characters_per_feature,

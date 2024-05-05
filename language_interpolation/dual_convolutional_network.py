@@ -23,6 +23,7 @@ class DualConvolutionalLayer(torch.nn.Module):
         super().__init__()
 
         self._out_width = out_width
+        self.device = device
 
         self.input_layer = HighOrderMLP(
             layer_type="continuous",
@@ -68,7 +69,7 @@ class DualConvolutionalLayer(torch.nn.Module):
             if val.shape[1] % 2 == 1:
                 # Add padding to the end, hope this doesn't bust anything
                 val = torch.cat(
-                    [val, torch.zeros(val.shape[0], 1, val.shape[2])], dim=1
+                    [val, torch.zeros(val.shape[0], 1, val.shape[2])], dim=1, device=self.device
                 )
 
             valshape = val.shape
@@ -91,12 +92,12 @@ class DualConvolutionNetwork(torch.nn.Module):
         segments: int = None,
         device: str = "cpu",
     ):
-
+        super().__init__()
         self.dual_layer = DualConvolutionalLayer(
             n=n,
             in_width=in_width,
             out_width=embedding_dimension,
-            hidden_layer=hidden_layers,
+            hidden_layers=hidden_layers,
             hidden_width=hidden_width,
             in_segments=in_segments,
             segments=segments,

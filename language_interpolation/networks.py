@@ -846,7 +846,7 @@ def select_network(cfg: DictConfig, device: str = None):
             max_context=cfg.data.max_features,
             non_linearity=torch.nn.ReLU(),
         )
-    elif cfg.net.model_type == "dual_convolutional_network":
+    elif cfg.net.model_type == "dual_convolution":
         model = DualConvolutionNetwork(
             n=cfg.net.n,
             in_width=cfg.net.in_width,
