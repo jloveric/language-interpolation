@@ -127,9 +127,9 @@ super high accuracy. Still need to create a text generator for evaluation with t
 python examples/high_order_interpolation.py data.type=sequence net=large_standard net.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4 net.model_type=low_order_mlp
 ```
 ## Dual Convolution
-This one doesn't work yet, but runs! Basically the idea is to repeately apply the same high order 1d convolution to reduce the input sequence to a single remaining vector. The update is dynamic and the number of times the convolution is applied depends on the length of the sequence. This was inspired by mamba, but is really nothing like mamba, more like a variable depth high order convnet. The command to run is
+The idea is to repeately apply the same high order 1d convolution to reduce the input sequence to a single remaining vector. The update is dynamic and the number of times the convolution is applied depends on the length of the sequence. This was inspired by mamba, but is really nothing like mamba, more like a variable depth high order convnet. The command to run is
 ```
-python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-3 batch_size=32 net.layer_type=continuous data.repeats=5 net.n=2 data.max_features=10 optimizer.patience=20 initialize.type=linear
+python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-4 batch_size=32 net.layer_type=continuous data.repeats=5 net.n=2 data.max_features=10 optimizer.patience=20 initialize.type=linear
 ```
 
 ## Notes
