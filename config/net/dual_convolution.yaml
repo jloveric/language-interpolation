@@ -5,12 +5,11 @@ model_type: dual_convolution
 n: 3
 
 segments: 2
-#base_width: 8
 
 in_width: 1
 out_width: 128
 embedding_dimension: 1024
-hidden_width: 128
+hidden_width: 1024
 hidden_layers: 2
 in_segments: 128
 accelerator: cuda

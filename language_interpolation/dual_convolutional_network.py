@@ -27,7 +27,7 @@ class DualConvolutionalLayer(torch.nn.Module):
         self.device = device
         self.interior_normalization = normalization()
         self.input_layer = HighOrderMLP(
-            layer_type="continuous",
+            layer_type="discontinuous",
             n=n,
             in_width=in_width,
             in_segments=in_segments,
@@ -40,7 +40,7 @@ class DualConvolutionalLayer(torch.nn.Module):
             normalization=normalization
         )
         self.equal_layers = HighOrderMLP(
-            layer_type="continuous",
+            layer_type="discontinuous",
             n=n,
             in_width=2 * out_width,
             out_width=out_width,

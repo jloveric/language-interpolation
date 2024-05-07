@@ -127,11 +127,10 @@ super high accuracy. Still need to create a text generator for evaluation with t
 python examples/high_order_interpolation.py data.type=sequence net=large_standard net.hidden.width=1000 max_epochs=100 optimizer.lr=1e-4 net.model_type=low_order_mlp
 ```
 ## Dual Convolution
-The idea is to repeately apply the same high order 1d convolution to reduce the input sequence to a single remaining vector. The update is dynamic and the number of times the convolution is applied depends on the length of the sequence. This was inspired by mamba, but is really nothing like mamba, more like a variable depth high order convnet. The command to run is
+The idea is to repeately apply the same high order 1d convolution to reduce the input sequence to a single remaining vector. The update is dynamic and the number of times the convolution is applied depends on the length of the sequence. Remarkable this actually sort of works but is insanely slow. Maybe I can get faster convergence somehow.
 ```
-python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-4 batch_size=32 net.layer_type=continuous data.repeats=5 net.n=2 data.max_features=10 optimizer.patience=20 initialize.type=linear
+python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-5 batch_size=32 net.layer_type=discontinuous data.repeats=1 net.n=3 net.segments=4 data.max_features=10 optimizer.patience=20  net.embedding_dimension=128 net.hidden_width=1024 net.normalize=maxabs initialize.type=linear
 ```
-Not surprising, this technique does not seem to work particularly well. So far it's been unable to get beyond generating more than a few letters.
 
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
