@@ -131,7 +131,10 @@ The idea is to repeately apply the same high order 1d convolution to reduce the 
 ```
 python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-5 batch_size=32 net.layer_type=discontinuous data.repeats=1 net.n=3 net.segments=4 data.max_features=10 optimizer.patience=20  net.embedding_dimension=128 net.hidden_width=1024 net.normalize=maxabs initialize.type=linear
 ```
-
+And this one was a bit better. Heated my office for a while. Performance did not quit get to 50% which means it could be only the predictions one layer deep are accurate and it ignores everything else.
+```
+python examples/high_order_interpolation.py data.type=sequence net=dual_convolution max_epochs=100 optimizer.lr=1e-5 batch_size=32 net.layer_type=continuous data.repeats=1 net.n=3 net.segments=16 data.max_features=10 optimizer.patience=20  net.embedding_dimension=128 net.hidden_width=1024 net.normalize=maxabs initialize.type=linear
+```
 ## Notes
 I use input layer (continuous or discontinuous) with 128 segments, one for each ASCII character.  You can bump this down to 64, but the convergence doesn't seem quite as good - presumably it still works because most books don't use all the ascii characters anyway.
 
